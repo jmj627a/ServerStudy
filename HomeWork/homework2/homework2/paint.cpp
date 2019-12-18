@@ -8,11 +8,6 @@
 #define BEFORE 1
 #define AFTER 2
 
-#define UP 0
-#define LEFT 1
-#define DOWN 2
-#define RIGHT 3
-
 bool key = false;
 
 
@@ -41,10 +36,10 @@ void boardPrint(int board[][SCREEN_WIDTH])
 
 void paintBoard(int x, int y, int board[][SCREEN_WIDTH])
 {
-	int dis = UP;
 
-	boardPrint(board);
 	system("cls");
+	boardPrint(board);
+	Sleep(10);
 
 	if (x < 0 || x >= SCREEN_WIDTH)
 		return;
@@ -62,37 +57,17 @@ void paintBoard(int x, int y, int board[][SCREEN_WIDTH])
 	else if (board[x][y] == BLANK)
 		return;
 
-	if (dis == UP)
-	{
-		paintBoard(x - 1, y, board);
-		dis = LEFT;
-	}
-	if (dis == LEFT)
-	{
-		paintBoard(x, y - 1, board);
-		dis = DOWN;
-	}
-	if (dis == DOWN)
-	{
-		paintBoard(x + 1, y, board);
-		dis = RIGHT;
-	}
-	if (dis == RIGHT)
-	{
-		paintBoard(x, y + 1, board);
-		dis++;
-	}
+	paintBoard(x - 1, y, board);
+	paintBoard(x, y - 1, board);
+	paintBoard(x + 1, y, board);
+	paintBoard(x, y + 1, board);
 
 	if (x == 2 && y == 1)
-	{
 		key = true;
-	}
-
 }
 
 void main()
 {
-
 	while (true)
 	{
 		key = false;
@@ -105,20 +80,14 @@ void main()
 		{1, 1,0,0,0,0,0,1,1,0,},
 		{1, 1,1,0,0,0,1,1,1,0,},
 		{0, 1,1,1,0,1,1,1,0,0,},
-		{0, 0,1,1,1,1,1,0,0,0,},
-		{0, 0,0,1,1,1,0,0,1,0,},
-		{0, 0,0,0,1,0,0,0,1,1,}
+		{0, 0,1,1,1,1,1,0,0,1,},
+		{0, 0,0,1,1,1,0,0,1,1,},
+		{0, 0,0,0,1,0,0,1,1,1,}
 		};
 
 		while (false == key)
 		{
 			paintBoard(2, 1, board);
-
 		}
-
-
 	}
-
-
-
 }
