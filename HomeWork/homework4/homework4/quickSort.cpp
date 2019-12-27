@@ -1,11 +1,59 @@
 #include <stdio.h>
 
 
-int quickArr[10] = { 7,4,9,10,2,5,6,8,1,0 };
+int arr[10] = { 7,4,9,10,2,5,6,8,1,0 };
 //int pivot = 0; //0번째 값이 피봇
 //int right = 9; //배열 맨 마짐가 9번째 값이 right
 //int left = 1; //피봇 다음 값이 left
 
+void swap(int l, int r) {
+	int tmp = arr[l];
+	arr[l] = arr[r];
+	arr[r] = tmp;
+}
+
+int partition( int left, int right) {
+	int pivot = arr[left];
+
+	printf("( %d ~ %d )", left, right);
+	for (int i = 0; i < 10; ++i)
+		printf("%d ", arr[i]);
+	printf("\n");
+
+	int l = left + 1;
+	int r = right;
+
+
+	while (l < r) {
+		while (arr[l] < pivot && l < r)
+			l++;
+		while (arr[r] > pivot&& l < r)
+			r--;
+		if (l < r)
+			swap(l, r);
+	}
+
+	swap(left, r);
+	return r;
+}
+
+void quicksort(int left, int right) {
+
+	if (left < right) {
+		int pivot = partition(left, right);
+		quicksort(left, pivot - 1);
+		quicksort(pivot + 1, right);
+	}
+}
+
+
+
+void main()
+{
+	quicksort(0, 9);
+}
+
+/*
 int qSort(int left, int right)
 {
 	if (left >= right)
@@ -94,12 +142,5 @@ void quickSort(int _left, int _right)
 	quickSort(right + 1, _right);
 
 }
+*/
 
-
-void main()
-{
-	quickSort(0, 9);
-}
-
-
-//https://medium.com/@leeyh0216/%ED%80%B5%EC%A0%95%EB%A0%AC-3cb1e521e656
