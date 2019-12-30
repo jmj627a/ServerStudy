@@ -31,15 +31,18 @@ void main()
 
 		for (int i = 0; i < SIZE; ++i)
 		{
+			//띄어쓰기나 끝이 아니라면 뒤에 붙이기
 			if (str[i] != ' ' && str[i] != NULL)
 			{
 				s2[0] = str[i];
 				strcat_s(s1, s2);
 			}
+			//띄어쓰기나 끝이면 단어 찾아서 출력
 			else if (str[i] == ' ' || str[i] == NULL)
 			{
 				bool isThere = false;
 
+				//사전에 있는 단어와 비교
 				for (int i = 0; i < 10; ++i)
 				{
 					if (0 == strcmp(s1, dictionary[i][0]))
@@ -50,6 +53,7 @@ void main()
 					}
 				}
 
+				//배열에 없으면 그대로 영어 출력
 				if (!isThere)
 					printf("%s ", s1);
 
