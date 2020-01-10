@@ -104,7 +104,7 @@ void main(void)
 	
 	while (1)
 	{
-
+		//Render
 		// 스크린 버퍼를 지움
 		Buffer_Clear();
 
@@ -137,7 +137,7 @@ void main(void)
 //--------------------------------------------------------------------
 void Buffer_Flip(void)
 {
-	cs_ClearScreen();
+	//cs_ClearScreen();
 
 	for (int i = 0; i < dfSCREEN_HEIGHT; ++i)
 	{
