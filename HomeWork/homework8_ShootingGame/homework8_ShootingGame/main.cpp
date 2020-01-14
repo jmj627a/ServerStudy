@@ -21,7 +21,7 @@ enum GameSceneType
 	EXIT = 4
 };
 
-struct PLAYER
+struct Player
 {
 	int x = 10;
 	int y = 10;
@@ -29,7 +29,7 @@ struct PLAYER
 	int life = 3;
 };
 
-struct ENEMY
+struct Enemy
 {
 	bool flag = false;
 	
@@ -41,8 +41,7 @@ struct ENEMY
 	bool dir; //0 - 오른쪽 , 1 - 왼쪽
 };
 
-
-struct BULLET
+struct Bullet
 {
 	bool flag = false;
 	bool type; // 0 - PLAYER_TYPE , 1 - ENEMY_TYPE
@@ -51,40 +50,62 @@ struct BULLET
 	int y;
 };
 
+struct Title
+{
+	int text[6][3];
 
-ENEMY* g_Enemy;
-BULLET g_Bullet[BULLET_NUM];
-PLAYER g_player;
+	int startX;
+	int startY;
+
+	int x;
+	int y;
+
+	bool dir;
+	int size = 6;
+};
+
+
+Enemy* g_Enemy;
+Bullet g_Bullet[BULLET_NUM];
+Player g_player;
 
 int g_GameSceneType = TITLE;
 int g_GameStage = 0;
 int g_TotalStage = 3;
 
+bool Special_state = false;
+
 // 화면 깜빡임을 없애기 위한 화면 버퍼.
 char szScreenBuffer[dfSCREEN_HEIGHT][dfSCREEN_WIDTH];
 
 //타이틀 버퍼
-char szTitleBuffer[20][20] = {
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,1,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+char szTitleBuffer[20][20] = {0,};
+
+Title title[4] = {
+	{{0,1,0,
+	 1,0,0,
+	 1,1,1,
+	 1,0,1,
+	 1,0,1,
+	 0,1,0}, 2,2,2,2,0,6},
+	{{0,1,0,
+	 1,0,1,
+	 1,1,1,
+	 1,0,1,
+	 1,0,1,
+	 0,0,0}, 6,5,6,5,0,6},
+	{{1,0,1,
+	 1,1,1,
+	 1,1,1,
+	 1,0,1,
+	 1,0,1,
+	 0,0,0}, 10,9,10,9,0,6},
+	{{1,1,1,
+	 1,0,0,
+	 1,1,1,
+	 1,0,0,
+	 1,1,1,
+	 0,0,0}, 14,12,14,12,0,6}
 };
 
 void playerInit();
@@ -109,6 +130,8 @@ void Draw_Bullet(char chSprite);
 //버퍼에 찍는건 아니고 그냥 출력
 void Draw_interface();
 
+void Draw_Title();
+
 //총알 생성 (누구 총알인지, 몬스터면 몇번째 몬스터한테 나온 총알인지)
 void create_bullet(bool type, int num);
 
@@ -119,6 +142,8 @@ void Title_keyInput();
 //한 칸씩 이동
 void bullet_Move();
 void enemy_Move();
+
+void Title_Move();
 
 //적 이동 방향 변경
 void enemy_changeDir();
@@ -138,6 +163,7 @@ void playerDeathCheck();
 
 
 int temp = 0;
+
 //넘겨주는 씬으로 변경 
 void Change_Scene(int type);
 
@@ -146,8 +172,8 @@ void Title_Scene();
 void Game_Scene();
 void Gameover_Scene();
 
-
-
+//적 다 잡았으면 다음 스테이지로
+void stageEndCheck();
 
 
 void main(void)
@@ -177,6 +203,7 @@ void main(void)
 			enemyInit();
 			bulletInit();
 			Change_Scene(INGAME);
+			cs_ClearScreen();
 			break;
 
 		case EXIT:
@@ -200,7 +227,7 @@ void playerInit()
 void enemyInit()
 {
 	free(g_Enemy);
-	g_Enemy = (ENEMY*)malloc(sizeof(ENEMY) * ENEMY_NUM);
+	g_Enemy = (Enemy*)malloc(sizeof(Enemy) * ENEMY_NUM);
 
 	FILE* pStageFile = fopen("Enemy.txt", "rb");
 
@@ -257,8 +284,6 @@ void bulletInit()
 }
 
 
-
-
 // 버퍼의 내용을 화면으로 찍어주는 함수.
 void Buffer_Flip(void)
 {
@@ -270,7 +295,6 @@ void Buffer_Flip(void)
 		printf("%s\n", szScreenBuffer[i]);
 	}
 }
-
 
 // 화면 버퍼를 지워주는 함수
 void Buffer_Clear(void)
@@ -300,7 +324,6 @@ void Draw_Enemy(char chSprite)
 	}
 }
 
-
 void Draw_Bullet(char chSprite)
 {
 	for (int i = 0; i < BULLET_NUM; ++i)
@@ -311,6 +334,7 @@ void Draw_Bullet(char chSprite)
 		}
 	}
 }
+
 //넘겨주는 씬으로 변경 
 void Change_Scene(int type)
 {
@@ -393,6 +417,10 @@ void KeyInput()
 	{
 		g_GameStage = (g_GameStage + 1) % g_TotalStage;
 		Change_Scene(LOADING);
+	}
+	if (GetAsyncKeyState(VK_F1))
+	{
+		Special_state = (Special_state + 1) % 2;
 	}
 }
 
@@ -586,7 +614,6 @@ void Game_Scene()
 	KeyInput();
 
 	//로직처리
-
 	enemy_Move();
 	bullet_Move();
 	enemy_Attack();
@@ -596,13 +623,62 @@ void Game_Scene()
 	collision_Bullet_Player();
 
 	playerDeathCheck();
+	stageEndCheck();
 
+}
+
+//타이틀 이동
+void Title_Move()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		switch (title[i].dir)
+		{
+		case 0:
+			if (title[i].y < 15)
+				title[i].y++;
+			else
+				title[i].dir = (title[i].dir + 1) % 2;
+			break;
+
+		case 1:
+			if (title[i].y > 0)
+				title[i].y--;
+			else
+				title[i].dir = (title[i].dir + 1) % 2;
+			break;
+		}
+		
+	}
+}
+
+//타이틀 찍기
+void Draw_Title()
+{
+	for (int i = 0; i < 20; ++i)
+	{
+		for (int j = 0; j < 20; ++j)
+		{
+			szTitleBuffer[j][i] = 0;
+		}
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			for (int k = 0; k < 6; ++k)
+			{
+				//cs_MoveCursor(title[i].startX + j, title[i].startY + k);
+				szTitleBuffer[title[i].y + k][title[i].x + j] = title[i].text[k][j];
+			}
+		}
+	}
 }
 
 //타이틀 내용 출력
 void Title_Print()
 {
-	cs_ClearScreen();
 
 	for (int i = 0; i < 20; ++i)
 	{
@@ -632,8 +708,6 @@ void Title_Print()
 	cs_MoveCursor(48, 15);
 	printf("　STAGE 3");
 
-	cs_MoveCursor(48, 20);
-	printf("　EXIT");
 
 	cs_MoveCursor(48, 5 * (g_GameStage + 1));
 	printf("▶");
@@ -668,13 +742,15 @@ void Title_keyInput()
 //타이틀 씬 함수
 void Title_Scene()
 {
+	Title_Move();
+
+	Draw_Title();
+
 	Title_Print();
 
 	Title_keyInput();
-
 }
 
-int temp = 0;
 //게임오버 씬 함수
 void Gameover_Scene()
 {
@@ -705,12 +781,33 @@ void Gameover_Scene()
 		{
 		case 0:
 			Change_Scene(TITLE);
+			cs_ClearScreen();
 			break;
 		case 1:
 			Change_Scene(EXIT);
+			cs_ClearScreen();
 			break;
 		}
 	}
 	cs_MoveCursor(28, 10 + 5 * (temp));
 	printf("▶");
+}
+
+//몬스터 다 잡으면 다음 스테이지로
+void stageEndCheck()
+{
+	bool flag = true;
+	for (int i = 0; i < ENEMY_NUM; ++i)
+	{
+		if (true == g_Enemy[i].flag)
+		{
+			flag = false;
+		}
+	}
+
+	if (true == flag)
+	{
+		g_GameStage = (g_GameStage + 1) % g_TotalStage;
+		Change_Scene(LOADING);
+	}
 }
