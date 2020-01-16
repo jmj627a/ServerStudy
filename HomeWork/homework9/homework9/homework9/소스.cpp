@@ -71,11 +71,11 @@ void main()
 			B2 = (*pImage2 & 0x000000ff) >> 0;
 
 			//Gray Scale
-			//unsigned int temp = (R1 + G1 + B1) / 3;
-			//*pImage3 = (R1 << temp) | (G1 << temp) | (B1 << temp);
+			unsigned int temp = (R1 + G1 + B1) / 3;
+			*pImage3 = (temp << 16) | (temp << 8) | (temp );
 
 			//¹Ý¹Ý ¼¯±â
-			*pImage3 = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
+			//*pImage3 = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
 			
 			//*pImage3 = (R1 << 16) | (G1 << 8) | (B1);
 			
