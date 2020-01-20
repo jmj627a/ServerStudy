@@ -128,7 +128,7 @@ void main()
 
 	MemoryRelease((int*)0x12341234);
 	MemoryRelease(p2);
-	MemoryRelease(p1);
+	//MemoryRelease(p1);
 	MemoryRelease(p);
 
 	MemoryPrint();
