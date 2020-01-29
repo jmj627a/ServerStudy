@@ -1,15 +1,17 @@
 #include <stdio.h>
 
-#define hello 100
 constexpr int ONE = 1;
+constexpr int TWO = 2;
 
+#define ONEONE 1
+#define TWOTWO 2
 
 void main()
 {
-	auto b = 2;
-	scanf_s("%d", &b);
-	const int a = b;
-	int* p = (int*)&a;
-	*p = 20;
-	printf("%d", a);
+	int a = ONE + TWO;
+
+	int b = ONEONE + TWOTWO;
+
+	printf("%d \n", a + b);
+
 }
