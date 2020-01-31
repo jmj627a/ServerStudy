@@ -6,7 +6,7 @@
 #include "CList.h"
 //#include "CNew.h"
 
-CList* info = new CList();
+CList* list = new CList();
 
 void* operator new (size_t size, const char* File, int Line);
 void* operator new[](size_t size, const char* File, int Line);
@@ -19,10 +19,10 @@ void operator delete[](void* p);
 
 void* operator new(size_t size, const char* File, int Line)
 {
-	printf("!!!! %d !!!!\n", size);
+	//printf("!!!! %d !!!!\n", size);
  	void* ptr = malloc(size);
 
-	info->listAdd(ptr, size, Line, File);
+	list->listAdd(ptr, size, Line, File);
 
 	return ptr;
 }
@@ -45,15 +45,17 @@ void operator delete[](void* p, char* File, int Line)
 // 실제로 사용할 delete
 void operator delete (void* p)
 {
+	list->MemoryRelease(p);
 }
+
 void operator delete[](void* p)
 {
+	operator delete(p);
 }
 
 
 #define __FILENAME__    strrchr(__FILE__, '\\') 
 #define new new(__FILENAME__, __LINE__)
-
 
 void main()
 {
@@ -62,11 +64,13 @@ void main()
 	char* p1 = new char;
 	char* p2 = new char[10];
 
-	//MemoryRelease((int*)0x12341234);
-	//MemoryRelease(p2);
-	//MemoryRelease(p1);
-	//MemoryRelease(p);
-	//
-	//MemoryPrint();
+
+	delete (int*)0x00331144;
+	delete a;
+	delete[] p;
+	delete p1;
+	//delete[] p2;
+	
+	list->MemoryPrint();
 }
 

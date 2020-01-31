@@ -40,11 +40,10 @@ T* CList::MemoryAlloc(int _num, int _LineNum, const char* _FileName)
 }
 
 
-template <typename T>
-bool CList::MemoryRelease(T* a)
+bool CList::MemoryRelease(void* a)
 {
 	CNode* curr = this->head;
-	T* findPtr = a;
+	void* findPtr = a;
 
 	if (head->next == tail) return false;
 
@@ -60,8 +59,11 @@ bool CList::MemoryRelease(T* a)
 
 		curr = curr->next;
 
-		if (curr->next = tail)
+		if (curr->next == tail)
+		{
+			//NOALLOC 오류 출력
 			return false;
+		}
 	}
 }
 
@@ -69,12 +71,13 @@ bool CList::MemoryRelease(T* a)
 
 void CList::MemoryPrint()
 {
-	CNode* curr = this->head;
-	if (curr == NULL)
+	CNode* curr = this->head->next;
+	if (curr == tail)
 		return;
 
 	while (true)
 	{
+		//LEAK 오류 출력
 		printf("ptr 주소 : %X \n", (curr->ptr));
 		printf("size : %d byte \n", curr->size);
 		printf("위치 : %d \n", curr->FileLine);
@@ -82,7 +85,9 @@ void CList::MemoryPrint()
 
 
 		curr = curr->next;
-		if (curr == NULL)
+		if (curr == tail)
 			break;
 	}
+
+
 }

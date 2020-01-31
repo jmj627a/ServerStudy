@@ -42,8 +42,7 @@ public:
 	template <typename T>
 	T* MemoryAlloc(int _num, int _LineNum, const char* _FileName);
 
-	template <typename T>
-	bool MemoryRelease(T* a);
+	bool MemoryRelease(void* a);
 
 	void MemoryPrint();
 };
