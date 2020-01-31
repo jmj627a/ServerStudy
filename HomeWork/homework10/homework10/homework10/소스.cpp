@@ -18,6 +18,7 @@ struct AllocInfo
 };
 
 AllocInfo* info;
+int a = 1;
 
 template <typename T>
 void listAdd(T* temp, int num, int _LineNum, const char* _FileName)
