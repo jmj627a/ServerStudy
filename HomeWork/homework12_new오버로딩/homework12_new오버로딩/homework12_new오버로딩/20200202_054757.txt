@@ -1,0 +1,4 @@
+NOALLOC [0x00331144]
+LEAK [0x00049938] size[10] [\main.cpp] 	 : 91 
+LEAK [0x0004A0F8] size[40] [\main.cpp] 	 : 89 
+LEAK [0x00049AA8] size[4] [\main.cpp] 	 : 88 
