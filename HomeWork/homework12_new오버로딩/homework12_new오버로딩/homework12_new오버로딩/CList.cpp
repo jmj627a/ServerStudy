@@ -45,7 +45,7 @@ bool CList::MemoryRelease(void* a)
 	CNode* curr = this->head;
 	void* findPtr = a;
 
-	if (head->next == tail) return false;
+	if (head->next == tail) return true;
 
 	while (true)
 	{
@@ -53,7 +53,7 @@ bool CList::MemoryRelease(void* a)
 		{
 			CNode* temp = curr->next;
 			curr->next = curr->next->next;
-			delete temp;
+			//delete temp; 여기서 delete하니까 또 오버로드한 delete가 불림
 			return true;
 		}
 
