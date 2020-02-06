@@ -4,7 +4,7 @@
 
 void main()
 {
-	CList list;
+	CList<int> list;
 
 	list.push_front(10);
 	list.push_front(20);
@@ -13,4 +13,5 @@ void main()
 	list.push_back(200);
 	list.push_front(40);
 
+	list.printAll();
 }
