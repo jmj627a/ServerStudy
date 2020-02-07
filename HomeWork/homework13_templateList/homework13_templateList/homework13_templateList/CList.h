@@ -40,7 +40,8 @@ public:
 			return temp;
 		}
 
-		T& operator *()
+		//const &로 해야 외부에서 값 변경을 하지 않음
+		const T& operator *()
 		{
 			//현재 노드의 데이터를 뽑음
 			return _node->_data;
