@@ -1,0 +1,3 @@
+ Name 		|	 Average 		|	 Min 		|	 Max 		|	 Call 
+helloWorld 	|	 0.5506§Á 	|	 0.1007§Á 	|	 1.0009§Á 	|	 8 
+I Like My Self 	|	 1.0004§Á 	|	 1.0003§Á 	|	 1.0010§Á 	|	 1 

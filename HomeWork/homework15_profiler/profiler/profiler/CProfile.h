@@ -60,7 +60,7 @@ public:
 	// Parameters: (char *)출력될 파일 이름.
 	// Return: 없음.
 	/////////////////////////////////////////////////////////////////////////////
-	void ProfileDataOutText(const char* szFileName);
+	void ProfileDataOutText();// const char* szFileName);
 
 	void ProfileDataOutConsol();
 
@@ -80,6 +80,7 @@ public:
 
 	~CProfile()
 	{
+
 	}
 
 };

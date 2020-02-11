@@ -3,33 +3,34 @@
 #include "CProfile.h"
 
 CProfile profile;
-
+bool flag = true;
 
 void main()
 {
-	for (int i = 0; i < 5; ++i)
+
+	while (true == flag)
 	{
 		profile.ProfileBegin("helloWorld");
-		Sleep(1000);
+		Sleep(2000);
 		profile.ProfileEnd("helloWorld");
-	}
 
-	for (int i = 0; i < 5; ++i)
-	{
 		profile.ProfileBegin("helloWorld");
 		Sleep(100);
 		profile.ProfileEnd("helloWorld");
-	}
 
-	for (int i = 0; i < 3; ++i)
-	{
-		profile.ProfileBegin("I Like My Self");
+		profile.ProfileBegin("I Like My Self!");
 		Sleep(1000);
-		profile.ProfileEnd("I Like My Self");
+		profile.ProfileEnd("I Like My Self!");
+
+		if(GetAsyncKeyState(VK_F1))
+			profile.ProfileDataOutText();
+		if (GetAsyncKeyState(VK_F2))
+			profile.ProfileDataOutConsol();
+		if (GetAsyncKeyState(VK_F3))
+			profile.ProfileReset();
+		if (GetAsyncKeyState(VK_F12))
+			flag = false;
 	}
-
-	profile.ProfileDataOutConsol();
-
 
 
 

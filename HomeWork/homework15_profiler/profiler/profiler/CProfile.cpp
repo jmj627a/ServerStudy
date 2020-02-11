@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
+#include <time.h>
 #include "CProfile.h"
 
 void CProfile::ProfileBegin(const char* szName)
@@ -24,9 +25,8 @@ void CProfile::ProfileBegin(const char* szName)
 		{
 			data[i].iFlag = true;
 			data[i].iCall++;
-			
 			strcpy(data[i].szName, szName);
-			QueryPerformanceCounter(&Start);
+			QueryPerformanceCounter(&Start); 
 			data[i].iStartTime = Start;
 
 			return;
@@ -57,26 +57,49 @@ void CProfile::ProfileEnd(const char* szName)
 	}
 }
 
-void CProfile::ProfileDataOutText(const char* szFileName)
+//특정 키를 누르면 텍스트 파일로 출력되게
+void CProfile::ProfileDataOutText()// const char* szFileName)
 {
-	//특정 키를 누르면 텍스트 파일로 출력되게
+	struct tm* today;
+	time_t now = time(NULL);
+	char file_name[100];
+	FILE *fp;
+
+	today = localtime(&now);  // 현재시간
+	sprintf(file_name, "%d%02d%02d_%02d%02d%02d.txt", today->tm_year + 1900, today->tm_mon + 1, today->tm_mday
+		, today->tm_hour, today->tm_min, today->tm_sec);
+
+	fp = fopen(file_name, "w+");
+
+	char buf[100];
+	sprintf(buf," Name \t\t|\t Average \t\t|\t Min \t\t|\t Max \t\t|\t Call \n");
+	fprintf(fp, buf);
+
 	for (int i = 0; i < 10; ++i)
 	{
-		printf("%s \t|\t %0.4lf㎲ \t|\t %0.4lf㎲ \t|\t %0.4lf㎲ \t|\t %d \n", 
-			data[i].szName, (data[i].iTotalTime*1000)/(data[i].iCall-1), data[i].iMin, data[i].iMax, data[i].iCall);
+		if (false == data[i].iFlag)
+			continue;
+
+		sprintf(buf, "%s \t|\t %0.4lf㎲ \t|\t %0.4lf㎲ \t|\t %0.4lf㎲ \t|\t %d \n",
+			data[i].szName, (data[i].iTotalTime - data[i].iMax - data[i].iMin) / (data[i].iCall - 2), data[i].iMin, data[i].iMax, data[i].iCall - 2);
+		fprintf(fp, buf);
 	}
+
+	fclose(fp);
 }
 
+//특정 키를 누르면 콘솔 출력되게
 void CProfile::ProfileDataOutConsol()
 {
-	//특정 키를 누르면 텍스트 파일로 출력되게
+	printf(" Name \t\t|\t Average \t|\t Min \t\t|\t Max \t\t|\t Call \n");
+
 	for (int i = 0; i < 10; ++i)
 	{
 		if (false == data[i].iFlag)
 			continue;
 
 		printf("%s \t|\t %0.4lf㎲ \t|\t %0.4lf㎲ \t|\t %0.4lf㎲ \t|\t %d \n",
-			data[i].szName, (data[i].iTotalTime) / (data[i].iCall - 1), data[i].iMin, data[i].iMax, data[i].iCall);
+			data[i].szName, (data[i].iTotalTime- data[i].iMax- data[i].iMin) / (data[i].iCall - 2), data[i].iMin, data[i].iMax, data[i].iCall-2);
 	}
 }
 
@@ -85,4 +108,14 @@ void CProfile::ProfileReset(void)
 	//특정 키를 누르면 네임택 빼고 초기화. 
 	//실제로 시작 후 몇초동안은 수집 의미 없는 데이터가 들어가므로 
 	//재사용 되기 시작한 순간부터 데이터를 모으기 위해 키를 누르면 리셋되도록.
+	for (int i = 0; i < 10; ++i)
+	{
+		//data[i].iFlag = false;
+		//data[i].szName[64] = NULL;
+		//data[i].iStartTime = ;
+		data[i].iTotalTime = 0;
+		data[i].iMin = 0x7fffffffffffffff;
+		data[i].iMax = 0;
+		data[i].iCall = 0;
+	}
 }
