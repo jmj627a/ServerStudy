@@ -10,10 +10,10 @@
 
 
 // 화면 깜빡임을 없애기 위한 화면 버퍼.
-char szScreenBuffer[dfSCREEN_HEIGHT][dfSCREEN_WIDTH];
+extern char szScreenBuffer[dfSCREEN_HEIGHT][dfSCREEN_WIDTH];
 
 //타이틀 버퍼
-char szTitleBuffer[20][20] = { 0, };
+extern char szTitleBuffer[20][20];
 
 
 //-------------------------------------------------------------
@@ -28,13 +28,18 @@ void cs_Initial(void);
 //
 //-------------------------------------------------------------
 void cs_MoveCursor(int iPosX, int iPosY);
-
+void gotoxy(int iPosX, int iPosY);
 //-------------------------------------------------------------
 // 콘솔 화면을 조기화 한다.
 //
 //-------------------------------------------------------------
 void cs_ClearScreen(void);
 
+// 버퍼의 내용을 화면으로 찍어주는 함수.
+void Buffer_Flip(void);
+
+// 화면 버퍼를 지워주는 함수
+void Buffer_Clear(void);
 
 #endif
 

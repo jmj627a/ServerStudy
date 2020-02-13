@@ -16,3 +16,4 @@ void CObjectManager::Action()
 void CObjectManager::Draw()
 {
 }
+

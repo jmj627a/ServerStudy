@@ -1,11 +1,17 @@
 #include "CSceneManager.h"
 
-void CSceneManager::Run()
+void CSceneManager::Action()
 {
-	_pScene->
+	_pScene->Update();
 }
+
 
 void CSceneManager::LoadScene(int SceneType)
 {
-
+	switch (SceneType) 
+	{
+	case 0: //title scene
+		_pScene = new CSceneTitle();
+		break;
+	}
 }

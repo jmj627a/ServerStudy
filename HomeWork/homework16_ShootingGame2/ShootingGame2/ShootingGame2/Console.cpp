@@ -4,6 +4,12 @@
 
 HANDLE  hConsole;
 
+// 화면 깜빡임을 없애기 위한 화면 버퍼.
+char szScreenBuffer[dfSCREEN_HEIGHT][dfSCREEN_WIDTH];
+
+//타이틀 버퍼
+char szTitleBuffer[20][20] = { 0, };
+
 //-------------------------------------------------------------
 // 이렇게 씁니다.
 //
@@ -60,6 +66,17 @@ void cs_MoveCursor(int iPosX, int iPosY)
 	SetConsoleCursorPosition(hConsole, stCoord);
 }
 
+void gotoxy(int iPosX, int iPosY)
+{
+	COORD stCoord;
+	stCoord.X = iPosX;
+	stCoord.Y = iPosY;
+	//-------------------------------------------------------------
+	// 원하는 위치로 커서를 이동시킨다.
+	//-------------------------------------------------------------
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), stCoord);
+}
+
 //-------------------------------------------------------------
 // 콘솔 화면을 조기화 한다.
 //
@@ -85,4 +102,29 @@ void cs_ClearScreen(void)
 		}
 	}
 */
+}
+
+// 버퍼의 내용을 화면으로 찍어주는 함수.
+void Buffer_Flip(void)
+{
+	//cs_ClearScreen();
+
+	for (int i = 0; i < dfSCREEN_HEIGHT; ++i)
+	{
+		cs_MoveCursor(0, i);
+		printf("%s\n", szScreenBuffer[i]);
+	}
+}
+
+// 화면 버퍼를 지워주는 함수
+void Buffer_Clear(void)
+{
+	for (int i = 0; i < dfSCREEN_HEIGHT; ++i)
+	{
+		for (int j = 0; j < dfSCREEN_WIDTH - 1; ++j)
+		{
+			szScreenBuffer[i][j] = ' ';
+		}
+		szScreenBuffer[i][dfSCREEN_WIDTH - 1] = '\0';
+	}
 }

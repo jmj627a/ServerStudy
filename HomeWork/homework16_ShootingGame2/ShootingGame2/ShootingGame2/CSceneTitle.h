@@ -1,5 +1,6 @@
 #pragma once
 #include "CSceneBase.h"
+#include "global.h"
 
 struct Word
 {
@@ -53,11 +54,12 @@ private:
 		 14,12,14,12,0,6}
 	};
 
+	int chooseStage = 0;
+
 public:
 
 	CSceneTitle()
 	{
-		 
 	}
 
 	void Title_Move();
@@ -67,7 +69,16 @@ public:
 
 	virtual void Update()
 	{
+		//키보드
+		Title_keyInput();
+
+		//로직
 		Title_Move();
+		
+		//랜더
+		Title_Draw();
+		Title_Print();
+
 	}
 };
 

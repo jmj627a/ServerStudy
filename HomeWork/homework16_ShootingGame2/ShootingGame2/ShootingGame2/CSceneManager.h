@@ -10,12 +10,10 @@ public:
 
 	CSceneManager()
 	{
-		_pScene = new CSceneTitle();
+		LoadScene(TITLE);
 	}
 
-
-
-	void Run();
+	void Action();
 
 	void LoadScene(int SceneType);
 };

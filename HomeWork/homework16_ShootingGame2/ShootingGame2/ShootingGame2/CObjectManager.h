@@ -12,7 +12,6 @@ public:
 	void DestroyObject();
 	void Action();
 	void Draw();
-	void Filp();
-
+	
 };
 
