@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include "CSceneTitle.h"
+#include "CSceneManager.h"
 #include "global.h"
 
 void CSceneTitle::Title_Move()
@@ -31,23 +32,27 @@ void CSceneTitle::Title_keyInput()
 {
 	if (GetAsyncKeyState(VK_UP))
 	{
-		if (chooseStage > 0)
-			chooseStage -= 1;
-
-		//cs_MoveCursor(48, 5 * (chooseStage + 1));
-		//printf("▶");
+		messageQueue->Enq(KEY_UP);
 	}
 	if (GetAsyncKeyState(VK_DOWN))
 	{
-		if (chooseStage < 3)
-			chooseStage += 1;
-
-
-		//cs_MoveCursor(48, 5 * (chooseStage + 1));
-		//printf("▶");
+		messageQueue->Enq(KEY_DOWN);
 	}
 	if (GetAsyncKeyState(VK_RETURN))
 	{
+		switch (chooseStage)
+		{
+		case 0:
+			messageQueue->Enq(ENTER_STAGE1);
+			break;
+		case 1:
+			messageQueue->Enq(ENTER_STAGE2);
+			break;
+		case 2:
+			messageQueue->Enq(ENTER_STAGE3);
+			break;
+		}
+		
 		//chooseStage를 manager에게 알려주면서 return??
 		//아니면 keyinput이니까 큐에 넣으면서 그냥 나감
 		//LoadScene(LOADING);
@@ -99,15 +104,53 @@ void CSceneTitle::Title_Print()
 
 
 	gotoxy(48, 5);
-	printf("   STAGE 1");
+	printf("STAGE 1    ");
 
 	gotoxy(48, 10);
-	printf("   STAGE 2");
+	printf("STAGE 2    ");
 
 	gotoxy(48, 15);
-	printf("   STAGE 3");
+	printf("STAGE 3    ");
 
 
-	cs_MoveCursor(48, 5 * (chooseStage + 1));
-	printf("▶");
+	gotoxy(55, 5 * (chooseStage + 1));
+	printf("◀");
+}
+
+bool CSceneTitle::checkMessage()
+{
+	int message;
+	int flag = messageQueue->Deq(&message);
+
+	if (flag == false)
+		return false;
+
+
+	switch(message)
+	{
+		case KEY_UP:
+			if (chooseStage > 0)
+				chooseStage -= 1;
+			break;
+
+		case KEY_DOWN:
+			if (chooseStage < 2)
+				chooseStage += 1;
+			break;
+
+		case ENTER_STAGE1:
+			manager->LoadScene(GAME_STAGE1);
+			break;
+
+		case ENTER_STAGE2:
+			manager->LoadScene(GAME_STAGE2);
+			break;
+
+		case ENTER_STAGE3:
+			manager->LoadScene(GAME_STAGE3);
+			break;
+
+	}
+
+	return true;
 }

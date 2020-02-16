@@ -55,16 +55,16 @@ void cs_Initial(void)
 // 콘솔 화면의 커서를 X, Y 좌표로 이동시킨다.
 //
 //-------------------------------------------------------------
-void cs_MoveCursor(int iPosX, int iPosY)
-{
-	COORD stCoord;
-	stCoord.X = iPosX;
-	stCoord.Y = iPosY;
-	//-------------------------------------------------------------
-	// 원하는 위치로 커서를 이동시킨다.
-	//-------------------------------------------------------------
-	SetConsoleCursorPosition(hConsole, stCoord);
-}
+//void cs_MoveCursor(int iPosX, int iPosY)
+//{
+//	COORD stCoord;
+//	stCoord.X = iPosX;
+//	stCoord.Y = iPosY;
+//	//-------------------------------------------------------------
+//	// 원하는 위치로 커서를 이동시킨다.
+//	//-------------------------------------------------------------
+//	SetConsoleCursorPosition(hConsole, stCoord);
+//}
 
 void gotoxy(int iPosX, int iPosY)
 {
@@ -111,7 +111,7 @@ void Buffer_Flip(void)
 
 	for (int i = 0; i < dfSCREEN_HEIGHT; ++i)
 	{
-		cs_MoveCursor(0, i);
+		gotoxy(0, i);
 		printf("%s\n", szScreenBuffer[i]);
 	}
 }

@@ -8,7 +8,7 @@ class CPlayer : public CBaseObject
 
 public:
 
-	CPlayer() : CBaseObject(PLAYER, 40,20)
+	CPlayer() : CBaseObject(PLAYER, 40,20,true)
 	{
 		_life = 3;
 	}

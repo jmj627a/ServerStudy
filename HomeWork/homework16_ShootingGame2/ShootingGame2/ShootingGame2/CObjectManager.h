@@ -6,8 +6,20 @@
 class CObjectManager
 {
 public:
-	std::list<CBaseObject*> ObjectList;
+	CBaseObject* objectList[100];
 	
+	CObjectManager()
+	{
+		for (int i = 0; i < 100; ++i)
+			objectList[i] = nullptr;
+		//objectList = (CBaseObject*)malloc(sizeof(CBaseObject)*100);
+	}
+
+	~CObjectManager()
+	{
+		DestroyObject();
+	}
+
 	void CreateObject(int ObjectType);
 	void DestroyObject();
 	void Action();

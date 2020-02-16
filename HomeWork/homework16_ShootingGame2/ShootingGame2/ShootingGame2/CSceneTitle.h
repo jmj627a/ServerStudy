@@ -1,6 +1,9 @@
 #pragma once
 #include "CSceneBase.h"
+#include "CMessageQueue.h"
 #include "global.h"
+
+class CSceneManager;
 
 struct Word
 {
@@ -18,7 +21,6 @@ struct Word
 
 class CSceneTitle : public CSceneBase
 {
-
 private:
 	Word word[4] = {
 		{{0,1,0,
@@ -56,21 +58,31 @@ private:
 
 	int chooseStage = 0;
 
-public:
+	CMessageQueue* messageQueue = new CMessageQueue();
 
-	CSceneTitle()
+	CSceneManager* manager;// = new CSceneManager();
+
+public:
+	CSceneTitle() {}
+	CSceneTitle(CSceneManager* _manager )// : manager(_manager)
 	{
+		manager = _manager;
 	}
 
 	void Title_Move();
 	void Title_keyInput();
 	void Title_Draw();
 	void Title_Print();
+	
+	bool checkMessage();
 
 	virtual void Update()
 	{
 		//키보드
 		Title_keyInput();
+
+		//메세지큐 꺼내오기
+		while (checkMessage());
 
 		//로직
 		Title_Move();

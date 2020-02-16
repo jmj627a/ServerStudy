@@ -13,12 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Scene">
+      <UniqueIdentifier>{ea43751f-d70d-41cb-b182-bb09def55dcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Stage">
+      <UniqueIdentifier>{c97127cd-1527-4c56-b8cc-493121f84e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Player">
+      <UniqueIdentifier>{75e0936f-cb72-4c14-a95f-676f5f311f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Enemy">
+      <UniqueIdentifier>{4bfc61f0-a464-431d-8ba5-8a05bdef4853}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="CPlayer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Console.cpp">
@@ -30,26 +39,44 @@
     <ClCompile Include="CObjectManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="CSceneManager.cpp">
+    <ClCompile Include="CMessageQueue.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="CSceneTitle.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="CStage1.cpp">
+      <Filter>소스 파일\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="CSceneGame.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="CStage2.cpp">
+      <Filter>소스 파일\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="CSceneOver.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="CStage3.cpp">
+      <Filter>소스 파일\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="CStageBase.cpp">
+      <Filter>소스 파일\Stage</Filter>
     </ClCompile>
     <ClCompile Include="CSceneBase.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneGame.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneManager.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneOver.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneTitle.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayer.cpp">
+      <Filter>소스 파일\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="CEnemy.cpp">
+      <Filter>소스 파일\Enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CPlayer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Console.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -62,20 +89,41 @@
     <ClInclude Include="CObjectManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="CSceneManager.h">
+    <ClInclude Include="CMessageQueue.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CStageBase.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayer.h">
+      <Filter>소스 파일\Player</Filter>
     </ClInclude>
     <ClInclude Include="CSceneTitle.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="CSceneGame.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="CSceneOver.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\Scene</Filter>
     </ClInclude>
     <ClInclude Include="CSceneBase.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneGame.h">
+      <Filter>소스 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneManager.h">
+      <Filter>소스 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneOver.h">
+      <Filter>소스 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CStage3.h">
+      <Filter>소스 파일\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="CEnemy.h">
+      <Filter>소스 파일\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="CStage2.h">
+      <Filter>소스 파일\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="CStage1.h">
+      <Filter>소스 파일\Stage</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #pragma once
 #include "CSceneBase.h"
 #include "CSceneTitle.h"
+#include "CSceneGame.h"
 #include "global.h"
 
 class CSceneManager

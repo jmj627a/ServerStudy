@@ -27,7 +27,7 @@ void cs_Initial(void);
 // 콘솔 화면의 커서를 X, Y 좌표로 이동시킨다.
 //
 //-------------------------------------------------------------
-void cs_MoveCursor(int iPosX, int iPosY);
+//void cs_MoveCursor(int iPosX, int iPosY);
 void gotoxy(int iPosX, int iPosY);
 //-------------------------------------------------------------
 // 콘솔 화면을 조기화 한다.

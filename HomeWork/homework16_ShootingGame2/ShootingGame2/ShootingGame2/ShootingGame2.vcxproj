@@ -124,6 +124,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CBaseObject.cpp" />
+    <ClCompile Include="CEnemy.cpp" />
+    <ClCompile Include="CMessageQueue.cpp" />
     <ClCompile Include="CObjectManager.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="CPlayer.cpp" />
@@ -132,10 +134,16 @@
     <ClCompile Include="CSceneManager.cpp" />
     <ClCompile Include="CSceneOver.cpp" />
     <ClCompile Include="CSceneTitle.cpp" />
+    <ClCompile Include="CStage1.cpp" />
+    <ClCompile Include="CStage2.cpp" />
+    <ClCompile Include="CStage3.cpp" />
+    <ClCompile Include="CStageBase.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CBaseObject.h" />
+    <ClInclude Include="CEnemy.h" />
+    <ClInclude Include="CMessageQueue.h" />
     <ClInclude Include="CObjectManager.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="CPlayer.h" />
@@ -144,6 +152,10 @@
     <ClInclude Include="CSceneManager.h" />
     <ClInclude Include="CSceneOver.h" />
     <ClInclude Include="CSceneTitle.h" />
+    <ClInclude Include="CStage1.h" />
+    <ClInclude Include="CStage2.h" />
+    <ClInclude Include="CStage3.h" />
+    <ClInclude Include="CStageBase.h" />
     <ClInclude Include="global.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
