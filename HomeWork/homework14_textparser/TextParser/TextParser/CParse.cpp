@@ -89,7 +89,9 @@ bool CParse::CheckNextWord(char*& chppBuffer, int* ipLength)
 	//글자 나올때까지 넘기기
 	SkipNoneCommand(chppBuffer);
 
-	//여기서 "시작하면 문자열 부르는 함수로 "끝날때까지
+	//주석 끝날때까지 넘기기 //만나면 0a0d 나올때까지 /*만나면 */나올때까지 
+	//SkipComment();
+
 
 	while (1)
 	{
@@ -101,6 +103,9 @@ bool CParse::CheckNextWord(char*& chppBuffer, int* ipLength)
 			*ipLength = length;						//단어 길이
 
 			return true;
+		}
+		else if (*fileBuffer == '"') //여기서 "시작하면 문자열 부르는 함수로 "끝날때까지
+		{
 		}
 		fileBuffer++;
 		length++;
@@ -138,6 +143,34 @@ bool CParse::SkipNoneCommand(char*& chppBuffer)
 		if (*fileBuffer == ' ' || *fileBuffer == '\t' || *fileBuffer == '\r' || *fileBuffer == '\n')
 		{
 			fileBuffer++;
+		}
+		else if (*fileBuffer == '/' && *(fileBuffer + 1) == '/') //주석//표시 한줄 무시
+		{
+			while (true)
+			{
+				fileBuffer++;
+
+				if (*fileBuffer == '\r' && *(fileBuffer + 1) == '\n')
+				{
+					fileBuffer += 2;
+					break;
+				}
+
+			}
+		}
+		else if (*fileBuffer == '/' && *(fileBuffer + 1) == '*') //주석/* */ 표시 무시
+		{
+			while (true)
+			{
+				fileBuffer++;
+
+				if (*fileBuffer == '*' && *(fileBuffer + 1) == '/')
+				{
+					fileBuffer += 2;
+					break;
+				}
+
+			}
 		}
 		else
 		{
