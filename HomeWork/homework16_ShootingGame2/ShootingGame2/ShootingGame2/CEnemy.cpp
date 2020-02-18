@@ -1,15 +1,16 @@
 #include "CEnemy.h"
+#include "CObjectManager.h"
 
 bool CEnemy::Action()
 {
 	if (flag == false)
 		return false;
 
-
 	//이동
 	enemy_Move();
 	
 	//총알발사
+	enemy_Attack();
 
 	return true;
 }
@@ -53,5 +54,20 @@ void CEnemy::enemy_Move()
 	case true:
 		X--;
 		break;
+	}
+}
+
+
+//랜덤하게 총알 발사
+void CEnemy::enemy_Attack()
+{
+	if (false == flag)
+		return;
+
+	int random = rand() % 100;
+
+	if (random <= 5) //그냥 하나당 5%의 확률로 총알 발사
+	{
+		objectManager->CreateObject(BULLET, X, Y, ENEMY);
 	}
 }

@@ -15,7 +15,6 @@ public:
 	virtual void EnemyInit();
 	virtual void Update()
 	{
-
 		objectManager->Draw();
 		objectManager->Action();
 

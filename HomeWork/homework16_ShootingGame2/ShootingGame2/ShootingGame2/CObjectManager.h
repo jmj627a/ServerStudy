@@ -20,10 +20,13 @@ public:
 		DestroyObject();
 	}
 
-	void CreateObject(int ObjectType);
+	void CreateObject(int _objectType, int _X, int _Y, int _orderType);
+	
 	void DestroyObject();
 	void Action();
 	void Draw();
+	
+
 	
 };
 

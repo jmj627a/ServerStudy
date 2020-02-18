@@ -7,8 +7,6 @@
 
 class CStage1 : public CStageBase
 {
-	//CPlayer* player;
-	CEnemy* enemy[100];
 	CMessageQueue* messageQueue = new CMessageQueue();
 	CSceneManager* manager;// = new CSceneManager();
 	CObjectManager* objectManager = new CObjectManager();
@@ -49,8 +47,6 @@ public:
 	~CStage1() {
 		delete manager;
 		delete messageQueue;
-		for (int i = 0; i < 100; ++i)
-			delete enemy[i];
 	};
 };
 

@@ -26,7 +26,7 @@ void CStage1::EnemyInit()
 	{
 		if (pStageBuffer[i] == '7')
 		{
-			objectManager->objectList[count] = new CEnemy(i % 82, i / 82, i % 82, i / 82, 0);
+			objectManager->objectList[count] = new CEnemy(objectManager, i % 82, i / 82, i % 82, i / 82, 0);
 			count++;
 		}
 	}
