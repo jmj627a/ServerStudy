@@ -1,7 +1,7 @@
 #pragma once
 #include "CBaseObject.h"
-#include <list>
-#include <iostream>
+
+class CMessageQueue;
 
 class CObjectManager
 {
@@ -20,8 +20,15 @@ public:
 		DestroyObject();
 	}
 
+	//player
+	void CreateObject(CMessageQueue* _message, int _objectType);
+
+	//bullet
 	void CreateObject(int _objectType, int _X, int _Y, int _orderType);
-	
+
+	//enemy
+	void CreateObject(int _objectType, int _X, int _Y, int _startX, int startY, bool _dir);
+
 	void DestroyObject();
 	void Action();
 	void Draw();

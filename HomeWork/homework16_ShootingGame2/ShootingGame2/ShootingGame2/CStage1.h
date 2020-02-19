@@ -8,7 +8,7 @@
 class CStage1 : public CStageBase
 {
 	CMessageQueue* messageQueue = new CMessageQueue();
-	CSceneManager* manager;// = new CSceneManager();
+	CSceneManager* manager;
 	CObjectManager* objectManager = new CObjectManager();
 
 public:
@@ -21,13 +21,13 @@ public:
 		
 		objectManager->Draw();
 		objectManager->Action();
-
+		
 
 		////키보드
 		//Title_keyInput();
 		//
-		////메세지큐 꺼내오기
-		//while (checkMessage());
+		//메세지큐 꺼내오기
+		while (checkMessage());
 		//
 		////로직
 		//Title_Move();
@@ -38,10 +38,13 @@ public:
 
 	}
 
+	bool checkMessage();
+
 	CStage1() {};
 	CStage1(CSceneManager* _manager)
 	{
 		manager = _manager;
+		objectManager->CreateObject(messageQueue, PLAYER);
 		EnemyInit();
 	};
 	~CStage1() {
