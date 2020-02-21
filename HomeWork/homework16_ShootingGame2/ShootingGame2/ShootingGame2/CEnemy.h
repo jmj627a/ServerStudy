@@ -36,5 +36,10 @@ public:
 	//랜덤하게 총알 발사
 	void enemy_Attack();
 
+	//충돌체크 하려고 위치 알려주기 
+	virtual int getX() { return X; }
+	virtual int getY() { return Y; }
+
+
 };
 

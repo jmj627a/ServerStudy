@@ -16,14 +16,14 @@ public :
 	virtual bool Action(void) = 0;
 	virtual bool Draw(void) = 0;
 
-	int GetObjectType() {
-		return objectType;
-	}
+	//충돌체크 하려고 위치 알려주기 
+	int getX(){ return X;}
+	int getY(){ return Y;}
+	
+	int GetObjectType() { return objectType; }
 
-	bool GetFlag()
-	{
-		return flag;
-	}
+	bool GetFlag() { return flag; }
+	void SetFlag(bool _flag) { flag = _flag; }
 
 protected:
 	int X;

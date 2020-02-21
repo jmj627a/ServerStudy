@@ -17,7 +17,7 @@ public:
 
 	~CObjectManager()
 	{
-		DestroyObject();
+		DestroyAllObject();
 	}
 
 	//player
@@ -29,7 +29,8 @@ public:
 	//enemy
 	void CreateObject(int _objectType, int _X, int _Y, int _startX, int startY, bool _dir);
 
-	void DestroyObject();
+	void DestroyObject(int i);
+	void DestroyAllObject();
 	void Action();
 	void Draw();
 	

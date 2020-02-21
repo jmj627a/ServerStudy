@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "CPlayer.h"
 #include "CMessageQueue.h"
+#include "CObjectManager.h"
 
 bool CPlayer::Action()
 {
@@ -110,6 +111,7 @@ bool CPlayer::checkMessage()
 
 	case KEY_SPACE:
 		//ÃÑ¾Ë»ý¼º
+		objectManager->CreateObject(BULLET, X, Y, PLAYER);
 		break;
 	}
 

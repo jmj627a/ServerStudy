@@ -11,7 +11,7 @@ void CObjectManager::CreateObject(CMessageQueue* _message, int _objectType)
 		if (objectList[i] != nullptr)
 			continue;
 
-		objectList[i] = new CPlayer(_message);
+		objectList[i] = new CPlayer(this, _message);
 		return;
 	}
 }
@@ -23,7 +23,10 @@ void CObjectManager::CreateObject(int _objectType, int _X, int _Y, int _orderTyp
 		if (objectList[i] != nullptr)
 			continue;
 
-		objectList[i] = new CBullet(_X, _Y, ENEMY);
+		if (_orderType == ENEMY)
+			objectList[i] = new CBullet(this, _X, _Y, ENEMY);
+		else if (_orderType == PLAYER)
+			objectList[i] = new CBullet(this, _X, _Y, PLAYER);
 		return;
 	}
 
@@ -41,11 +44,20 @@ void CObjectManager::CreateObject(int _objectType, int _X, int _Y, int _startX, 
 	}
 }
 
-void CObjectManager::DestroyObject()
+void CObjectManager::DestroyObject(int i)
+{
+	if (objectList[i]->GetFlag() == false)
+	{
+		delete objectList[i];
+		objectList[i] = nullptr;
+	}
+}
+
+void CObjectManager::DestroyAllObject()
 {
 	for (int i = 0; i < 100; ++i)
 	{
-		free(objectList[i]);
+		delete objectList[i];
 		objectList[i] = nullptr;
 	}
 }
@@ -58,6 +70,7 @@ void CObjectManager::Action()
 			return;
 
 		objectList[i]->Action();
+		DestroyObject(i);
 	}
 }
 
