@@ -33,33 +33,3 @@ void CStage1::EnemyInit()
 }
 
 
-//이거 PLAYER 안으로 들어가야할거같은데..?????
-bool CStage1::checkMessage()
-{
-	int message;
-	int flag = messageQueue->Deq(&message);
-
-	if (flag == false)
-		return false;
-
-	//방향키 이동과, 총알 발사에 대한 메세지 분류
-	switch (message)
-	{
-	case KEY_UP:
-		break;
-
-	case KEY_DOWN:
-		break;
-
-	case KEY_RIGHT:
-		break;
-
-	case KEY_LEFT:
-		break;
-
-	case KEY_SPACE:
-		break;
-	}
-
-	return true;
-}

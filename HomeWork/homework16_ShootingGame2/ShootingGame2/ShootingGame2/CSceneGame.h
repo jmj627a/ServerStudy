@@ -1,8 +1,8 @@
 #pragma once
 #include "CSceneBase.h"
+#include "CStageBase.h"
 
 class CSceneManager;
-class CStageBase;
 
 class CSceneGame : public CSceneBase
 {
@@ -16,7 +16,10 @@ public:
 	~CSceneGame();
 	
 
-	virtual void Update();
+	virtual void Update()
+	{
+		stage->Update();
+	}
 	
 };
 

@@ -23,22 +23,11 @@ public:
 		objectManager->Action();
 		
 
-		////키보드
-		//Title_keyInput();
-		//
 		//메세지큐 꺼내오기
-		while (checkMessage());
-		//
-		////로직
-		//Title_Move();
-		//
-		////랜더
-		//Title_Draw();
-		//Title_Print();
-
+		//플레이어 action에서 하자..
+		//while (checkMessage());
 	}
 
-	bool checkMessage();
 
 	CStage1() {};
 	CStage1(CSceneManager* _manager)

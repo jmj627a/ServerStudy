@@ -26,5 +26,7 @@ public:
 
 	//키보드 입력
 	void player_KeyInput();
+
+	bool checkMessage();
 };
 

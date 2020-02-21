@@ -6,6 +6,10 @@ bool CPlayer::Action()
 {
 	if (true != flag) return false;
 
+	//메세지큐 꺼내서 이동
+	while (checkMessage());
+
+
 	//충돌체크
 
 
@@ -71,4 +75,43 @@ void CPlayer::player_KeyInput()
 		message->Enq(KEY_UP);
 	}
 	
+}
+
+bool CPlayer::checkMessage()
+{
+	int _message;
+	int flag = message->Deq(&_message);
+
+	if (flag == false)
+		return false;
+
+	//방향키 이동과, 총알 발사에 대한 메세지 분류
+	switch (_message)
+	{
+	case KEY_UP:
+		if(Y > 1)
+			Y--;
+		break;
+
+	case KEY_DOWN:
+		if(Y<dfSCREEN_HEIGHT-1)
+			Y++;
+		break;
+
+	case KEY_RIGHT:
+		if (X < dfSCREEN_WIDTH - 1)
+			X++;
+		break;
+
+	case KEY_LEFT:
+		if (X > 1)
+			X--;
+		break;
+
+	case KEY_SPACE:
+		//총알생성
+		break;
+	}
+
+	return true;
 }

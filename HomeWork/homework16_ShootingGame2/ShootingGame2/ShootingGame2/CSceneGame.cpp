@@ -21,8 +21,3 @@ CSceneGame::~CSceneGame()
 {
 	delete stage;
 }
-
-void CSceneGame::Update()
-{
-	stage->Update();
-}
