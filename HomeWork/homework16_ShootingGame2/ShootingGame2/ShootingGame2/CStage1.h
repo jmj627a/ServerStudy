@@ -19,8 +19,8 @@ public:
 	virtual void Update()
 	{
 		
-		objectManager->Draw();
 		objectManager->Action();
+		objectManager->Draw();
 		
 
 		//메세지큐 꺼내오기

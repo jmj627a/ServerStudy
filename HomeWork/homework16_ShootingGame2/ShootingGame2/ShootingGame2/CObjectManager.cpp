@@ -44,12 +44,18 @@ void CObjectManager::CreateObject(int _objectType, int _X, int _Y, int _startX, 
 	}
 }
 
-void CObjectManager::DestroyObject(int i)
+void CObjectManager::DestroyObject()
 {
-	if (objectList[i]->GetFlag() == false)
+	for (int i = 0; i < 100; ++i)
 	{
-		delete objectList[i];
-		objectList[i] = nullptr;
+		if (objectList[i] == nullptr)
+			continue;
+
+		if (objectList[i]->GetFlag() == false)
+		{
+			delete objectList[i];
+			objectList[i] = nullptr;
+		}
 	}
 }
 
@@ -67,11 +73,12 @@ void CObjectManager::Action()
 	for (int i = 0; i < 100; ++i)
 	{
 		if (objectList[i] == nullptr)
-			return;
+			continue;
 
 		objectList[i]->Action();
-		DestroyObject(i);
 	}
+	
+	DestroyObject();
 }
 
 void CObjectManager::Draw()
@@ -79,7 +86,7 @@ void CObjectManager::Draw()
 	for (int i = 0; i < 100; ++i)
 	{
 		if (objectList[i] == nullptr)
-			return;
+			continue;
 
 		objectList[i]->Draw();
 	}

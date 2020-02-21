@@ -11,13 +11,13 @@ public :
 		flag = _flag;
 	}
 
-	virtual ~CBaseObject() {};
+  	virtual ~CBaseObject() {};
 	
 	virtual bool Action(void) = 0;
 	virtual bool Draw(void) = 0;
 
 	//충돌체크 하려고 위치 알려주기 
-	int getX(){ return X;}
+  	int getX(){ return X;}
 	int getY(){ return Y;}
 	
 	int GetObjectType() { return objectType; }
@@ -26,9 +26,9 @@ public :
 	void SetFlag(bool _flag) { flag = _flag; }
 
 protected:
+	bool flag;
 	int X;
 	int Y;
-	bool flag;
 	int objectType;
 };
 

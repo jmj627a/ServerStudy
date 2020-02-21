@@ -20,10 +20,13 @@ bool CBullet::Action()
 
 bool CBullet::Draw()
 {
-	if (false == flag)
-		return false;
+	//if (false == flag)
+	//	return false;
 
-	szScreenBuffer[Y][X] = 'O';
+	if (orderType == ENEMY)
+		szScreenBuffer[Y][X] = 'O';
+	else if (orderType == PLAYER)
+		szScreenBuffer[Y][X] = '|';
 
 	return true;
 }
@@ -52,8 +55,7 @@ void CBullet::collision_Bullet_Wall()
 
 	if (Y < 0)
 		flag = false;
-
-	if (Y > dfSCREEN_HEIGHT - 1)
+	else if (Y > dfSCREEN_HEIGHT - 1)
 		flag = false;
 }
 
@@ -65,9 +67,12 @@ void CBullet::collision_Bullet_Enemy()
 	if (ENEMY == orderType)
 		return;
 
-	for (int i = 0; i < ENEMY_NUM; ++i)
+	for (int i = 0; i < 100; ++i)
 	{
-		if (false == flag)
+		if (nullptr == objectManager->objectList[i])
+			continue;
+
+		if (objectManager->objectList[i]->GetObjectType() != ENEMY)
 			continue;
 
 		if ((X == objectManager->objectList[i]->getX()) && (Y == objectManager->objectList[i]->getY()))
@@ -85,6 +90,11 @@ void CBullet::collision_Bullet_Player()
 
 	if (PLAYER == orderType)
 		return;
+
+	if (nullptr == objectManager->objectList[0])
+	{
+		int a = 0;
+	}
 
 	if ((X == objectManager->objectList[0]->getX()) && (Y == objectManager->objectList[0]->getY()))
 	{

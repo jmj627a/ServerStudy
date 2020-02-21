@@ -17,11 +17,8 @@ bool CEnemy::Action()
 
 bool CEnemy::Draw()
 {
-	for (int i = 0; i < ENEMY_NUM; ++i)
-	{
-		if (true == flag)
-			szScreenBuffer[Y][X] = 'M';
-	}
+	if (true == flag)
+		szScreenBuffer[Y][X] = 'M';
 
 	return true;
 }
