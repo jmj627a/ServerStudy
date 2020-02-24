@@ -11,15 +11,12 @@ void main()
 	Buffer_Clear();
 
 	CSceneManager* sceneManager = new CSceneManager();
-	//CObjectManager* objectManager = new CObjectManager();
 
 	while (1)
 	{
 		Buffer_Flip();
 		Buffer_Clear();
 
-		//objectManager->Draw();
-		//objectManager->Action();
 		sceneManager->Action();
 
 		Sleep(50);

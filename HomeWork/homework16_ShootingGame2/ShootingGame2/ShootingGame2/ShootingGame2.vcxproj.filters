@@ -40,6 +40,9 @@
     <Filter Include="소스 파일\Manager">
       <UniqueIdentifier>{df9e1d2b-939c-45f3-a9cb-e2352a7b0152}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\UI">
+      <UniqueIdentifier>{015a2a54-149f-4934-96d4-33bbe6942e89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,6 +96,9 @@
     <ClCompile Include="CMessageQueue.cpp">
       <Filter>소스 파일\Manager</Filter>
     </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>소스 파일\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Console.h">
@@ -145,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="CMessageQueue.h">
       <Filter>소스 파일\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>소스 파일\UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

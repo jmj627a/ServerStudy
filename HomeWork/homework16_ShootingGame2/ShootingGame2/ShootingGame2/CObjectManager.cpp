@@ -4,14 +4,14 @@
 #include "CPlayer.h"
 #include "CEnemy.h"
 
-void CObjectManager::CreateObject(CMessageQueue* _message, int _objectType)
+void CObjectManager::CreateObject(CSceneManager* _manager, CMessageQueue* _message, int _objectType)
 {
 	for (int i = 0; i < 100; ++i)
 	{
 		if (objectList[i] != nullptr)
 			continue;
 
-		objectList[i] = new CPlayer(this, _message);
+		objectList[i] = new CPlayer(this, _manager, _message);
 		return;
 	}
 }
@@ -44,6 +44,29 @@ void CObjectManager::CreateObject(int _objectType, int _X, int _Y, int _startX, 
 	}
 }
 
+void CObjectManager::stageEndCheck()
+{
+	bool flag = true;
+	for (int i = 0; i < 100; ++i)
+	{
+		if (objectList[i] == nullptr)
+			continue;
+
+		if (ENEMY == objectList[i]->GetObjectType())
+		{
+			flag = false;
+			break;
+		}
+	}
+
+	if (true == flag)
+	{
+		cs_ClearScreen();
+		manager->LoadScene(TITLE);
+	}
+	
+}
+
 void CObjectManager::DestroyObject()
 {
 	for (int i = 0; i < 100; ++i)
@@ -61,11 +84,7 @@ void CObjectManager::DestroyObject()
 
 void CObjectManager::DestroyAllObject()
 {
-	for (int i = 0; i < 100; ++i)
-	{
-		delete objectList[i];
-		objectList[i] = nullptr;
-	}
+	delete[] objectList;
 }
 
 void CObjectManager::Action()
@@ -76,9 +95,15 @@ void CObjectManager::Action()
 			continue;
 
 		objectList[i]->Action();
+		stageEndCheck();
+
 	}
 	
 	DestroyObject();
+
+	//if ((TITLE != manager->getSceneType()) &&
+	//	(GAMEOVER != manager->getSceneType()))
+		//stageEndCheck();
 }
 
 void CObjectManager::Draw()

@@ -30,6 +30,8 @@ void CStage1::EnemyInit()
 			objectManager->CreateObject(ENEMY, i % 82, i / 82, i % 82, i / 82, 0);
 		}
 	}
+
+	free(pStageBuffer);
 }
 
 

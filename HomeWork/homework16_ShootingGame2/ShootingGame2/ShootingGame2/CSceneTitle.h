@@ -59,7 +59,6 @@ private:
 	int chooseStage = 0;
 
 	CMessageQueue* messageQueue = new CMessageQueue();
-
 	CSceneManager* manager;// = new CSceneManager();
 
 public:
@@ -69,6 +68,10 @@ public:
 		manager = _manager;
 	}
 
+	~CSceneTitle()
+	{
+		delete messageQueue;
+	}
 	void Title_Move();
 	void Title_keyInput();
 	void Title_Draw();
@@ -91,6 +94,11 @@ public:
 		Title_Draw();
 		Title_Print();
 
+	}
+
+	virtual int getSceneType()
+	{
+		return TITLE;
 	}
 };
 

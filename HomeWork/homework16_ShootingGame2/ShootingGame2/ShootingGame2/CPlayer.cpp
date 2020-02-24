@@ -11,9 +11,12 @@ bool CPlayer::Action()
 	//키입력
 	player_KeyInput();
 
-
 	//메세지큐 꺼내서 이동
 	while (checkMessage());
+
+	playerDeathCheck();
+
+	ui->printUI();
 
 	return true;
 }
@@ -69,10 +72,7 @@ void CPlayer::player_KeyInput()
 	{
 		message->Enq(KEY_SPACE);
 	}
-	if (GetAsyncKeyState(VK_F12))
-	{
-		message->Enq(KEY_UP);
-	}
+
 	
 }
 
@@ -110,6 +110,12 @@ bool CPlayer::checkMessage()
 	case KEY_SPACE:
 		//총알생성
 		objectManager->CreateObject(BULLET, X, Y, PLAYER);
+		break;
+
+	case GAME_OVER:
+		//게임오버
+		ui->deleteUI();
+		manager->LoadScene(GAMEOVER);
 		break;
 	}
 

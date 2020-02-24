@@ -22,14 +22,13 @@ void CStage2::EnemyInit()
 	int temp = fread(pStageBuffer, 1, 1886, pStageFile);
 	pStageBuffer[1887] = '\0';
 
-	printf("%s", pStageBuffer);
-	int count = 0;
 	for (int i = 0; i < 1886; ++i)
 	{
 		if (pStageBuffer[i] == '7')
 		{
-			objectManager->objectList[count] = new CEnemy(objectManager, i % 82, i / 82, i % 82, i / 82, 0);
-			count++;
+			objectManager->CreateObject(ENEMY, i % 82, i / 82, i % 82, i / 82, 0);
 		}
 	}
+
+	free(pStageBuffer);
 }

@@ -16,8 +16,3 @@ CSceneGame::CSceneGame(CSceneManager * _manager, int stageType)
 		stage = new CStage3(_manager); break;
 	}
 }
-
-CSceneGame::~CSceneGame()
-{
-	delete stage;
-}

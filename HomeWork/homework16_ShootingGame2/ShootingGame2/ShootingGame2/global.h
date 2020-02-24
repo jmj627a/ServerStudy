@@ -14,10 +14,11 @@
 
 //SCENE
 #define TITLE			0
-#define GAME_STAGE1			1
-#define GAME_STAGE2			2
-#define GAME_STAGE3			3
+#define GAME_STAGE1		1
+#define GAME_STAGE2		2
+#define GAME_STAGE3		3
 #define GAMEOVER		4
+#define EXIT			5
 //#define LOADING 3
 
 
@@ -29,6 +30,7 @@
 #define KEY_RIGHT		4
 #define KEY_SPACE		5
 #define KEY_F12			6
+#define KEY_ENTER		7
 
 #define ENTER_STAGE1	10
 #define ENTER_STAGE2	11

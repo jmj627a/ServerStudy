@@ -52,10 +52,6 @@ void CSceneTitle::Title_keyInput()
 			messageQueue->Enq(ENTER_STAGE3);
 			break;
 		}
-		
-		//chooseStage를 manager에게 알려주면서 return??
-		//아니면 keyinput이니까 큐에 넣으면서 그냥 나감
-		//LoadScene(LOADING);
 	}
 }
 
