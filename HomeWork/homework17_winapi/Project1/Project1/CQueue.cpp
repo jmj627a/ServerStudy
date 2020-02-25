@@ -6,6 +6,7 @@ void  CQueue::enq(int _height)
 	newNode->height = _height;
 	newNode->next = head->next;
 	head->next = newNode;
+	count++;
 }
 
 bool  CQueue::deq(NODE*& _node)
@@ -29,6 +30,7 @@ bool  CQueue::deq(NODE*& _node)
 		curr = curr->next;
 	}
 
+	count--;
 	return true;
 }
 
@@ -47,6 +49,27 @@ void CQueue::printAll()
 
 		//printf("%d \n", curr->height);
 
+		curr = curr->next;
+	}
+}
+
+int CQueue::getIndex(int _index)
+{
+	if (head->next == tail)
+		return -10;
+	
+	int idx = -1;
+
+	NODE* curr = head;
+	while (true)
+	{
+		if (curr == tail)
+			return -10;
+
+		if (idx == _index)
+			return curr->height;
+
+		idx++;
 		curr = curr->next;
 	}
 }
