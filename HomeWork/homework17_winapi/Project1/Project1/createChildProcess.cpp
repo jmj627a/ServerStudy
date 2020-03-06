@@ -149,6 +149,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	HDC	g_hMemDC;
+	HBITMAP	g_hMemBitmap;
+
+
 	static int mouseOldX, mouseX = 0;
 	static int mouseOldY, mouseY = 0;
 	static bool isDraw = false;
@@ -192,20 +196,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
+
+		RECT Rect;
+		GetClientRect(hWnd, &Rect);		//그림 그려질 클라이언트 영역의 크기를 얻음. -> 윈도우 크기 != 클라이언트 크기
+
+		HDC hdc =  GetDC(hWnd);
+		g_hMemDC = CreateCompatibleDC(hdc);		// createDC는 쌩 DC생성이라, 그거 말고 이 함수가 필요하다.  
+		g_hMemBitmap = CreateCompatibleBitmap(hdc, Rect.right, Rect.bottom); // 현재 윈도우와 똑같은 속성, 색상으로 HBITMAP 생성
+		SelectObject(g_hMemDC, g_hMemBitmap);		//DC와 bitmap을 연결
+		ReleaseDC(hWnd, hdc);
+
+		//특정 패턴으로 dc를 채워주는 함수로, 아래 는 dc를 흰색으로 채워줌.
+		//PatBlt(g_hMemDC, 0, 0, Rect.right, Rect.bottom, WHITENESS);		// bit로 시작하는 함수는 dc에 뭔가 출력하는 종류의 함수.
 
 		if (isDraw)
 		{
 			pen = CreatePen(PS_SOLID, rand() % 10 + 1, RGB(rand() % 255, rand() % 255, rand() % 255)); // (RGB(rand() % 255, rand() % 255, rand() % 255));
-			oldPen = (HPEN)SelectObject(hdc, pen);
+			oldPen = (HPEN)SelectObject(g_hMemDC, pen);
 
-			MoveToEx(hdc, mouseOldX, mouseOldY, NULL);
-			LineTo(hdc, mouseX, mouseY);
+			MoveToEx(g_hMemDC, mouseOldX, mouseOldY, NULL);
+			LineTo(g_hMemDC, mouseX, mouseY);
 
-			SelectObject(hdc, oldPen);
+			SelectObject(g_hMemDC, oldPen);
 			DeleteObject(pen);
 		}
 
+		hdc = BeginPaint(hWnd, &ps);
+		StretchBlt(memDC, 0, 0, CLIENT_WIDTH, CLIENT_HEIGHT, memDC2, 0, 0, 649, 500, SRCCOPY);
+		BitBlt(hdc, 0, 0, Rect.right, Rect.bottom, g_hMemDC, 0, 0, SRCCOPY);
+		DeleteObject(g_hMemBitmap);
+		DeleteObject(g_hMemDC);
 		EndPaint(hWnd, &ps);
 	}
 	break;
@@ -222,6 +242,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK WndChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	HDC	g_hMemDC;
+	HBITMAP	g_hMemBitmap;
+
 	static int oldX = 0;
 	static int oldY = 0;
 	static bool isDraw = false;
@@ -248,7 +271,7 @@ LRESULT CALLBACK WndChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			queue->enq(changeWindowPosition(rand() % CHILD_WINDOW_HEIGHT / 3));
 			break;
 		}
-		InvalidateRect(hWnd, NULL, true);
+		InvalidateRect(hWnd, NULL, false);
 		break;
 	}
 	break;
@@ -256,7 +279,19 @@ LRESULT CALLBACK WndChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
+		
+		RECT Rect;
+		GetClientRect(hWnd, &Rect);		//그림 그려질 클라이언트 영역의 크기를 얻음. -> 윈도우 크기 != 클라이언트 크기
+
+		HDC hdc = GetDC(hWnd);
+		g_hMemDC = CreateCompatibleDC(hdc);		// createDC는 쌩 DC생성이라, 그거 말고 이 함수가 필요하다.  
+		g_hMemBitmap = CreateCompatibleBitmap(hdc, Rect.right, Rect.bottom); // 현재 윈도우와 똑같은 속성, 색상으로 HBITMAP 생성
+		SelectObject(g_hMemDC, g_hMemBitmap);		//DC와 bitmap을 연결
+		ReleaseDC(hWnd, hdc);
+
+		//특정 패턴으로 dc를 채워주는 함수로, 아래 는 dc를 흰색으로 채워줌.
+		PatBlt(g_hMemDC, 0, 0, Rect.right, Rect.bottom, WHITENESS);		// bit로 시작하는 함수는 dc에 뭔가 출력하는 종류의 함수.
+		
 		oldX = 0;
 		oldY = changeWindowPosition(0);
 
@@ -265,15 +300,17 @@ LRESULT CALLBACK WndChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			if (queue->getIndex(i) == -10)
 				break;
 
-			MoveToEx(hdc, oldX, oldY, NULL);
-			LineTo(hdc, i * 10, queue->getIndex(i));
+			MoveToEx(g_hMemDC, oldX, oldY, NULL);
+			LineTo(g_hMemDC, i * 10, queue->getIndex(i));
 
 			oldX = i * 10;
 			oldY = queue->getIndex(i);
 		}
 
-
-		//TextOut(hdc, oldX, oldY, L"Beautiful Korea", wcslen(L"Beautiful Korea"));
+		hdc = BeginPaint(hWnd, &ps);	
+		BitBlt(hdc, 0, 0, Rect.right, Rect.bottom, g_hMemDC, 0, 0, SRCCOPY);
+		DeleteObject(g_hMemBitmap);
+		DeleteObject(g_hMemDC); 
 		EndPaint(hWnd, &ps);
 	}
 	break;
