@@ -1,0 +1,265 @@
+# 모니터링 클라이언트에 컬럼 추가하기.
+
+하나의 모니터링 윈도우 (자식 윈도우)  에  꼭 하나의 데이터만 출력하지 않습니다.
+첨부된 샘플처럼 여러 서버를 대상으로 여러개의 데이터가 동시에 출력 되기도 합니다.
+
+그래프 타입에선 LINE_MULTI 으로 전달 드렸습니다.
+
+
+이를 구현하기 위해서는 하나의 자식 윈도우 클래스에 아래 정보가 추가 되어야 겠습니다.
+
+- 항목별 HPEN
+- 항목별 Data Queue
+- 항목별 이름
+- 항목별 구분자 1
+- 항목별 구분자 2
+
+여기서 조금 특이한건 구분자 1,2  입니다.  왜 구분자가 2개인가. 
+
+
+
+우리는 모니터링 대상별로 Type 을 지정하여  구분 하게 될 것입니다.
+이 Type 은 상황에 따라 게임에 따라 서버에 따라 다르게 지정되므로 지금 당장 고정값으로 정의하지는 않을 것입니다.
+
+예를 들자면 이런 느낌 입니다.
+
+	dfMONITOR_DATA_TYPE_SERVER_CPU_TOTAL = 1,                      // 하드웨어 CPU 사용률 전체
+	dfMONITOR_DATA_TYPE_SERVER_AVAILABLE_MEMORY,               // 하드웨어 사용가능 메모리
+	dfMONITOR_DATA_TYPE_SERVER_NETWORK_RECV,                     // 하드웨어 이더넷 수신 kb
+	dfMONITOR_DATA_TYPE_SERVER_NETWORK_SEND,                     // 하드웨어 이더넷 송신 kb
+	dfMONITOR_DATA_TYPE_SERVER_NONPAGED_MEMORY,              // 하드웨어 논페이지 메모리 사용량
+
+	dfMONITOR_DATA_TYPE_MATCH_SERVER_ON,                       // 매치메이킹 서버 ON
+	dfMONITOR_DATA_TYPE_MATCH_CPU,                                // 매치메이킹 CPU 사용률 (커널 + 유저)
+	dfMONITOR_DATA_TYPE_MATCH_MEMORY_COMMIT,             // 매치메이킹 메모리 유저 커밋 사용량 (Private) MByte
+	dfMONITOR_DATA_TYPE_MATCH_PACKET_POOL,                   // 매치메이킹 패킷풀 사용량
+	dfMONITOR_DATA_TYPE_MATCH_SESSION,                          // 매치메이킹 접속 세션
+	dfMONITOR_DATA_TYPE_MATCH_PLAYER,                           // 매치메이킹 접속 유저 (로그인 성공 후)
+	dfMONITOR_DATA_TYPE_MATCH_MATCHSUCCESS,                     // 매치메이킹 방 배정 성공 수 (초당)
+
+
+	dfMONITOR_DATA_TYPE_MASTER_SERVER_ON,                        // 마스터 서버 ON
+	dfMONITOR_DATA_TYPE_MASTER_CPU,                              // 마스터 CPU 사용률 (프로세스)
+	dfMONITOR_DATA_TYPE_MASTER_CPU_SERVER,                       // 마스터 CPU 사용률 (서버 컴퓨터 전체)
+	dfMONITOR_DATA_TYPE_MASTER_MEMORY_COMMIT,                    // 마스터 메모리 유저 커밋 사용량 (Private) MByte
+	dfMONITOR_DATA_TYPE_MASTER_PACKET_POOL,                      // 마스터 패킷풀 사용량
+	dfMONITOR_DATA_TYPE_MASTER_MATCH_CONNECT,                    // 마스터 매치메이킹 서버 연결 수
+	dfMONITOR_DATA_TYPE_MASTER_MATCH_LOGIN,                      // 마스터 매치메이킹 서버 로그인 수
+	dfMONITOR_DATA_TYPE_MASTER_STAY_CLIENT,                      // 마스터 대기자 클라이언트
+	dfMONITOR_DATA_TYPE_MASTER_BATTLE_CONNECT,                   // 마스터 배틀 서버 연결 수
+	dfMONITOR_DATA_TYPE_MASTER_BATTLE_LOGIN,                     // 마스터 배틀 서버 로그인 후
+	dfMONITOR_DATA_TYPE_MASTER_BATTLE_STANDBY_ROOM,              // 마스터 배틀 서버 대기방
+
+
+각 모니터링 항목별로 번호를 나눠서  해당 번호를 서버측과 모니터링 클라이언트 측에서 약속으로 정하고 쓰는 것입니다.
+그리고 이것이 구분자 중 1개가 됩니다.
+
+그럼 또 하나의 구분자는 무엇인가 하면  서버의 구분 입니다.
+첨부된 샘플 exe 파일에서 보여지듯이  '동시접속자'   라는 항목 하나에  여러개의 서버가 지정 되는 상황 입니다.
+
+예를 들어보면 
+
+cpu 사용률은 Type 1번 입니다.
+
+Server 1, Type 1
+Server 2, Type 1
+Server 3, Type 1
+
+이렇게 3대의 서버에서 전달되는 Type 1 이 됩니다.
+그러므로 결국  모니터링 클라이언트 입장에서는  1개의 수치 데이터에  따라오는 구분자는  Server / Type  으로 2개의 구분자를 가집니다.
+
+
+실제 서버와 연동을 할 때  모니터링 클라이언트가 수신하는 데이터는 다음과 같습니다.
+
+Server : 10
+Type : 1
+Value : 50
+
+이렇게 3개의 데이터를 받게 될 것입니다.  10번 서버의 1번 타입 데이터가 50 
+
+
+
+# 모니터링 윈도우 클래스의 추가사항
+
+1. 수신 데이터의 개수 지정   (컬럼)
+2. 각 데이터 마다의 수신 서버 / 타입 지정
+3. 각 데이터 마다의 수신 타입 지정 
+
+하나의 윈도우 클래스에는 이제 여러개의 데이터를 받아들여야 하므로  Data Queue 가 배열로서 선언 되어야 합니다.
+어떤 윈도우는 1개, 어떤 윈도우는 20개를 받아들여야 할지 모르니, 아무래도 동적 배열이 좋겠지요
+
+그렇다면 1번 항목의 지정은  생성자에서 전달 되는게 맞겠습니다.
+
+2번,3번의 경우는 1번 항목의 개수에 따라  추가 되어야 하는 상황입니다.
+
+하나의 데이터 정보를 저장하기 위한  구조체를 잡아 보겠습니다.
+
+
+struct ST_COLUMN_INFO
+{
+	ULONG64 u64ServerID;
+	int iType;
+	WCHAR szName[Max];
+	CQueue<int> _DataQueue;
+
+} stColumnInfo;
+
+해당 데이터의 ServerID, 데이터의 Type, 데이터의 표기 이름, 데이터 큐
+
+를 하나로 묶어서 준비 했습니다.   해당 윈도우에서 표현 할 데이터 종료 개수에 따라 위 구조체가 동적할당 되면 되겠습니다.
+ServerID 는 일단 64bit 변수로 준비 했습니다.
+
+이는 개발 상황에 따라 다른 것이므로 상황에 맞게 변경하여 사용하면 됩니다.
+( 서버의 구분을 문자코드로 하기도 하며,  단순 넘버링을 붙이기도 합니다 )
+
+
+ = 맴버변수로 추가 해봅니다.
+
+ int		_iDataColumn; // 본 윈도우의 컬럼 개수
+ stColumnInfo	*_ColumArray; // 컬럼별 데이터 타입
+
+
+
+ = 생성자에는 컬럼의 개수를 입력받아 필요만큼 컬럼정보를 동적 할당 합니다.
+ 
+ CGraphUnit::CGraphUnit(....    int iColumnNum);
+
+ 
+
+ = 생성 후 추가적인 컬럼별 정보를 입력 받을 수 있도록 함수가 제공 되어야 합니다.
+
+ CGraphUnit::SetDataColumnInfo(int iColIndex, ULONG64 u64ServerID, int iType, WCHAR *szName)
+
+
+ 메인 윈도우에서는  각 윈도우 객체 생성 후에 다음과 같이 각 윈도우별 컬럼 정보를 지정 해주어야 합니다.
+
+	pWin1->SetDataColumnInfo(0, ServerID_1, 1);
+	pWin2->SetDataColumnInfo(0, ServerID_1, 2);
+	pWin3->SetDataColumnInfo(0, ServerID_2, 1);
+
+	pWin4->SetDataColumnInfo(0, ServerID_1, 3, L"릴리즈서버");
+	pWin4->SetDataColumnInfo(1, ServerID_2, 3, L"개판서버");
+	pWin4->SetDataColumnInfo(2, ServerID_3, 3, L"먹튀서버");
+	pWin4->SetDataColumnInfo(3, ServerID_4, 3, L"다운스멜서버");
+
+pWin1 에는  ServerID_1 서버의 1번 데이터
+pWin2 에는  ServerID_1 서버의 2번 데이터
+pWin3 에는  ServerID_2 서버의 1번 데이터
+
+pWin4 에는 4개의 컬럼으로  각 서버별 3번 타입을 표시 하게 되는 코드 입니다.
+
+
+컬럼별 이름은 꼭 필요한 것은 아니지만 완성도 있는 모니터링 클라이언트를 목표로 하신다면 
+한쪽에 각 이름도 표시가 되어야  여러분이 보기 편하실 것입니다.
+
+
+
+ = 각 윈도우에 데이터를 전달하는 방법
+
+이제 문제는  어떤 윈도우가 어떤 데이터를 받아야 할지 모른다는 것입니다.
+우리의 모니터링 클라이언트에는  마냥 모든 모니터링 데이터가 수신 될 것입니다.  
+수십대의 서버가 보내주는 수십개의 타입별 데이터가 마구 쏟아질 것입니다.
+
+
+이 모든 데이터는 메인 윈도우 프로시저를 통해 수신 될 것입니다.  (지금은 WM_TIMER 를 대용으로 사용 중이고요)
+
+문제는  메인 윈도우 입장에서는  이 데이터들을 어떻게 분배 해야할지, 누구에게 줘야 할지 애매한 상황입니다.
+실제 모니터링 클라이언트를 셋팅해보면 많은경우는 자식 윈도우가 40개 이상,  실제 모니터링 할 데이터는 80개 이상이 됩니다.
+
+그리고 또한,  하나의 데이터가 꼭 하나의 윈도우에 전달 되는 것이 아닙니다.
+
+예를 들면
+
+ServerID : 4   Type : 10    -  4번 서버의 동시접속자 10번 타입  이라고 예를 들어보면
+
+2개의 윈도우가 있는 상황
+
+CGraphUnit1  ServerID : 4  /  Type : 10  /  LINE_SINGLE
+CGraphUnit2  ServerID : 4  /  Type : 10  /  NUMBER 
+
+이렇게 하나의 데이터가  2개 이상의 윈도우에서 표기 되어야 하는 경우도 있습니다.
+각기 다른 방식으로 표현을 해주고 싶을 경우 이죠.
+
+
+
+일단 방법은 두가지를 고민 해볼 수 있겠습니다.
+
+1. 메인 윈도우에서  모든 자식 윈도우들의  각각의 ServerID, DataType 을 보관, 관리한다.
+
+   메인 윈도우에서 데이터가 수신 되었다면 이 데이터를 필요로 하는 윈도우를 검색해서 해당 윈도우에게 InsertData 한다.
+
+   - 관리 자료가 많음
+   - 코드가 더러워짐
+   + 받아야 할 윈도우만 데이터를 받으므로 성능이 좋음
+
+
+2. 메인 윈도우는 데이터 수신시 모든 데이터를 모든 윈도우에 InsertData 하고,  각 윈도우들이 걸러서 받아들인다.
+
+   - 1개의 데이터 수신시 모든 윈도우에 전달 되므로 부담이 큼
+   + 관리 자료가 적음
+   + 코드가 간단함
+
+
+저는 2번을 선택 하였으며, 2번이 좋아 보입니다.
+단순히 코드의 성능만을 본다면 1번이 맞지만,  설계적인 측면과 코드의 모양을 본다면 2번이 훨씬 나은 선택입니다.
+
+
+
+ 
+ = 데이터를 입력받는 InsertData 역시 Server, Type, Data 의 정보를 받도록 합니다.
+
+ CGraphUnit::InsertData(ULONG64 u64ServerID, int iType, int iData)
+
+각 윈도우는 자신이 받아들일 ServerID 와 Type 을 알고있는 상태 입니다.
+이를 확인하여 맞는 큐에 넣어 주면 됩니다.
+
+아니라면 무시하고 버려 버립니다.
+
+
+
+ = WM_PAINT 에서는 멀티라인에 대한 구현을 합니다.
+
+	case WM_PAINT:
+
+		switch ( pThis->_enGraphType )
+		{
+
+		case LINE_SINGLE:
+			pThis->Paint_LineSingle();
+			break;
+
+		case LINE_MULTI:
+			pThis->Paint_LineMulti();   <<< 추가
+			break;
+		}
+
+
+= 각각의 라인은 눈에 띄도록 색상이 구별 되어야 합니다. 
+  
+   그래서 항목별 HPEN 을 준비 하도록 한 것입니다.
+   항목별 Pen 의 생성은 랜덤하게 생성 하거나,  색상 대비가 뚜렷하도록 테이블화 하여 미리 지정되어도 괜찮습니다.
+
+   컬럼 수에 맞게 HPEN 이 생성되어야 하며,  랜더링시 컬럼 항목별로 Pen 을 지정하여 그려주면 됩니다.
+
+
+
+=  각각의 라인은 이름을 가지고 있습니다.
+
+   이는 노가다성이 굉장히 강한 작업입니다.
+
+   멀티라인의 경우 한쪽 부분에 각 이름을 표기하는 것인데....
+   음.........   안하셔도 됩니다.  ^^;
+
+   혹시라도 완성도 있는 모니터링 클라이언트를 목표로 하시고,  앞으로도 써먹을 생각을 가지고 계신다면 해보시고
+   그냥 시키니까 하지만 재미도 없고 하기도 싫은 분들은 생략 하십쇼.
+
+
+
+
+= 첨부 샘플의 Bar 그래프는 
+
+   하지 마십쇼.  만들어 보긴 했는데 암짝에도 쓸모가 없고  보기도 안좋아서  사용이 안되고 있습니다.
+
+
+
+  
