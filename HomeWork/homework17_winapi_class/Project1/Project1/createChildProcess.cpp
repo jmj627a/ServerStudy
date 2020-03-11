@@ -22,7 +22,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-ATOM                RegisterChildClass(HINSTANCE hInstance);
+//ATOM                RegisterChildClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    WndChildProc(HWND, UINT, WPARAM, LPARAM);
@@ -45,7 +45,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_PROJECT1, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
-	RegisterChildClass(hInstance);
+	//p1->RegisterChildClass(hInstance);
+
 
 	// 애플리케이션 초기화를 수행합니다:
 	if (!InitInstance(hInstance, nCmdShow))
@@ -98,34 +99,13 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassExW(&wcex);
 }
 
-ATOM RegisterChildClass(HINSTANCE hInstance)
-{
-	WNDCLASSEXW wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndChildProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PROJECT1));
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_PROJECT1);
-	wcex.lpszClassName = L"Child";
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-	return RegisterClassExW(&wcex);
-}
-
 HWND hWnd;
 
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-	hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
 		CW_USEDEFAULT, 0, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, hInstance, nullptr);
 
 	if (!hWnd)
@@ -143,10 +123,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 
+HDC	g_hMemDC;
+HBITMAP	g_hMemBitmap;
+HDC hdc;
+RECT Rect;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	HDC	g_hMemDC;
-	HBITMAP	g_hMemBitmap;
 
 	static int mouseOldX, mouseX = 0;
 	static int mouseOldY, mouseY = 0;
@@ -161,6 +144,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 	{
+		GetClientRect(hWnd, &Rect);		//그림 그려질 클라이언트 영역의 크기를 얻음. -> 윈도우 크기 != 클라이언트 크기
+
+		HDC hdc = GetDC(hWnd);
+		g_hMemDC = CreateCompatibleDC(hdc);		// createDC는 쌩 DC생성이라, 그거 말고 이 함수가 필요하다.  
+		g_hMemBitmap = CreateCompatibleBitmap(hdc, Rect.right, Rect.bottom); // 현재 윈도우와 똑같은 속성, 색상으로 HBITMAP 생성
+		SelectObject(g_hMemDC, g_hMemBitmap);		//DC와 bitmap을 연결
+		ReleaseDC(hWnd, hdc);
+
+		//특정 패턴으로 dc를 채워주는 함수로, 아래 는 dc를 흰색으로 채워줌.
+		PatBlt(g_hMemDC, 0, 0, Rect.right, Rect.bottom, BLACKNESS);		// bit로 시작하는 함수는 dc에 뭔가 출력하는 종류의 함수.
+
+
 		p1 = new CGraphWnd(hInst, hWnd, CGraphWnd::LINE_SINGLE, 10, 10, 200, 200);
 		p2 = new CGraphWnd(hInst, hWnd, CGraphWnd::LINE_SINGLE, 220, 10, 200, 200);
 
@@ -179,9 +174,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	break;
 
 	case WM_TIMER:
-		p1->InsertData(rand() % 100);
-		p2->InsertData(rand() % 100);
-		break;
+		switch (wParam)
+		{
+		case 1:
+			InvalidateRect(hWnd, NULL, false);
+			//p1->InsertData(rand() % 100);
+			//p2->InsertData(rand() % 100);
+			break;
+		}
+		return 0;
 
 	case WM_MOUSEMOVE:
 		mouseOldX = mouseX;
@@ -203,18 +204,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		PAINTSTRUCT ps;
 
-		RECT Rect;
-		GetClientRect(hWnd, &Rect);		//그림 그려질 클라이언트 영역의 크기를 얻음. -> 윈도우 크기 != 클라이언트 크기
-
-		HDC hdc =  GetDC(hWnd);
-		g_hMemDC = CreateCompatibleDC(hdc);		// createDC는 쌩 DC생성이라, 그거 말고 이 함수가 필요하다.  
-		g_hMemBitmap = CreateCompatibleBitmap(hdc, Rect.right, Rect.bottom); // 현재 윈도우와 똑같은 속성, 색상으로 HBITMAP 생성
-		SelectObject(g_hMemDC, g_hMemBitmap);		//DC와 bitmap을 연결
-		ReleaseDC(hWnd, hdc);
-
-		//특정 패턴으로 dc를 채워주는 함수로, 아래 는 dc를 흰색으로 채워줌.
-		PatBlt(g_hMemDC, 0, 0, Rect.right, Rect.bottom, BLACKNESS);		// bit로 시작하는 함수는 dc에 뭔가 출력하는 종류의 함수.
-
 		if (isDraw)
 		{
 			pen = CreatePen(PS_SOLID, rand() % 10 + 1, RGB(rand() % 255, rand() % 255, rand() % 255)); // (RGB(rand() % 255, rand() % 255, rand() % 255));
@@ -229,13 +218,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		hdc = BeginPaint(hWnd, &ps);
 		BitBlt(hdc, 0, 0, Rect.right, Rect.bottom, g_hMemDC, 0, 0, SRCCOPY);
-		DeleteObject(g_hMemBitmap);
-		DeleteObject(g_hMemDC);
 		EndPaint(hWnd, &ps);
 	}
 	break;
 	case WM_DESTROY:
 	{
+		DeleteObject(g_hMemBitmap);
+		DeleteObject(g_hMemDC);
 		PostQuitMessage(0);
 	}
 	break;

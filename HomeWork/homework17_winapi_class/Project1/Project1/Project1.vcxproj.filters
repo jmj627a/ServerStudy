@@ -44,19 +44,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Project1.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="drawGraph.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="CQueue.cpp">
       <Filter>소스 파일\queue</Filter>
     </ClCompile>
     <ClCompile Include="createChildProcess.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="test.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="CGraphWnd.cpp">
