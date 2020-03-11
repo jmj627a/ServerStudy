@@ -1,14 +1,21 @@
 #include <Windows.h>
+#include <cstdlib>
+#include <time.h>
+
 #include "Resource.h"
 #include "CGraphWnd.h"
 #include "CQueue.h"
 
 CQueue* CGraphWnd:: queue = new CQueue();
+CGraphWnd:: stHWNDtoTHIS HWNDTable[dfMAXCHILD];
 
 CGraphWnd::CGraphWnd(HINSTANCE hInstance, HWND hWndParent, TYPE enType, int iPosX, int iPosY, int iWidth, int iHeight)
 {
 	initChildClass(hInstance);
-	
+	_enGraphType = enType;
+
+	PutThis();
+
 	CreateWindowW(L"Child", NULL,
 		WS_CHILD | WS_VISIBLE /*| WS_BORDER*/ | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_DLGFRAME | WS_THICKFRAME | WS_TABSTOP,
 		rand()%500, rand() % 500, CHILD_WINDOW_WIDTH, CHILD_WINDOW_HEIGHT,
@@ -30,28 +37,19 @@ LRESULT CGraphWnd::WndChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	static int oldX = 0;
 	static int oldY = 0;
 	static bool isDraw = false;
+
 	switch (message)
 	{
 	case WM_CREATE:
 	{
-		GetClientRect(hWnd, &Rect1);		//그림 그려질 클라이언트 영역의 크기를 얻음. -> 윈도우 크기 != 클라이언트 크기
+		pThis->createFunc(hWnd);
 
-		HDC hdc = GetDC(hWnd);
-		g_hMemDC1 = CreateCompatibleDC(hdc);		// createDC는 쌩 DC생성이라, 그거 말고 이 함수가 필요하다.  
-		g_hMemBitmap1 = CreateCompatibleBitmap(hdc, Rect1.right, Rect1.bottom); // 현재 윈도우와 똑같은 속성, 색상으로 HBITMAP 생성
-		SelectObject(g_hMemDC1, g_hMemBitmap1);		//DC와 bitmap을 연결
-		ReleaseDC(hWnd, hdc);
-
-		//특정 패턴으로 dc를 채워주는 함수로, 아래 는 dc를 흰색으로 채워줌.
-		PatBlt(g_hMemDC1, 0, 0, Rect1.right, Rect1.bottom, WHITENESS);		// bit로 시작하는 함수는 dc에 뭔가 출력하는 종류의 함수.
-
-		SetTimer(hWnd, 2, 100, NULL);
 	}
 	break;
 	case WM_TIMER:
 	{
 		switch (wParam) {
-		case 2:
+		case LINE_SINGLE:
 
 			if (queue->count >= 100)
 			{
@@ -59,7 +57,18 @@ LRESULT CGraphWnd::WndChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				bool ret = queue->deq(temp);
 			}
 
-			queue->enq(changeWindowPosition(rand() % CHILD_WINDOW_HEIGHT / 3));
+			queue->enq(changeWindowPosition(rand() % CHILD_WINDOW_HEIGHT / 2));
+			break;
+
+		case LINE_MULTI:
+
+			if (queue->count >= 100)
+			{
+				NODE* temp = new NODE();
+				bool ret = queue->deq(temp);
+			}
+
+			queue->enq(changeWindowPosition(rand() % CHILD_WINDOW_HEIGHT / 2));
 			break;
 		}
 		InvalidateRect(hWnd, NULL, false);
@@ -146,4 +155,22 @@ CGraphWnd* CGraphWnd::GetThis(HWND hWnd)
 int CGraphWnd::changeWindowPosition(int _y)
 {
 	return CHILD_WINDOW_HEIGHT - _y;
+}
+
+void CGraphWnd::createFunc(HWND hWnd)
+{
+	GetClientRect(hWnd, &Rect1);		//그림 그려질 클라이언트 영역의 크기를 얻음. -> 윈도우 크기 != 클라이언트 크기
+
+	HDC hdc = GetDC(hWnd);
+	g_hMemDC1 = CreateCompatibleDC(hdc);		// createDC는 쌩 DC생성이라, 그거 말고 이 함수가 필요하다.  
+	g_hMemBitmap1 = CreateCompatibleBitmap(hdc, Rect1.right, Rect1.bottom); // 현재 윈도우와 똑같은 속성, 색상으로 HBITMAP 생성
+	SelectObject(g_hMemDC1, g_hMemBitmap1);		//DC와 bitmap을 연결
+	ReleaseDC(hWnd, hdc);
+
+	//특정 패턴으로 dc를 채워주는 함수로, 아래 는 dc를 흰색으로 채워줌.
+	PatBlt(g_hMemDC1, 0, 0, Rect1.right, Rect1.bottom, WHITENESS);		// bit로 시작하는 함수는 dc에 뭔가 출력하는 종류의 함수.
+
+	srand((unsigned)time(NULL));
+
+	SetTimer(hWnd, _enGraphType, 100, NULL);
 }

@@ -157,9 +157,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 		p1 = new CGraphWnd(hInst, hWnd, CGraphWnd::LINE_SINGLE, 10, 10, 200, 200);
-		p2 = new CGraphWnd(hInst, hWnd, CGraphWnd::LINE_SINGLE, 220, 10, 200, 200);
+		p2 = new CGraphWnd(hInst, hWnd, CGraphWnd::LINE_MULTI, 220, 10, 200, 200);
 
-		SetTimer(hWnd, 1, 100, NULL);
+		SetTimer(hWnd, 1000, 100, NULL);
 
 		//childhWnd1 = CreateWindowW(L"Child", NULL,
 		//	WS_CHILD | WS_VISIBLE /*| WS_BORDER*/ | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_DLGFRAME | WS_THICKFRAME | WS_TABSTOP,

@@ -74,9 +74,13 @@ protected:
 
 	static CGraphWnd	*GetThis(HWND hWnd);
 	static stHWNDtoTHIS 	HWNDTable[dfMAXCHILD];
+
 	static int changeWindowPosition(int _y);
 
 private:
+
+	void createFunc(HWND hWnd);
+
 
 	//------------------------------------------------------
 	// 부모 윈도우 핸들, 내 윈도우 핸들, 인스턴스 핸들
