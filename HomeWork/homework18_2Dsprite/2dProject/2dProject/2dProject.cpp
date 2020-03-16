@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "2dProject.h"
 #include "CScreenDib.h"
+#include "CSpriteDib.h"
 
 #define MAX_LOADSTRING 100
 
@@ -18,6 +19,7 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+CSpriteDib g_cSprite(7 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
 HWND hWnd;
 
@@ -29,18 +31,39 @@ void Update()
 	int iDestHeight = g_cScreenDib.GetHeight();
 	int iDestPitch= g_cScreenDib.GetPitch();
 
+
+	//1. 맵 화면 출력
+	g_cSprite.DrawImage(0, 0, 0, bypDest, iDestWidth, iDestHeight, iDestPitch);
+
+	//2. 캐릭터 출력
+	g_cSprite.DrawImage(1, 100, 100, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	
 	//버퍼 포인터에 그림을 그린다
 	//스트라이프 출력부
-	BYTE byGrayColor = 0;
+	/*BYTE byGrayColor = 0;
 	for (int iCount = 0; iCount < 480; iCount++)
 	{
 		memset(bypDest, byGrayColor, 640 * 4);
 		bypDest += iDestPitch;
 		byGrayColor++;
-	}
+	}*/
 
+	//screen dib을 화면으로 플립
 	//dib버퍼의 내용을 화면으로 출력
 	g_cScreenDib.Flip(hWnd);
+}
+
+BOOL GameInit()
+{
+	g_cSprite.LoadDibSprite(0, "Sprite_Data\\_Map.bmp", 0, 0);
+	g_cSprite.LoadDibSprite(1, "Sprite_Data\\Stand_L_01.bmp", 71, 90);
+	g_cSprite.LoadDibSprite(2, "Sprite_Data\\Stand_L_02.bmp", 71, 90);
+	g_cSprite.LoadDibSprite(3, "Sprite_Data\\Stand_L_03.bmp", 71, 90);
+	g_cSprite.LoadDibSprite(4, "Sprite_Data\\Stand_R_01.bmp", 71, 90);
+	g_cSprite.LoadDibSprite(5, "Sprite_Data\\Stand_R_02.bmp", 71, 90);
+	g_cSprite.LoadDibSprite(6, "Sprite_Data\\Stand_R_03.bmp", 71, 90);
+
+	return true;
 }
 
 
@@ -59,6 +82,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_MY2DPROJECT, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
+
+	//이미지 불러오기
+	GameInit();
+
 
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance (hInstance, nCmdShow))
