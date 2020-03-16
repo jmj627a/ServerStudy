@@ -23,7 +23,7 @@ CSpriteDib::~CSpriteDib()
 	}
 }
 
-BOOL CSpriteDib::LoadDibSprite(int iSpriteIndex,const char* szFileName, int iCenterPointX, int iCenterPointY)
+BOOL CSpriteDib::LoadDibSprite(int iSpriteIndex, const wchar_t* szFileName, int iCenterPointX, int iCenterPointY)
 {
 	HANDLE hFile;
 	DWORD dwRead;
@@ -34,7 +34,7 @@ BOOL CSpriteDib::LoadDibSprite(int iSpriteIndex,const char* szFileName, int iCen
 	BITMAPINFOHEADER stInfoHeader;
 
 	//일단 파일을 열자
-	hFile = CreateFile((LPCWSTR)szFileName, GENERIC_READ, NULL, NULL, OPEN_EXISTING,
+	hFile = CreateFile(szFileName, GENERIC_READ, NULL, NULL, OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if(INVALID_HANDLE_VALUE == hFile)
@@ -53,7 +53,7 @@ BOOL CSpriteDib::LoadDibSprite(int iSpriteIndex,const char* szFileName, int iCen
 		if (32 == stInfoHeader.biBitCount)
 		{
 			//한줄 한줄의 피치값을 구한다
-			iPitch = (stInfoHeader.biWidth * 4) + 3 & ~3;
+			iPitch = ((stInfoHeader.biWidth * 4) + 3) & ~3;
 
 			//스프라이트 구조체에 크기 저장
 			m_stpSprite[iSpriteIndex].iWidth = stInfoHeader.biWidth;
@@ -156,7 +156,7 @@ void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypD
 	if (0 > iDrawX)
 	{
 		iSpriteWidth = iSpriteWidth - (-iDrawX);
-		dwpSprite - dwpSprite + (-iDrawX);
+		dwpSprite = dwpSprite + (-iDrawX);
 
 		//왼쪽이 족므 잘리므로 출력 시작 위치를 오른쪽으로 민다
 		iDrawX = 0;
@@ -181,7 +181,7 @@ void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypD
 	{
 		for (iCountX = 0; iSpriteWidth > iCountX; iCountX++)
 		{
-			if (m_dwColorKey != (*dwpSprite * 0x00ffffff))
+			if (m_dwColorKey != (*dwpSprite & 0x00ffffff))
 				*dwpDest = *dwpSprite;
 			dwpDest++;
 			dwpSprite++;

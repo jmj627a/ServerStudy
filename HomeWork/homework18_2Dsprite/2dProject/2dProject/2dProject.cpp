@@ -55,13 +55,14 @@ void Update()
 
 BOOL GameInit()
 {
-	g_cSprite.LoadDibSprite(0, "Sprite_Data\\_Map.bmp", 0, 0);
-	g_cSprite.LoadDibSprite(1, "Sprite_Data\\Stand_L_01.bmp", 71, 90);
-	g_cSprite.LoadDibSprite(2, "Sprite_Data\\Stand_L_02.bmp", 71, 90);
-	g_cSprite.LoadDibSprite(3, "Sprite_Data\\Stand_L_03.bmp", 71, 90);
-	g_cSprite.LoadDibSprite(4, "Sprite_Data\\Stand_R_01.bmp", 71, 90);
-	g_cSprite.LoadDibSprite(5, "Sprite_Data\\Stand_R_02.bmp", 71, 90);
-	g_cSprite.LoadDibSprite(6, "Sprite_Data\\Stand_R_03.bmp", 71, 90);
+	//g_cSprite.LoadDibSprite(0, (const wchar_t*)("Sprite_Data\\_Map.bmp"), 0, 0);
+	g_cSprite.LoadDibSprite(0, _T("Sprite_Data\\_Map.bmp"), 0, 0);
+	g_cSprite.LoadDibSprite(1, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(2, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(3, _T("Sprite_Data\\Stand_L_03.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(4, _T("Sprite_Data\\Stand_R_01.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(5, _T("Sprite_Data\\Stand_R_02.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(6, _T("Sprite_Data\\Stand_R_03.bmp"), 71, 90);
 
 	return true;
 }

@@ -29,7 +29,7 @@ public:
 	virtual ~CSpriteDib();
 
 	//bmp 파일을 읽어서 하나의 프레임으로 저장한다
-	BOOL LoadDibSprite(int iSpriteIndex, const char* szFileName, int iCenterPointX, int iCenterPointY);
+	BOOL LoadDibSprite(int iSpriteIndex, const wchar_t* szFileName, int iCenterPointX, int iCenterPointY);
 
 	//해당 스프라이트 삭제
 	void ReleaseSprite(int iSpriteIndex);

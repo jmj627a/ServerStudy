@@ -36,7 +36,7 @@ void CScreenDib::CreateDibBuffer(int iWidth, int iHeight, int iColorBit)
 	//Dib 출력시 뒤집어서 출력하기 위해 높이값을 -로 입력하고 있다.
 	m_stDibInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	m_stDibInfo.bmiHeader.biWidth = m_iWidth;
-	m_stDibInfo.bmiHeader.biHeight = m_iHeight;
+	m_stDibInfo.bmiHeader.biHeight = -m_iHeight;
 	m_stDibInfo.bmiHeader.biPlanes = 1;
 	m_stDibInfo.bmiHeader.biBitCount = m_iColorBit;
 	m_stDibInfo.bmiHeader.biCompression= 0;
@@ -83,7 +83,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 
 	//화면에 프레임 표시 부분, 필요에 따라 사용
 	{
-		static char szFrame[5];
+		static wchar_t szFrame[5];
 		static int iFrame = 0;
 		static DWORD dwTick = 0;
 
@@ -91,11 +91,11 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 
 		if (dwTick + 1000 < timeGetTime())
 		{
-			wsprintf((LPWSTR)szFrame, (LPCWSTR)"%d", iFrame);
+			wsprintf(szFrame, L"%d", iFrame);
 			iFrame = 0;
 			dwTick = timeGetTime();
 		}
-		TextOut(hDC, 0, 0, (LPWSTR)szFrame, (int)strlen(szFrame));
+		TextOut(hDC, 0, 0, szFrame, (int)strlen((const char*)szFrame));
 	}
 
 	ReleaseDC(hWnd, hDC);
