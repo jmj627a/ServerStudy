@@ -55,6 +55,7 @@ void Update()
 
 BOOL GameInit()
 {
+	//g_cSprite.LoadDibSprite(0, (const wchar_t*)("Sprite_Data\\_Map.bmp"), 0, 0);
 	g_cSprite.LoadDibSprite(0, _T("Sprite_Data\\_Map.bmp"), 0, 0);
 	g_cSprite.LoadDibSprite(1, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(2, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
