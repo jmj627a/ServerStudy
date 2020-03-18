@@ -6,7 +6,7 @@ class CPlayerObject : public CBaseObject
 {
 private:
 	bool m_bPlayerCharacter;
-	int m_chHP;
+	char m_chHP;
 	DWORD m_dwActionCur;
 	DWORD m_dwActionOld;
 	int m_iDirCur;	//위 아래는 얼굴 방향을 알아야함. 위로가는데 왼쪽보는지 그런거
@@ -18,7 +18,7 @@ public:
 
 	void ActionProc();
 	int GetDirection();
-	int GetHP();
+	char GetHP();
 	void InputActionProc();
 	bool IsPlayer();
 
@@ -32,7 +32,7 @@ public:
 	void SetActionMove();
 	void SetActionStand();
 	
-	void SetDirection();
-	void SetHP();
+	void SetDirection(int _dir);
+	void SetHP(char _hp);
 };
 

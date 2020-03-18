@@ -41,6 +41,20 @@ void CPlayerObject::SetActionAttack3()
 	m_dwActionCur = dfACTION_ATTACK3;
 }
 
+CPlayerObject::CPlayerObject()
+{
+	m_bPlayerCharacter = true;
+	m_chHP = 100;
+	m_dwActionCur = dfACTION_STAND;
+	m_dwActionOld = dfACTION_STAND;
+	m_iDirCur = 0;	//위 아래는 얼굴 방향을 알아야함. 위로가는데 왼쪽보는지 그런거
+	m_iDirOld = 0;
+}
+
+CPlayerObject::~CPlayerObject()
+{
+}
+
 void CPlayerObject::ActionProc()
 {
 	//몇몇 동작 시(공격)의 경우 강제적으로 해당 동작 처리를 완료해야만 한다
@@ -67,6 +81,16 @@ void CPlayerObject::ActionProc()
 		InputActionProc();
 		break;
 	}
+}
+
+int CPlayerObject::GetDirection()
+{
+	return m_iDirCur;
+}
+
+char CPlayerObject::GetHP()
+{
+	return m_chHP;
 }
 
 void CPlayerObject::InputActionProc()
@@ -117,4 +141,21 @@ void CPlayerObject::SetActionStand()
 {
 	m_dwActionOld = m_dwActionCur;
 	m_dwActionCur = dfACTION_STAND;
+}
+
+void CPlayerObject::SetDirection(int _dir)
+{
+	m_iDirOld = m_iDirCur;
+	
+	//왼쪽
+	if (_dir == 0)
+		m_iDirCur = 0;
+	//오른쪽
+	else if (_dir == 1)
+		m_iDirCur = 1;
+}
+
+void CPlayerObject::SetHP(char _hp)
+{
+	m_chHP = _hp;
 }
