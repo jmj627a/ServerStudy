@@ -1,12 +1,12 @@
 ﻿// 2dProject.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 
-#include "framework.h"
-#include "2dProject.h"
-#include "CScreenDib.h"
-#include "CSpriteDib.h"
 #include "CBaseObject.h"
 #include "CPlayerObject.h"
+#include "CScreenDib.h"
+#include "CSpriteDib.h"
+#include "framework.h"
+#include "2dProject.h"
 
 
 #define MAX_LOADSTRING 100
@@ -28,6 +28,7 @@ HWND hWnd;
 
 CBaseObject* g_pPlayerObject;
 
+//이 안에서 프레임 시간도 구하고 키 입력도 지금 활성화 되어있는애만 받게
 void Update()
 {
 	//출력버퍼 포인터 및 정보를 얻음
@@ -113,10 +114,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
-			Update();
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+		else
+			Update();
     }
 
     return (int) msg.wParam;

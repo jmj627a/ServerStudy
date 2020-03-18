@@ -12,7 +12,7 @@ protected:
 	
 	int m_iDelayCount;
 	int m_iFrameDelay;
-	int m_iObjectID;
+	int m_iObjectID;		//회원번호는 서버가 부여
 
 	int m_iSpriteEnd;
 	int m_iSpriteNow;

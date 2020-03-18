@@ -17,7 +17,7 @@ void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int i
 DWORD CPlayerObject::Run()
 {
 	//다음 프레임으로 애니메이션
-	NextFrame();
+	NextFrame(); //빨리넘어가면 빨리넘어가서 로직의 일부로 들어간것
 	ActionProc();
 
 	return FALSE;
@@ -55,6 +55,7 @@ void CPlayerObject::ActionProc()
 	case dfACTION_ATTACK3:
 		if (IsEndFrame())
 		{
+			//스프라이트 바꿔주기
 			SetActionStand();
 			//공격이 끝났으면 액션을 바꿔 연속으로 공격을 할 때 재 전송이 가능하도록
 			m_dwActionInput = dfACTION_STAND;
@@ -70,42 +71,38 @@ void CPlayerObject::ActionProc()
 
 void CPlayerObject::InputActionProc()
 {
+	//오브젝트의 액션을 보내는것 
+	m_dwActionOld = m_dwActionCur;
+
+	//오른쪽으로 돌았으면 그 메세지만 보냄. 행동의 변화가있을때만
+
 	switch (m_dwActionCur)
 	{
 	case dfACTION_MOVE_DD:
-		m_iCurY -= 5;
 		break;
 
 	case dfACTION_MOVE_LD:
-		m_iCurX -= 5;
-		m_iCurY -= 5;
 		break;
 
 	case dfACTION_MOVE_LL:
-		m_iCurX -= 5; 
 		break;
 
 	case dfACTION_MOVE_LU:
-		m_iCurX -= 5;
-		m_iCurY += 5;
 		break;
 
 	case dfACTION_MOVE_RD:
-		m_iCurX += 5;
-		m_iCurY -= 5;
 		break;
 
 	case dfACTION_MOVE_RR:
-		m_iCurX += 5;
 		break;
 
 	case dfACTION_MOVE_RU:
-		m_iCurX += 5;
-		m_iCurY -= 5;
 		break;
 
 	case dfACTION_MOVE_UU:
-		m_iCurY -= 5; 
+		break;
+
+	case dfACTION_STAND:
 		break;
 	}
 }

@@ -5,6 +5,7 @@
 #include "2dProject.h"
 #include "CScreenDib.h"
 #include "CSpriteDib.h"
+#include "CBaseObject.h"
 
 #define MAX_LOADSTRING 100
 
@@ -23,6 +24,7 @@ CSpriteDib g_cSprite(7 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
 HWND hWnd;
 
+CBaseObject* c;
 void Update()
 {
 	//출력버퍼 포인터 및 정보를 얻음

@@ -9,7 +9,7 @@ private:
 	int m_chHP;
 	DWORD m_dwActionCur;
 	DWORD m_dwActionOld;
-	int m_iDirCur;
+	int m_iDirCur;	//위 아래는 얼굴 방향을 알아야함. 위로가는데 왼쪽보는지 그런거
 	int m_iDirOld;
 
 public:
