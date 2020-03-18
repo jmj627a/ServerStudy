@@ -157,6 +157,7 @@
     <ClInclude Include="CPlayerObject.h" />
     <ClInclude Include="CSpriteDib.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="global.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="CScreenDib.h" />
     <ClInclude Include="targetver.h" />

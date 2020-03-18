@@ -3,7 +3,7 @@
 
 class CBaseObject
 {
-private:
+protected:
 	bool m_bEndFrame;
 	DWORD m_dwActionInput;
 	
@@ -23,7 +23,7 @@ public:
 	CBaseObject();
 	~CBaseObject();
 
-	void ActionInput(void);
+	void ActionInput(DWORD dwAction);
 	int GetCurX(void);
 	int GetCurY(void);
 	int GetObjectID(void);
@@ -35,8 +35,8 @@ public:
 	int IsEndFrame(void);
 	void NextFrame(void);
 
-	virtual void Render();
-	virtual void Run();
+	virtual void Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch);
+	virtual DWORD Run();
 
 
 };

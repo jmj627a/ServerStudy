@@ -42,11 +42,14 @@
     <ClInclude Include="CSpriteDib.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="CBaseObject.h">
-      <Filter>소스 파일\BaseObject</Filter>
-    </ClInclude>
     <ClInclude Include="CPlayerObject.h">
       <Filter>소스 파일\BaseObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CBaseObject.h">
+      <Filter>소스 파일\BaseObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

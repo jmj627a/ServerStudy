@@ -5,6 +5,9 @@
 #include "2dProject.h"
 #include "CScreenDib.h"
 #include "CSpriteDib.h"
+#include "CBaseObject.h"
+#include "CPlayerObject.h"
+
 
 #define MAX_LOADSTRING 100
 
@@ -22,6 +25,8 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 CSpriteDib g_cSprite(7 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
 HWND hWnd;
+
+CBaseObject* g_pPlayerObject;
 
 void Update()
 {
@@ -53,8 +58,9 @@ void Update()
 	g_cScreenDib.Flip(hWnd);
 }
 
-BOOL GameInit()
+void InitialGame()
 {
+	//스프라이트 로드
 	g_cSprite.LoadDibSprite(0, _T("Sprite_Data\\_Map.bmp"), 0, 0);
 	g_cSprite.LoadDibSprite(1, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(2, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
@@ -63,7 +69,12 @@ BOOL GameInit()
 	g_cSprite.LoadDibSprite(5, _T("Sprite_Data\\Stand_R_02.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(6, _T("Sprite_Data\\Stand_R_03.bmp"), 71, 90);
 
-	return true;
+
+	g_pPlayerObject = new CPlayerObject();
+	//g_pPlayerObject->
+
+
+
 }
 
 

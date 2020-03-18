@@ -1,18 +1,5 @@
-﻿// header.h: 표준 시스템 포함 파일
-// 또는 프로젝트 특정 포함 파일이 들어 있는 포함 파일입니다.
-//
-
 #pragma once
 
-#include "targetver.h"
-#define WIN32_LEAN_AND_MEAN             // 거의 사용되지 않는 내용을 Windows 헤더에서 제외합니다.
-// Windows 헤더 파일
-#include <windows.h>
-// C 런타임 헤더 파일입니다.
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
 
 enum e_OBJECT_TYPE
 {
@@ -117,13 +104,13 @@ enum e_SPRITE
 	eSPRITE_MAX
 };
 
-//화면 이동 영역
+//ȭ�� �̵� ����
 #define dfRANGE_MOVE_TOP	50
 #define dfRANGE_MOVE_LEFT	10
 #define dfRANGE_MOVE_RIGHT	630
 #define dfRANGE_MOVE_BOTTOM	470
 
-//애니메이션 프레임 딜레이
+//�ִϸ��̼� ������ ������
 #define dfDELAY_STAND	5
 #define dfDELAY_MOVE	4
 #define dfDELAY_ATTACK1	3
@@ -131,7 +118,7 @@ enum e_SPRITE
 #define dfDELAY_ATTACK3	4
 #define dfDELAY_EFFECT	3
 
-//플레이어 8방향에 대한 define
+//�÷��̾� 8���⿡ ���� define
 #define dfACTION_MOVE_LL 0
 #define dfACTION_MOVE_LU 1
 #define dfACTION_MOVE_UU 2

@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include "CBaseObject.h"
+
 class CPlayerObject : public CBaseObject
 {
 private:
@@ -21,8 +22,8 @@ public:
 	void InputActionProc();
 	bool IsPlayer();
 
-	void Render();
-	void Run();
+	void Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch);
+	DWORD Run();
 
 	void SetActionAttack1();
 	void SetActionAttack2();
