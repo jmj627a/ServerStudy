@@ -73,6 +73,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 	RECT Rect;
 	HDC hDC;
 
+
 	//찍을 대상의 DC를 얻는다
 	GetWindowRect(hWnd, &Rect);
 	hDC = GetDC(hWnd);
@@ -83,9 +84,24 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 
 	//화면에 프레임 표시 부분, 필요에 따라 사용
 	{
+		timeBeginPeriod(1);
+
+		static int cur = timeGetTime();
+		static int old = timeGetTime();
+		static int deltaTime = cur - old;
+
+		cur = timeGetTime();
+		deltaTime = cur - old;
+
+		if (deltaTime < 20)
+		{
+			Sleep(20 - deltaTime);
+		}
+		old = cur + (20 - deltaTime);
+
 		static wchar_t szFrame[5];
 		static int iFrame = 0;
-		static DWORD dwTick = 0;
+		static DWORD dwTick = timeGetTime();
 
 		iFrame++;
 
@@ -95,11 +111,10 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 			iFrame = 0;
 			dwTick = timeGetTime();
 		}
-		TextOut(hDC, 0, 0, szFrame, (int)strlen((const char*)szFrame));
+
+		TextOut(hDC, 0, 0, szFrame, wcslen(szFrame));
 	}
-
 	ReleaseDC(hWnd, hDC);
-
 }
 
 BYTE* CScreenDib::GetDibBuffer(void)

@@ -177,12 +177,14 @@ void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypD
 	BYTE* bypSpriteOrigin = (BYTE*)dwpSprite;
 
 	//전체 크기를 돌면서 투명색 처리를 한다
+	int	A1, R1, G1, B1;
 	for (iCountY = 0; iSpriteHeight > iCountY; iCountY++)
 	{
 		for (iCountX = 0; iSpriteWidth > iCountX; iCountX++)
 		{
 			if (m_dwColorKey != (*dwpSprite & 0x00ffffff))
 				*dwpDest = *dwpSprite;
+			
 			dwpDest++;
 			dwpSprite++;
 		}
@@ -196,6 +198,205 @@ void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypD
 	
 	}
 
+}
+
+void CSpriteDib::DrawMySprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch, int iDrawLen)
+{
+	//최대 스프라이트 개수를 초과하거나 로드되지 않는 스프라이트라면 무시
+	if (iSpriteIndex >= m_iMaxSprite)
+		return;
+
+	if (NULL == m_stpSprite[iSpriteIndex].bypImage)
+		return;
+
+	st_SPRITE* stpSprite = &m_stpSprite[iSpriteIndex];
+
+	//스프라이트 출력을 위해 사이즈 저장
+	int iSpriteWidth = stpSprite->iWidth;
+	int iSpriteHeight = stpSprite->iHeight;
+	int iCountX, iCountY;
+
+	iSpriteWidth = iSpriteWidth * iDrawLen / 100;
+
+	DWORD* dwpDest = (DWORD*)bypDest;
+	DWORD* dwpSprite = (DWORD*)(stpSprite->bypImage);
+
+	//출력 중점 처리 
+	iDrawX = iDrawX - stpSprite->iCenterPointX;
+	iDrawY = iDrawY - stpSprite->iCenterPointY;
+
+	//상단에 대한 스프라이트 출력 위치 계산 (상단 클리핑)
+	if (0 > iDrawY)
+	{
+		iSpriteHeight = iSpriteHeight - (-iDrawY);
+		dwpSprite = (DWORD*)(stpSprite->bypImage + stpSprite->iPitch * (-iDrawY));
+
+		//위쪽이 짤리는 경우이므로 스프라이트 시작 위치를 아래로 내려준다 
+		iDrawY = 0;
+	}
+
+	//하단에 사이즈 계산 (하단 클리핑)
+	if (iDestHeight <= iDrawY + stpSprite->iHeight)
+		iSpriteHeight -= ((iDrawY + stpSprite->iHeight) - iDestHeight);
+
+
+	//왼쪽 출력 위치 계산 (좌측 클리핑)
+	if (0 > iDrawX)
+	{
+		iSpriteWidth = iSpriteWidth - (-iDrawX);
+		dwpSprite = dwpSprite + (-iDrawX);
+
+		//왼쪽이 족므 잘리므로 출력 시작 위치를 오른쪽으로 민다
+		iDrawX = 0;
+	}
+
+	//오른쪽 출력 위치 계산 (우측 클리핑)
+	if (iDestWidth <= iDrawX + stpSprite->iWidth)
+		iSpriteWidth -= ((iDrawX + stpSprite->iWidth) - iDestWidth);
+
+	//찍을 그림이 없다면 종료한다
+	if (iSpriteWidth <= 0 || iSpriteHeight <= 0)
+		return;
+
+	//화면에 찍을 위치로 이동한다 
+	dwpDest = (DWORD*)(((BYTE*)(dwpDest + iDrawX) + (iDrawY * iDestPitch)));
+
+	BYTE* bypDestOrigin = (BYTE*)dwpDest;
+	BYTE* bypSpriteOrigin = (BYTE*)dwpSprite;
+
+	//전체 크기를 돌면서 투명색 처리를 한다
+	int	R1, G1, B1;
+	int R2, G2, B2;
+	for (iCountY = 0; iSpriteHeight > iCountY; iCountY++)
+	{
+		for (iCountX = 0; iSpriteWidth > iCountX; iCountX++)
+		{
+			if (m_dwColorKey != (*dwpSprite & 0x00ffffff))
+			{
+				R1 = (*dwpDest & 0x00ff0000) >> 16;
+				G1 = (*dwpDest & 0x0000ff00) >> 8;
+				B1 = (*dwpDest & 0x000000ff) >> 0;
+
+				R2 = (*dwpSprite & 0x00ff0000) >> 16;
+				G2 = (*dwpSprite & 0x0000ff00) >> 8;
+				B2 = (*dwpSprite & 0x000000ff) >> 0;
+
+				*dwpDest = (R1 / 2 + R2 / 2 << 8) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
+
+				//*dwpDest = *dwpSprite;
+			}
+
+			dwpDest++;
+			dwpSprite++;
+		}
+
+		//다음줄로 이동, 화면과 스프라이트 모두
+		bypDestOrigin = bypDestOrigin + iDestPitch;
+		bypSpriteOrigin = bypSpriteOrigin + stpSprite->iPitch;
+
+		dwpDest = (DWORD*)bypDestOrigin;
+		dwpSprite = (DWORD*)bypSpriteOrigin;
+	}
+}
+
+void CSpriteDib::DrawSprite50(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch, int iDrawLen)
+{
+	//최대 스프라이트 개수를 초과하거나 로드되지 않는 스프라이트라면 무시
+	if (iSpriteIndex >= m_iMaxSprite)
+		return;
+
+	if (NULL == m_stpSprite[iSpriteIndex].bypImage)
+		return;
+
+	st_SPRITE* stpSprite = &m_stpSprite[iSpriteIndex];
+
+	//스프라이트 출력을 위해 사이즈 저장
+	int iSpriteWidth = stpSprite->iWidth;
+	int iSpriteHeight = stpSprite->iHeight;
+	int iCountX, iCountY;
+
+	iSpriteWidth = iSpriteWidth * iDrawLen / 100;
+
+	DWORD* dwpDest = (DWORD*)bypDest;
+	DWORD* dwpSprite = (DWORD*)(stpSprite->bypImage);
+
+	//출력 중점 처리 
+	iDrawX = iDrawX - stpSprite->iCenterPointX;
+	iDrawY = iDrawY - stpSprite->iCenterPointY;
+
+	//상단에 대한 스프라이트 출력 위치 계산 (상단 클리핑)
+	if (0 > iDrawY)
+	{
+		iSpriteHeight = iSpriteHeight - (-iDrawY);
+		dwpSprite = (DWORD*)(stpSprite->bypImage + stpSprite->iPitch * (-iDrawY));
+
+		//위쪽이 짤리는 경우이므로 스프라이트 시작 위치를 아래로 내려준다 
+		iDrawY = 0;
+	}
+
+	//하단에 사이즈 계산 (하단 클리핑)
+	if (iDestHeight <= iDrawY + stpSprite->iHeight)
+		iSpriteHeight -= ((iDrawY + stpSprite->iHeight) - iDestHeight);
+
+
+	//왼쪽 출력 위치 계산 (좌측 클리핑)
+	if (0 > iDrawX)
+	{
+		iSpriteWidth = iSpriteWidth - (-iDrawX);
+		dwpSprite = dwpSprite + (-iDrawX);
+
+		//왼쪽이 족므 잘리므로 출력 시작 위치를 오른쪽으로 민다
+		iDrawX = 0;
+	}
+
+	//오른쪽 출력 위치 계산 (우측 클리핑)
+	if (iDestWidth <= iDrawX + stpSprite->iWidth)
+		iSpriteWidth -= ((iDrawX + stpSprite->iWidth) - iDestWidth);
+
+	//찍을 그림이 없다면 종료한다
+	if (iSpriteWidth <= 0 || iSpriteHeight <= 0)
+		return;
+
+	//화면에 찍을 위치로 이동한다 
+	dwpDest = (DWORD*)(((BYTE*)(dwpDest + iDrawX) + (iDrawY * iDestPitch)));
+
+	BYTE* bypDestOrigin = (BYTE*)dwpDest;
+	BYTE* bypSpriteOrigin = (BYTE*)dwpSprite;
+
+	//전체 크기를 돌면서 투명색 처리를 한다
+	int	R1, G1, B1;
+	int R2, G2, B2;
+	for (iCountY = 0; iSpriteHeight > iCountY; iCountY++)
+	{
+		for (iCountX = 0; iSpriteWidth > iCountX; iCountX++)
+		{
+			if (m_dwColorKey != (*dwpSprite & 0x00ffffff))
+			{
+				R1 = (*dwpDest & 0x00ff0000) >> 16;
+				G1 = (*dwpDest & 0x0000ff00) >> 8;
+				B1 = (*dwpDest & 0x000000ff) >> 0;
+
+				R2 = (*dwpSprite & 0x00ff0000) >> 16;
+				G2 = (*dwpSprite & 0x0000ff00) >> 8;
+				B2 = (*dwpSprite & 0x000000ff) >> 0;
+
+				*dwpDest = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
+
+				//*dwpDest = *dwpSprite;
+			}
+
+	
+			dwpDest++;
+			dwpSprite++;
+		}
+
+		//다음줄로 이동, 화면과 스프라이트 모두
+		bypDestOrigin = bypDestOrigin + iDestPitch;
+		bypSpriteOrigin = bypSpriteOrigin + stpSprite->iPitch;
+
+		dwpDest = (DWORD*)bypDestOrigin;
+		dwpSprite = (DWORD*)bypSpriteOrigin;
+	}
 }
 
 void CSpriteDib::DrawImage(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch, int iDrawLen)

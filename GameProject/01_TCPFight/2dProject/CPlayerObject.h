@@ -29,7 +29,7 @@ public:
 	void SetActionAttack2();
 	void SetActionAttack3();
 
-	void SetActionMove();
+	void SetActionMove(int action);
 	void SetActionStand();
 	
 	void SetDirection(int _dir);

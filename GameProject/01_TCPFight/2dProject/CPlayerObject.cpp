@@ -1,16 +1,22 @@
 #include "CPlayerObject.h"
 #include "framework.h"
+#include "CSpriteDib.h"
+
+extern CSpriteDib g_cSprite;
 
 void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch)
 {
-	////그림자 출력 
-	//g_cSprite.DrawSprite50(eSHADOW, _iCurX, _iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
-	//
-	////플레이어 객체 출력
-	//g_cSprite.DrawSprite(GetSprite(), _iCurX, _iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
-	//
-	////hp 게이지 바 출력 
-	//g_cSprite.DrawSprite(eGUAGE_HP, _iCurX - 35, _iCurY + 9, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
+	//그림자 출력 
+	g_cSprite.DrawSprite50(eSHADOW, m_iCurX + 32, m_iCurY + 88, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	
+	//플레이어 객체 출력
+	if(m_iObjectID == 0)
+		g_cSprite.DrawMySprite(GetSprite(), m_iCurX, m_iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	else
+		g_cSprite.DrawSprite(GetSprite(), m_iCurX, m_iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	
+	//hp 게이지 바 출력 
+	g_cSprite.DrawSprite(eGUAGE_HP, m_iCurX + 30, m_iCurY + 100, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
 }
 
 //action
@@ -25,19 +31,19 @@ DWORD CPlayerObject::Run()
 
 void CPlayerObject::SetActionAttack1()
 {
-	m_dwActionOld = m_dwActionCur;
+	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK1;
 }
 
 void CPlayerObject::SetActionAttack2()
 {
-	m_dwActionOld = m_dwActionCur;
+	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK2;
 }
 
 void CPlayerObject::SetActionAttack3()
 {
-	m_dwActionOld = m_dwActionCur;
+	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK3;
 }
 
@@ -100,47 +106,157 @@ void CPlayerObject::InputActionProc()
 
 	//오른쪽으로 돌았으면 그 메세지만 보냄. 행동의 변화가있을때만
 
-	switch (m_dwActionCur)
+	switch (m_dwActionInput)
 	{
 	case dfACTION_MOVE_DD:
+		SetActionMove(dfACTION_MOVE_DD);
 		break;
 
 	case dfACTION_MOVE_LD:
+		SetDirection(dfDIR_LEFT);
+		SetActionMove(dfACTION_MOVE_LD);
 		break;
 
 	case dfACTION_MOVE_LL:
+		SetDirection(dfDIR_LEFT);
+		SetActionMove(dfACTION_MOVE_LL);
 		break;
 
 	case dfACTION_MOVE_LU:
+		SetDirection(dfDIR_LEFT);
+		SetActionMove(dfACTION_MOVE_LU);
 		break;
 
 	case dfACTION_MOVE_RD:
+		SetDirection(dfDIR_RIGHT);
+		SetActionMove(dfACTION_MOVE_RD);
 		break;
 
 	case dfACTION_MOVE_RR:
+		SetDirection(dfDIR_RIGHT);
+		SetActionMove(dfACTION_MOVE_RR);
 		break;
 
 	case dfACTION_MOVE_RU:
+		SetDirection(dfDIR_RIGHT);
+		SetActionMove(dfACTION_MOVE_RU);
 		break;
 
 	case dfACTION_MOVE_UU:
+		SetActionMove(dfACTION_MOVE_UU);
 		break;
 
 	case dfACTION_STAND:
+		SetActionStand();
+		break;
+
+	case dfACTION_ATTACK1:
+		SetActionAttack1();
+		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+		break;
+
+	case dfACTION_ATTACK2:
+		SetActionAttack2();
+		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+		break;
+
+	case dfACTION_ATTACK3:
+		SetActionAttack3();
+		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 		break;
 	}
 }
 
-void CPlayerObject::SetActionMove()
+void CPlayerObject::SetActionMove(int action)
 {
 	m_dwActionOld = m_dwActionCur;
-	m_dwActionCur = dfACTION_MOVE_LL;
+	m_dwActionCur = action;
+
+	switch (m_dwActionCur)
+	{
+	case dfACTION_MOVE_DD:
+		if (m_dwActionOld != dfACTION_MOVE_DD)
+		{
+		}
+		m_iCurY += 2;
+		break;
+
+	case dfACTION_MOVE_LD:
+		//방향이 다르면 무조건 스프라이트 처음부터
+		if (m_iDirOld != dfDIR_LEFT)
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+		//방향이 같다면 걷기중이 아니었다면 처음부터. 그 전동작이 stand였다면 처음부터 
+		if(m_dwActionOld == dfACTION_STAND)
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+
+		m_iCurX -= 3;
+		m_iCurY += 2;
+		break;
+
+	case dfACTION_MOVE_LL:
+		if (m_iDirOld != dfDIR_LEFT)
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+		if (m_dwActionOld == dfACTION_STAND)
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND); 
+		
+		m_iCurX -= 3;
+		break;
+
+	case dfACTION_MOVE_LU:
+		if (m_iDirOld != dfDIR_LEFT)
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+		if (m_dwActionOld == dfACTION_STAND)
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND); 
+		
+		m_iCurX -= 3;
+		m_iCurY -= 2; 
+		break;
+
+	case dfACTION_MOVE_RD:
+		if(m_iDirOld != dfDIR_RIGHT)
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+		if (m_dwActionOld == dfACTION_STAND)
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+		
+		m_iCurX += 3;
+		m_iCurY += 2; 
+		break;
+
+	case dfACTION_MOVE_RR:
+		if (m_iDirOld != dfDIR_RIGHT)
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+		if (m_dwActionOld == dfACTION_STAND)
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND); 
+		
+		m_iCurX += 3;
+		break;
+
+	case dfACTION_MOVE_RU:
+		if (m_iDirOld != dfDIR_RIGHT)
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+		if (m_dwActionOld == dfACTION_STAND)
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND); 
+		
+		m_iCurX += 3;
+		m_iCurY -= 2; 
+		break;
+
+	case dfACTION_MOVE_UU:
+		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+		m_iCurY -= 2;
+		break;
+	}
 }
 
 void CPlayerObject::SetActionStand()
 {
 	m_dwActionOld = m_dwActionCur;
 	m_dwActionCur = dfACTION_STAND;
+
+	if (m_iDirCur == dfDIR_LEFT)
+		SetSprite(ePLAYER_STAND_L01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+	else if (m_iDirCur == dfDIR_RIGHT)
+		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 }
 
 void CPlayerObject::SetDirection(int _dir)
@@ -148,11 +264,11 @@ void CPlayerObject::SetDirection(int _dir)
 	m_iDirOld = m_iDirCur;
 	
 	//왼쪽
-	if (_dir == 0)
-		m_iDirCur = 0;
+	if (_dir == dfDIR_LEFT)
+		m_iDirCur = dfDIR_LEFT;
 	//오른쪽
-	else if (_dir == 1)
-		m_iDirCur = 1;
+	else if (_dir == dfDIR_RIGHT)
+		m_iDirCur = dfDIR_RIGHT;
 }
 
 void CPlayerObject::SetHP(char _hp)

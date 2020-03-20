@@ -17,6 +17,11 @@ void CBaseObject::SetPosition(int _CurX, int _CurY)
 	m_iCurY = _CurY;
 }
 
+void CBaseObject::SetObjectID(int _ID)
+{
+	m_iObjectID = _ID;
+}
+
 CBaseObject::CBaseObject()
 {
 }

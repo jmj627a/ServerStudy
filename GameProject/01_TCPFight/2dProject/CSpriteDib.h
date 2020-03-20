@@ -38,6 +38,12 @@ public:
 	void DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth,
 		int iDestHeight, int iDestPitch, int iDrawLen = 100);
 
+	void DrawMySprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth,
+		int iDestHeight, int iDestPitch, int iDrawLen = 100);
+
+	void DrawSprite50(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth,
+		int iDestHeight, int iDestPitch, int iDrawLen = 100);
+
 	//특정 메모리 위치에 이미지를 출력한다 (클리핑 처리)
 	void DrawImage(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth,
 		int iDestHeight, int iDestPitch, int iDrawLen = 100);

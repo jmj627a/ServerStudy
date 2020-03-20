@@ -31,7 +31,8 @@ public:
 
 	void SetSprite(int iSpriteStart, int iSpriteMax, int iFrameDelay);
 	void SetPosition(int _CurX, int _CurY);
-	
+	void SetObjectID(int _ID); //나중에 서버한테 받을 부분
+
 	int IsEndFrame(void);
 	void NextFrame(void);
 

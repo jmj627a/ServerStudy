@@ -28,45 +28,29 @@ void KeyProcess();
 //void Update_Game(void);
 void Update();
 void InitialGame();
+void Action();
+void Draw();
 
-CSpriteDib g_cSprite(81 , 0x00ffffff);
+
+CSpriteDib g_cSprite(90 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
 HWND hWnd;
 
 CBaseObject* g_pPlayerObject;
 
-std::list<CBaseObject*> objectList;
+//std::list<CBaseObject*> objectList;
+CBaseObject* objectList[100];
 
 bool g_bActiveApp = true; //지금 활성화 됐는지 안됐는지
 
 void Update()
 {
-	//출력버퍼 포인터 및 정보를 얻음
-	BYTE *bypDest = g_cScreenDib.GetDibBuffer();
-	int iDestWidth = g_cScreenDib.GetWidth();
-	int iDestHeight = g_cScreenDib.GetHeight();
-	int iDestPitch= g_cScreenDib.GetPitch();
-
-
-	//1. 맵 화면 출력
-	g_cSprite.DrawImage(0, 0, 0, bypDest, iDestWidth, iDestHeight, iDestPitch);
-
-	//2. 캐릭터 출력
-
-	for (int i = 0; i < objectList.size; ++i)
-	{
-		//
-	}
-	
-	//버퍼 포인터에 그림을 그린다
-	//스트라이프 출력부
-
-
 	if (g_bActiveApp)
 		KeyProcess();
 
-	//Action;
-	//Draw();
+
+	Action();
+	Draw();
 
 
 	//screen dib을 화면으로 플립
@@ -75,6 +59,49 @@ void Update()
 
 	Sleep(0);
 }
+
+void Action()
+{
+	for (int i = 0; i < 100; ++i)
+	{
+		if (objectList[i] == NULL)
+			continue;
+		objectList[i]->Run();
+	}
+}
+
+void Draw()
+{
+	//출력버퍼 포인터 및 정보를 얻음
+	BYTE* bypDest = g_cScreenDib.GetDibBuffer();
+	int iDestWidth = g_cScreenDib.GetWidth();
+	int iDestHeight = g_cScreenDib.GetHeight();
+	int iDestPitch = g_cScreenDib.GetPitch();
+
+
+	//1. 맵 화면 출력
+	g_cSprite.DrawImage(0, 0, 0, bypDest, iDestWidth, iDestHeight, iDestPitch);
+
+	//2. 캐릭터 출력
+	for (int i = 0; i < 100; ++i)
+	{
+		if (objectList[i] == NULL)
+			continue;
+
+		objectList[i]->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
+	}
+
+	//list<CBaseObject*>::iterator itr;
+	//for (itr = objectList.begin(); itr != objectList.end(); ++itr)
+	//{
+	//	itr->;
+	//}
+
+	//버퍼 포인터에 그림을 그린다
+	//스트라이프 출력부
+
+}
+
 
 //void Update_Game(void)
 //{
@@ -93,10 +120,62 @@ void KeyProcess()
 	if (g_pPlayerObject == NULL)
 		return;
 
-	//if ((GetAsyncKeyState(VK_UP) && GetAsyncKeyState(VK_LEFT)))
-	//{
-	//	g_pPlayerObject->SetSprite()
-	//}
+
+	if (GetAsyncKeyState(VK_LEFT))
+		TextOut(GetDC(hWnd), 1000, 100, L"VK_LEFT ", 8);
+	if (GetAsyncKeyState(VK_RIGHT))
+		TextOut(GetDC(hWnd), 1000, 100, L"VK_RIGHT", 8);
+	if (GetAsyncKeyState(VK_UP))
+		TextOut(GetDC(hWnd), 1000, 100, L"VK_UP   ", 8);
+	if (GetAsyncKeyState(VK_DOWN))
+		TextOut(GetDC(hWnd), 1000, 100, L"VK_DOWN ", 8);
+
+	if (GetAsyncKeyState(VK_LEFT) && GetAsyncKeyState(VK_UP))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_LU);
+	}
+	else if (GetAsyncKeyState(VK_LEFT) && GetAsyncKeyState(VK_DOWN))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_LD);
+	}
+	else if (GetAsyncKeyState(VK_LEFT))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_LL);
+	}
+	else if (GetAsyncKeyState(VK_RIGHT) && GetAsyncKeyState(VK_UP))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_RU);
+	}
+	else if (GetAsyncKeyState(VK_RIGHT) && GetAsyncKeyState(VK_DOWN))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_RD);
+	}
+	else if (GetAsyncKeyState(VK_RIGHT))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_RR);
+	}
+	else if (GetAsyncKeyState(VK_UP))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_UU);
+	}
+	else if (GetAsyncKeyState(VK_DOWN))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_MOVE_DD);
+	}
+	else if (GetAsyncKeyState('Q'))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_ATTACK1);
+	}
+	else if (GetAsyncKeyState('W'))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_ATTACK2);
+	}
+	else if (GetAsyncKeyState('E'))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_ATTACK3);
+	}
+	else
+		g_pPlayerObject->ActionInput(dfACTION_STAND);
 }
 
 void InitialGame()
@@ -107,10 +186,16 @@ void InitialGame()
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L01, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L02, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L03, _T("Sprite_Data\\Stand_L_03.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(ePLAYER_STAND_L04, _T("Sprite_Data\\Stand_L_03.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(ePLAYER_STAND_L05, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(ePLAYER_STAND_L_MAX, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
 
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R01, _T("Sprite_Data\\Stand_R_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R02, _T("Sprite_Data\\Stand_R_02.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R03, _T("Sprite_Data\\Stand_R_03.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(ePLAYER_STAND_R04, _T("Sprite_Data\\Stand_R_03.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(ePLAYER_STAND_R05, _T("Sprite_Data\\Stand_R_02.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(ePLAYER_STAND_R_MAX, _T("Sprite_Data\\Stand_R_01.bmp"), 71, 90);
 
 	g_cSprite.LoadDibSprite(ePLAYER_ATTACK1_L01, _T("Sprite_Data\\Attack1_L_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_ATTACK1_L02, _T("Sprite_Data\\Attack1_L_02.bmp"), 71, 90);
@@ -182,20 +267,39 @@ void InitialGame()
 
 
 	g_pPlayerObject = new CPlayerObject();
-	g_pPlayerObject->SetPosition(200, 100);
+	g_pPlayerObject->SetPosition(400, 100);
 	g_pPlayerObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+	g_pPlayerObject-> SetObjectID(0);
 
-	objectList.push_back(g_pPlayerObject);
-	
+	//objectList.push_back(g_pPlayerObject);
+	for (int i = 0; i < 100; ++i)
+	{
+		if (objectList[i] != NULL)
+			continue;
+
+		objectList[i] = g_pPlayerObject;
+		break;
+	}
+
+
 	//더미 플레이어 생성 
 	CBaseObject* pObject;
 	for (int i = 0; i < 3; ++i)
 	{
 		pObject = new CPlayerObject();
-		pObject->SetPosition(200 + (i * 20), 100 + (i * 20));
+		pObject->SetPosition(150 + (i * 100), 150 + (i * 100));
 		pObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+		pObject->SetObjectID(1);
 
-		objectList.push_back(pObject);
+		//objectList.push_back(pObject);
+		for (int j = 0; j < 100; ++j)
+		{
+			if (objectList[j] != NULL)
+				continue;
+	
+			objectList[j] = pObject;
+			break;
+		}
 	}
 
 }
@@ -229,24 +333,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2DPROJECT));
+    //HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2DPROJECT));
 
     MSG msg;
 
     // 기본 메시지 루프입니다:
-    while (GetMessage(&msg, nullptr, 0, 0))
+    while (true)
     {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
         {
-			Update();
+			if (msg.message == WM_QUIT)
+				break;
+			//Update();
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 		else
-		{
-			//Update();
-			//Update_Game();
-		}
+			Update();
     }
 
     return (int) msg.wParam;
@@ -301,10 +404,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		SetTimer(hWnd, 1, 100, NULL);
 		break;
 	case WM_TIMER:
-
+		break;
+	case WM_MOUSEMOVE:
 		break;
 	case WM_ACTIVATE:
-		if (LOWORD(wParam) == WA_INACTIVE)
+		if (LOWORD(wParam) == WA_ACTIVE)
 			g_bActiveApp = true;
 		else
 			g_bActiveApp = false;
