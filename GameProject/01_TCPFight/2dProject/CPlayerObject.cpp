@@ -7,7 +7,7 @@ extern CSpriteDib g_cSprite;
 void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch)
 {
 	//그림자 출력 
-	g_cSprite.DrawSprite50(eSHADOW, m_iCurX + 32, m_iCurY + 88, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	g_cSprite.DrawSprite50(eSHADOW, m_iCurX, m_iCurY + 3, bypDest, iDestWidth, iDestHeight, iDestPitch);
 	
 	//플레이어 객체 출력
 	if(m_iObjectID == 0)
@@ -16,7 +16,7 @@ void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int i
 		g_cSprite.DrawSprite(GetSprite(), m_iCurX, m_iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
 	
 	//hp 게이지 바 출력 
-	g_cSprite.DrawSprite(eGUAGE_HP, m_iCurX + 30, m_iCurY + 100, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
+	g_cSprite.DrawSprite(eGUAGE_HP, m_iCurX - 30, m_iCurY + 10, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
 }
 
 //action
@@ -33,18 +33,33 @@ void CPlayerObject::SetActionAttack1()
 {
 	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK1;
+
+	if (m_iDirCur == dfDIR_LEFT)
+		SetSprite(ePLAYER_ATTACK1_L01, ePLAYER_ATTACK1_L_MAX, dfDELAY_ATTACK1);
+	else
+		SetSprite(ePLAYER_ATTACK1_R01, ePLAYER_ATTACK1_R_MAX, dfDELAY_ATTACK1);
 }
 
 void CPlayerObject::SetActionAttack2()
 {
 	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK2;
+
+	if (m_iDirCur == dfDIR_LEFT)
+		SetSprite(ePLAYER_ATTACK2_L01, ePLAYER_ATTACK2_L_MAX, dfDELAY_ATTACK2);
+	else
+		SetSprite(ePLAYER_ATTACK2_R01, ePLAYER_ATTACK2_R_MAX, dfDELAY_ATTACK2);
 }
 
 void CPlayerObject::SetActionAttack3()
 {
 	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK3;
+
+	if (m_iDirCur == dfDIR_LEFT)
+		SetSprite(ePLAYER_ATTACK3_L01, ePLAYER_ATTACK3_L_MAX, dfDELAY_ATTACK3);
+	else
+		SetSprite(ePLAYER_ATTACK3_R01, ePLAYER_ATTACK3_R_MAX, dfDELAY_ATTACK3);
 }
 
 CPlayerObject::CPlayerObject()
@@ -152,17 +167,14 @@ void CPlayerObject::InputActionProc()
 
 	case dfACTION_ATTACK1:
 		SetActionAttack1();
-		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 		break;
 
 	case dfACTION_ATTACK2:
 		SetActionAttack2();
-		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 		break;
 
 	case dfACTION_ATTACK3:
 		SetActionAttack3();
-		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 		break;
 	}
 }
@@ -175,8 +187,13 @@ void CPlayerObject::SetActionMove(int action)
 	switch (m_dwActionCur)
 	{
 	case dfACTION_MOVE_DD:
-		if (m_dwActionOld != dfACTION_MOVE_DD)
+		//이전 행동이 멈춘거면 이동
+		if (m_dwActionOld == dfACTION_STAND)
 		{
+			if(m_iDirCur == dfDIR_LEFT)
+				SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
+			else
+				SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		}
 		m_iCurY += 2;
 		break;
@@ -184,10 +201,10 @@ void CPlayerObject::SetActionMove(int action)
 	case dfACTION_MOVE_LD:
 		//방향이 다르면 무조건 스프라이트 처음부터
 		if (m_iDirOld != dfDIR_LEFT)
-			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		//방향이 같다면 걷기중이 아니었다면 처음부터. 그 전동작이 stand였다면 처음부터 
 		if(m_dwActionOld == dfACTION_STAND)
-			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 
 		m_iCurX -= 3;
 		m_iCurY += 2;
@@ -195,18 +212,18 @@ void CPlayerObject::SetActionMove(int action)
 
 	case dfACTION_MOVE_LL:
 		if (m_iDirOld != dfDIR_LEFT)
-			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
-			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND); 
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		
 		m_iCurX -= 3;
 		break;
 
 	case dfACTION_MOVE_LU:
 		if (m_iDirOld != dfDIR_LEFT)
-			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
-			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_STAND); 
+			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE); 
 		
 		m_iCurX -= 3;
 		m_iCurY -= 2; 
@@ -214,9 +231,9 @@ void CPlayerObject::SetActionMove(int action)
 
 	case dfACTION_MOVE_RD:
 		if(m_iDirOld != dfDIR_RIGHT)
-			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
-			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		
 		m_iCurX += 3;
 		m_iCurY += 2; 
@@ -224,25 +241,31 @@ void CPlayerObject::SetActionMove(int action)
 
 	case dfACTION_MOVE_RR:
 		if (m_iDirOld != dfDIR_RIGHT)
-			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
-			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND); 
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE); 
 		
 		m_iCurX += 3;
 		break;
 
 	case dfACTION_MOVE_RU:
 		if (m_iDirOld != dfDIR_RIGHT)
-			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND);
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
-			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_STAND); 
+			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE); 
 		
 		m_iCurX += 3;
 		m_iCurY -= 2; 
 		break;
 
 	case dfACTION_MOVE_UU:
-		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+		if (m_dwActionOld == dfACTION_STAND)
+		{
+			if (m_iDirCur == dfDIR_LEFT)
+				SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
+			else
+				SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
+		}
 		m_iCurY -= 2;
 		break;
 	}
@@ -253,8 +276,11 @@ void CPlayerObject::SetActionStand()
 	m_dwActionOld = m_dwActionCur;
 	m_dwActionCur = dfACTION_STAND;
 
+	if (m_dwActionOld == dfACTION_STAND)
+		return;
+
 	if (m_iDirCur == dfDIR_LEFT)
-		SetSprite(ePLAYER_STAND_L01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+		SetSprite(ePLAYER_STAND_L01, ePLAYER_STAND_L_MAX, dfDELAY_STAND);
 	else if (m_iDirCur == dfDIR_RIGHT)
 		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 }

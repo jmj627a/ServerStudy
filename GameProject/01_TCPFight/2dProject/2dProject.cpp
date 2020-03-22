@@ -2,6 +2,8 @@
 //
 
 #include <list>
+#include <Windows.h>
+
 #include "framework.h"
 #include "2dProject.h"
 #include "CScreenDib.h"
@@ -9,7 +11,10 @@
 #include "CBaseObject.h"
 #include "CPlayerObject.h"
 
+#pragma comment (lib, "winmm")
+
 #define MAX_LOADSTRING 100
+
 
 using namespace std;
 
@@ -30,7 +35,7 @@ void Update();
 void InitialGame();
 void Action();
 void Draw();
-
+void objectSort();
 
 CSpriteDib g_cSprite(90 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
@@ -45,7 +50,7 @@ bool g_bActiveApp = true; //지금 활성화 됐는지 안됐는지
 
 void Update()
 {
-	if (g_bActiveApp)
+	if (g_bActiveApp == true)
 		KeyProcess();
 
 
@@ -77,10 +82,14 @@ void Draw()
 	int iDestWidth = g_cScreenDib.GetWidth();
 	int iDestHeight = g_cScreenDib.GetHeight();
 	int iDestPitch = g_cScreenDib.GetPitch();
+	objectSort();
 
 
 	//1. 맵 화면 출력
 	g_cSprite.DrawImage(0, 0, 0, bypDest, iDestWidth, iDestHeight, iDestPitch);
+
+
+
 
 	//2. 캐릭터 출력
 	for (int i = 0; i < 100; ++i)
@@ -90,6 +99,21 @@ void Draw()
 
 		objectList[i]->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
 	}
+
+	static wchar_t szFrame[15];
+	static int iFrame = 0;
+	static DWORD dwTick = timeGetTime();
+
+	iFrame++;
+
+	if (dwTick + 1000 < timeGetTime())
+	{
+		wsprintf(szFrame, L"RFrame : %d   ", iFrame);
+		iFrame = 0;
+		dwTick = timeGetTime();
+	}
+
+	TextOut(GetDC(hWnd), 1000, 500, szFrame, wcslen(szFrame));
 
 	//list<CBaseObject*>::iterator itr;
 	//for (itr = objectList.begin(); itr != objectList.end(); ++itr)
@@ -101,19 +125,6 @@ void Draw()
 	//스트라이프 출력부
 
 }
-
-
-//void Update_Game(void)
-//{
-//	if (g_bActiveApp)
-//		KeyProcess();
-//
-//	//Action;
-//	//Draw();
-//
-//	g_cScreenDib.Flip(hWnd);
-//	Sleep(0);
-//}
 
 void KeyProcess()
 {
@@ -130,7 +141,19 @@ void KeyProcess()
 	if (GetAsyncKeyState(VK_DOWN))
 		TextOut(GetDC(hWnd), 1000, 100, L"VK_DOWN ", 8);
 
-	if (GetAsyncKeyState(VK_LEFT) && GetAsyncKeyState(VK_UP))
+	if (GetAsyncKeyState('Q'))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_ATTACK1);
+	}
+	else if (GetAsyncKeyState('W'))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_ATTACK2);
+	}
+	else if (GetAsyncKeyState('E'))
+	{
+		g_pPlayerObject->ActionInput(dfACTION_ATTACK3);
+	}
+	else if (GetAsyncKeyState(VK_LEFT) && GetAsyncKeyState(VK_UP))
 	{
 		g_pPlayerObject->ActionInput(dfACTION_MOVE_LU);
 	}
@@ -161,18 +184,6 @@ void KeyProcess()
 	else if (GetAsyncKeyState(VK_DOWN))
 	{
 		g_pPlayerObject->ActionInput(dfACTION_MOVE_DD);
-	}
-	else if (GetAsyncKeyState('Q'))
-	{
-		g_pPlayerObject->ActionInput(dfACTION_ATTACK1);
-	}
-	else if (GetAsyncKeyState('W'))
-	{
-		g_pPlayerObject->ActionInput(dfACTION_ATTACK2);
-	}
-	else if (GetAsyncKeyState('E'))
-	{
-		g_pPlayerObject->ActionInput(dfACTION_ATTACK3);
 	}
 	else
 		g_pPlayerObject->ActionInput(dfACTION_STAND);
@@ -262,8 +273,8 @@ void InitialGame()
 	g_cSprite.LoadDibSprite(eEFFECT_SPARK_03, _T("Sprite_Data\\xSpark_3.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(eEFFECT_SPARK_04, _T("Sprite_Data\\xSpark_4.bmp"), 71, 90);
 
-	g_cSprite.LoadDibSprite(eGUAGE_HP, _T("Sprite_Data\\HPGuage.bmp"), 71, 90);
-	g_cSprite.LoadDibSprite(eSHADOW, _T("Sprite_Data\\Shadow.bmp"), 71, 90);
+	g_cSprite.LoadDibSprite(eGUAGE_HP, _T("Sprite_Data\\HPGuage.bmp"), 0, 0);
+	g_cSprite.LoadDibSprite(eSHADOW, _T("Sprite_Data\\Shadow.bmp"), 32, 4);
 
 
 	g_pPlayerObject = new CPlayerObject();
@@ -304,7 +315,23 @@ void InitialGame()
 
 }
 
-
+void objectSort()
+{
+	for (int i = 0; i < 100; ++i)
+	{
+		if (objectList[i] == NULL) continue;
+		for (int j = 0; j < 100; ++j)
+		{
+			if (objectList[j] == NULL) continue;
+			if (objectList[i]->GetCurY() < objectList[j]->GetCurY())
+			{
+				CBaseObject* temp = objectList[i];
+				objectList[i] = objectList[j];
+				objectList[j] = temp;
+			}
+		}
+	}
+}
 
 
 
@@ -317,6 +344,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: 여기에 코드를 입력합니다.
+	timeBeginPeriod(1);
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -410,7 +438,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_ACTIVE)
 			g_bActiveApp = true;
-		else
+		else if (LOWORD(wParam) == WA_CLICKACTIVE)
+			g_bActiveApp = true;
+		else if(LOWORD(wParam) == WA_INACTIVE)
 			g_bActiveApp = false;
 
 		break;

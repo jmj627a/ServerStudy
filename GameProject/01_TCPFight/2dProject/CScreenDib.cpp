@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include "CScreenDib.h"
 
+//#pragma comment (lib, "winmm")
+
 CScreenDib::CScreenDib(int iWidth, int iHeight, int iColorBit)
 {
 	memset(&m_stDibInfo, 0, sizeof(BITMAPINFO));
@@ -84,7 +86,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 
 	//화면에 프레임 표시 부분, 필요에 따라 사용
 	{
-		timeBeginPeriod(1);
+		//timeBeginPeriod(1);
 
 		static int cur = timeGetTime();
 		static int old = timeGetTime();
@@ -99,7 +101,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 		}
 		old = cur + (20 - deltaTime);
 
-		static wchar_t szFrame[5];
+		static wchar_t szFrame[15];
 		static int iFrame = 0;
 		static DWORD dwTick = timeGetTime();
 
@@ -107,11 +109,12 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 
 		if (dwTick + 1000 < timeGetTime())
 		{
-			wsprintf(szFrame, L"%d", iFrame);
+			wsprintf(szFrame, L"TFrame : %d   ", iFrame);
 			iFrame = 0;
 			dwTick = timeGetTime();
 		}
 
+		TextOut(hDC, 1000, 470, szFrame, wcslen(szFrame));
 		TextOut(hDC, 0, 0, szFrame, wcslen(szFrame));
 	}
 	ReleaseDC(hWnd, hDC);

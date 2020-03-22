@@ -112,8 +112,13 @@ void CSpriteDib::ReleaseSprite(int iSpriteIndex)
 	}
 }
 
+extern HWND hWnd;
 void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch, int iDrawLen)
 {
+	//TCHAR str[100];
+	//wsprintf(str, TEXT("SpriteIndex : %d    "), iSpriteIndex);
+	//TextOut(GetDC(hWnd), 1000, 300, str, wcslen(str));
+
 	//최대 스프라이트 개수를 초과하거나 로드되지 않는 스프라이트라면 무시
 	if (iSpriteIndex >= m_iMaxSprite)
 		return;
@@ -281,7 +286,7 @@ void CSpriteDib::DrawMySprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* by
 				G2 = (*dwpSprite & 0x0000ff00) >> 8;
 				B2 = (*dwpSprite & 0x000000ff) >> 0;
 
-				*dwpDest = (R1 / 2 + R2 / 2 << 8) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
+				*dwpDest = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
 
 				//*dwpDest = *dwpSprite;
 			}
