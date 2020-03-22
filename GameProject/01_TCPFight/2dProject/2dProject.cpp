@@ -37,14 +37,19 @@ void Action();
 void Draw();
 void objectSort();
 
+bool PosYComp(const CBaseObject* lhs, const CBaseObject* rhs) {
+
+	return lhs->GetCurY() < rhs->GetCurY();
+
+}
 CSpriteDib g_cSprite(90 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
 HWND hWnd;
 
 CBaseObject* g_pPlayerObject;
 
-//std::list<CBaseObject*> objectList;
-CBaseObject* objectList[100];
+std::list<CBaseObject*> objectList;
+//CBaseObject* objectList[100];
 
 bool g_bActiveApp = true; //지금 활성화 됐는지 안됐는지
 
@@ -67,12 +72,17 @@ void Update()
 
 void Action()
 {
-	for (int i = 0; i < 100; ++i)
+	list<CBaseObject*>::iterator iter;
+	for (iter = objectList.begin(); iter != objectList.end(); ++iter)
 	{
-		if (objectList[i] == NULL)
-			continue;
-		objectList[i]->Run();
+		(*iter)->Run();
 	}
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	if (objectList[i] == NULL)
+	//		continue;
+	//	objectList[i]->Run();
+	//}
 }
 
 void Draw()
@@ -90,19 +100,24 @@ void Draw()
 
 
 
-
-	//2. 캐릭터 출력
-	for (int i = 0; i < 100; ++i)
-	{
-		if (objectList[i] == NULL)
-			continue;
-
-		objectList[i]->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
-	}
-
 	static wchar_t szFrame[15];
 	static int iFrame = 0;
 	static DWORD dwTick = timeGetTime();
+
+
+	//2. 캐릭터 출력
+	list<CBaseObject*>::iterator iter;
+	for (iter = objectList.begin(); iter != objectList.end(); ++iter) 
+	{
+		(*iter)->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
+	}
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	if (objectList[i] == NULL)
+	//		continue;
+	//
+	//	objectList[i]->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
+	//}
 
 	iFrame++;
 
@@ -282,15 +297,15 @@ void InitialGame()
 	g_pPlayerObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 	g_pPlayerObject-> SetObjectID(0);
 
-	//objectList.push_back(g_pPlayerObject);
-	for (int i = 0; i < 100; ++i)
-	{
-		if (objectList[i] != NULL)
-			continue;
-
-		objectList[i] = g_pPlayerObject;
-		break;
-	}
+	objectList.push_back(g_pPlayerObject);
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	if (objectList[i] != NULL)
+	//		continue;
+	//
+	//	objectList[i] = g_pPlayerObject;
+	//	break;
+	//}
 
 
 	//더미 플레이어 생성 
@@ -302,35 +317,36 @@ void InitialGame()
 		pObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 		pObject->SetObjectID(1);
 
-		//objectList.push_back(pObject);
-		for (int j = 0; j < 100; ++j)
-		{
-			if (objectList[j] != NULL)
-				continue;
-	
-			objectList[j] = pObject;
-			break;
-		}
+		objectList.push_back(pObject);
+		//for (int j = 0; j < 100; ++j)
+		//{
+		//	if (objectList[j] != NULL)
+		//		continue;
+		//
+		//	objectList[j] = pObject;
+		//	break;
+		//}
 	}
 
 }
 
 void objectSort()
 {
-	for (int i = 0; i < 100; ++i)
-	{
-		if (objectList[i] == NULL) continue;
-		for (int j = 0; j < 100; ++j)
-		{
-			if (objectList[j] == NULL) continue;
-			if (objectList[i]->GetCurY() < objectList[j]->GetCurY())
-			{
-				CBaseObject* temp = objectList[i];
-				objectList[i] = objectList[j];
-				objectList[j] = temp;
-			}
-		}
-	}
+	objectList.sort(PosYComp);
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	if (objectList[i] == NULL) continue;
+	//	for (int j = 0; j < 100; ++j)
+	//	{
+	//		if (objectList[j] == NULL) continue;
+	//		if (objectList[i]->GetCurY() < objectList[j]->GetCurY())
+	//		{
+	//			CBaseObject* temp = objectList[i];
+	//			objectList[i] = objectList[j];
+	//			objectList[j] = temp;
+	//		}
+	//	}
+	//}
 }
 
 

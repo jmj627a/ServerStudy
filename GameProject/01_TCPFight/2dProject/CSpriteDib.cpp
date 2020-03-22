@@ -286,7 +286,8 @@ void CSpriteDib::DrawMySprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* by
 				G2 = (*dwpSprite & 0x0000ff00) >> 8;
 				B2 = (*dwpSprite & 0x000000ff) >> 0;
 
-				*dwpDest = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
+				//*dwpDest = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 16) | (B1 / 2 + B2 / 2);
+				*dwpDest = (R2<<16) | (G2/2<<8) | (B2);
 
 				//*dwpDest = *dwpSprite;
 			}
@@ -386,7 +387,6 @@ void CSpriteDib::DrawSprite50(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* by
 				B2 = (*dwpSprite & 0x000000ff) >> 0;
 
 				*dwpDest = (R1 / 2 + R2 / 2 << 16) | (G1 / 2 + G2 / 2 << 8) | (B1 / 2 + B2 / 2);
-
 				//*dwpDest = *dwpSprite;
 			}
 

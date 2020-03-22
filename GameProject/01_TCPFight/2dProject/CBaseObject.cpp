@@ -44,7 +44,7 @@ int CBaseObject::GetCurX(void)
 	return m_iCurX;
 }
 
-int CBaseObject::GetCurY(void)
+int CBaseObject::GetCurY(void) const
 {
 	return m_iCurY;
 }

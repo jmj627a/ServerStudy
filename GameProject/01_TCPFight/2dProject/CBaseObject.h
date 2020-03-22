@@ -25,7 +25,7 @@ public:
 
 	void ActionInput(DWORD dwAction);
 	int GetCurX(void);
-	int GetCurY(void);
+	int GetCurY(void) const ;
 	int GetObjectID(void);
 	int GetSprite(void);
 
@@ -38,7 +38,6 @@ public:
 
 	virtual void Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch);
 	virtual DWORD Run();
-
 
 };
 
