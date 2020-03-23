@@ -38,9 +38,7 @@ void Draw();
 void objectSort();
 
 bool PosYComp(const CBaseObject* lhs, const CBaseObject* rhs) {
-
 	return lhs->GetCurY() < rhs->GetCurY();
-
 }
 CSpriteDib g_cSprite(90 , 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
@@ -49,7 +47,6 @@ HWND hWnd;
 CBaseObject* g_pPlayerObject;
 
 std::list<CBaseObject*> objectList;
-//CBaseObject* objectList[100];
 
 bool g_bActiveApp = true; //지금 활성화 됐는지 안됐는지
 
@@ -58,10 +55,8 @@ void Update()
 	if (g_bActiveApp == true)
 		KeyProcess();
 
-
 	Action();
 	Draw();
-
 
 	//screen dib을 화면으로 플립
 	//dib버퍼의 내용을 화면으로 출력
@@ -77,12 +72,6 @@ void Action()
 	{
 		(*iter)->Run();
 	}
-	//for (int i = 0; i < 100; ++i)
-	//{
-	//	if (objectList[i] == NULL)
-	//		continue;
-	//	objectList[i]->Run();
-	//}
 }
 
 void Draw()
@@ -111,13 +100,6 @@ void Draw()
 	{
 		(*iter)->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
 	}
-	//for (int i = 0; i < 100; ++i)
-	//{
-	//	if (objectList[i] == NULL)
-	//		continue;
-	//
-	//	objectList[i]->Render(bypDest, iDestWidth, iDestHeight, iDestPitch);
-	//}
 
 	iFrame++;
 
@@ -128,13 +110,7 @@ void Draw()
 		dwTick = timeGetTime();
 	}
 
-	TextOut(GetDC(hWnd), 1000, 500, szFrame, wcslen(szFrame));
-
-	//list<CBaseObject*>::iterator itr;
-	//for (itr = objectList.begin(); itr != objectList.end(); ++itr)
-	//{
-	//	itr->;
-	//}
+	TextOut(GetDC(hWnd), 700, 500, szFrame, wcslen(szFrame));
 
 	//버퍼 포인터에 그림을 그린다
 	//스트라이프 출력부
@@ -145,16 +121,6 @@ void KeyProcess()
 {
 	if (g_pPlayerObject == NULL)
 		return;
-
-
-	if (GetAsyncKeyState(VK_LEFT))
-		TextOut(GetDC(hWnd), 1000, 100, L"VK_LEFT ", 8);
-	if (GetAsyncKeyState(VK_RIGHT))
-		TextOut(GetDC(hWnd), 1000, 100, L"VK_RIGHT", 8);
-	if (GetAsyncKeyState(VK_UP))
-		TextOut(GetDC(hWnd), 1000, 100, L"VK_UP   ", 8);
-	if (GetAsyncKeyState(VK_DOWN))
-		TextOut(GetDC(hWnd), 1000, 100, L"VK_DOWN ", 8);
 
 	if (GetAsyncKeyState('Q'))
 	{
@@ -298,16 +264,7 @@ void InitialGame()
 	g_pPlayerObject-> SetObjectID(0);
 
 	objectList.push_back(g_pPlayerObject);
-	//for (int i = 0; i < 100; ++i)
-	//{
-	//	if (objectList[i] != NULL)
-	//		continue;
-	//
-	//	objectList[i] = g_pPlayerObject;
-	//	break;
-	//}
-
-
+	
 	//더미 플레이어 생성 
 	CBaseObject* pObject;
 	for (int i = 0; i < 3; ++i)
@@ -318,14 +275,6 @@ void InitialGame()
 		pObject->SetObjectID(1);
 
 		objectList.push_back(pObject);
-		//for (int j = 0; j < 100; ++j)
-		//{
-		//	if (objectList[j] != NULL)
-		//		continue;
-		//
-		//	objectList[j] = pObject;
-		//	break;
-		//}
 	}
 
 }
@@ -333,20 +282,6 @@ void InitialGame()
 void objectSort()
 {
 	objectList.sort(PosYComp);
-	//for (int i = 0; i < 100; ++i)
-	//{
-	//	if (objectList[i] == NULL) continue;
-	//	for (int j = 0; j < 100; ++j)
-	//	{
-	//		if (objectList[j] == NULL) continue;
-	//		if (objectList[i]->GetCurY() < objectList[j]->GetCurY())
-	//		{
-	//			CBaseObject* temp = objectList[i];
-	//			objectList[i] = objectList[j];
-	//			objectList[j] = temp;
-	//		}
-	//	}
-	//}
 }
 
 
@@ -388,7 +323,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
 			if (msg.message == WM_QUIT)
 				break;
-			//Update();
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
@@ -469,6 +403,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DESTROY:
+		timeEndPeriod(1);
         PostQuitMessage(0);
         break;
     default:

@@ -80,6 +80,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 	GetWindowRect(hWnd, &Rect);
 	hDC = GetDC(hWnd);
 
+	//비트맵을 원본 크기로 출력
 	int i = SetDIBitsToDevice(hDC, 0, 0, m_iWidth, m_iHeight, 
 		0, 0, 0, m_iHeight, m_bypBuffer, &m_stDibInfo, DIB_RGB_COLORS);
 
@@ -114,7 +115,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 			dwTick = timeGetTime();
 		}
 
-		TextOut(hDC, 1000, 470, szFrame, wcslen(szFrame));
+		TextOut(hDC, 700, 470, szFrame, wcslen(szFrame));
 		TextOut(hDC, 0, 0, szFrame, wcslen(szFrame));
 	}
 	ReleaseDC(hWnd, hDC);
