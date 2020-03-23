@@ -12,6 +12,7 @@
 #include "CPlayerObject.h"
 
 #pragma comment (lib, "winmm")
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
 
 #define MAX_LOADSTRING 100
 
@@ -36,6 +37,7 @@ void InitialGame();
 void Action();
 void Draw();
 void objectSort();
+bool FrameSkip(int deltaTime);
 
 bool PosYComp(const CBaseObject* lhs, const CBaseObject* rhs) {
 	return lhs->GetCurY() < rhs->GetCurY();
@@ -56,13 +58,63 @@ void Update()
 		KeyProcess();
 
 	Action();
-	Draw();
+
+	static int cur = timeGetTime();
+	static int old = timeGetTime();
+	static int deltaTime = cur - old;
+	static bool is20msOver = false;
+
+
+
+	//이전에 29ms가 나온다면 
+	//초과된 9를 old쪽에 더해주고 
+
+
+
+	//if (is20msOver == true) //이전에 20ms 초과된것 누적
+	//	cur = timeGetTime() - (deltaTime - 20);
+	//else
+		cur = timeGetTime();
+
+	is20msOver = false;
+	deltaTime = cur - old;
+	printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
+	//여기서 시작시간과 끝 시간을 재는 이유는? -> 그래야 draw를 패스할지 말지 정한다
+	//프레임스킵 안해도 되면 그리고, 스킵해야하면 건너뛰자.
+	if (false == FrameSkip(deltaTime))
+	{
+		if (deltaTime < 20)
+		{
+			Sleep(20 - deltaTime);
+			//old = cur + (20 - deltaTime);
+		}
+		//만약 20ms를 초과했다면, 초과한만큼을 다음 시간에 더한다.
+		else
+		{
+			is20msOver = true;
+			//old = cur + (deltaTime - 20);
+		}
+		old = cur - (deltaTime - 20);
+		Draw();
+	}
+	else
+		old = cur;// +20;// (20 - deltaTime);
+
+
 
 	//screen dib을 화면으로 플립
 	//dib버퍼의 내용을 화면으로 출력
 	g_cScreenDib.Flip(hWnd);
 
 	Sleep(0);
+}
+
+bool FrameSkip(int deltaTime)
+{
+	if (deltaTime >= 40)
+		return true;
+
+	return false;
 }
 
 void Action()
@@ -262,6 +314,7 @@ void InitialGame()
 	g_pPlayerObject->SetPosition(400, 100);
 	g_pPlayerObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 	g_pPlayerObject-> SetObjectID(0);
+	g_pPlayerObject->ActionInput(dfACTION_STAND);
 
 	objectList.push_back(g_pPlayerObject);
 	
@@ -273,6 +326,7 @@ void InitialGame()
 		pObject->SetPosition(150 + (i * 100), 150 + (i * 100));
 		pObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 		pObject->SetObjectID(1);
+		pObject->ActionInput(dfACTION_STAND);
 
 		objectList.push_back(pObject);
 	}
@@ -360,7 +414,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+      CW_USEDEFAULT, 0, 800, 700, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {

@@ -89,19 +89,6 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 	{
 		//timeBeginPeriod(1);
 
-		static int cur = timeGetTime();
-		static int old = timeGetTime();
-		static int deltaTime = cur - old;
-
-		cur = timeGetTime();
-		deltaTime = cur - old;
-
-		if (deltaTime < 20)
-		{
-			Sleep(20 - deltaTime);
-		}
-		old = cur + (20 - deltaTime);
-
 		static wchar_t szFrame[15];
 		static int iFrame = 0;
 		static DWORD dwTick = timeGetTime();

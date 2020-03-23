@@ -1,3 +1,4 @@
 const cast 사용 
 c++ list stl 만들기 
 텍스트 파서 만들기
+프레임 스킵
