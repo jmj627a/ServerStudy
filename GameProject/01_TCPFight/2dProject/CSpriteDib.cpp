@@ -115,10 +115,6 @@ void CSpriteDib::ReleaseSprite(int iSpriteIndex)
 extern HWND hWnd;
 void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch, int iDrawLen)
 {
-	//TCHAR str[100];
-	//wsprintf(str, TEXT("SpriteIndex : %d    "), iSpriteIndex);
-	//TextOut(GetDC(hWnd), 1000, 300, str, wcslen(str));
-
 	//최대 스프라이트 개수를 초과하거나 로드되지 않는 스프라이트라면 무시
 	if (iSpriteIndex >= m_iMaxSprite)
 		return;

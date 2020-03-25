@@ -12,7 +12,7 @@
 #include "CPlayerObject.h"
 
 #pragma comment (lib, "winmm")
-#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+//#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
 
 #define MAX_LOADSTRING 100
 
@@ -62,43 +62,28 @@ void Update()
 	static int cur = timeGetTime();
 	static int old = timeGetTime();
 	static int deltaTime = cur - old;
-	static bool is20msOver = false;
 
+	cur = timeGetTime();
 
-
-	//이전에 29ms가 나온다면 
-	//초과된 9를 old쪽에 더해주고 
-
-
-
-	//if (is20msOver == true) //이전에 20ms 초과된것 누적
-	//	cur = timeGetTime() - (deltaTime - 20);
-	//else
-		cur = timeGetTime();
-
-	is20msOver = false;
 	deltaTime = cur - old;
-	printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
-	//여기서 시작시간과 끝 시간을 재는 이유는? -> 그래야 draw를 패스할지 말지 정한다
+	//printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
+	
+	//여기서 시작시간과 끝 시간을 재는 이유 -> draw를 패스할지 말지 정한다
 	//프레임스킵 안해도 되면 그리고, 스킵해야하면 건너뛰자.
 	if (false == FrameSkip(deltaTime))
 	{
 		if (deltaTime < 20)
-		{
 			Sleep(20 - deltaTime);
-			//old = cur + (20 - deltaTime);
-		}
-		//만약 20ms를 초과했다면, 초과한만큼을 다음 시간에 더한다.
-		else
-		{
-			is20msOver = true;
-			//old = cur + (deltaTime - 20);
-		}
+		
+		//20ms를 초과 X -> Sleep 한 시간만큼 old에 더한다.
+		//20ms를 초과 O -> 초과한 시간만큼 old에서 뺀다.
+		
 		old = cur - (deltaTime - 20);
+
 		Draw();
 	}
 	else
-		old = cur;// +20;// (20 - deltaTime);
+		old = cur + (20 - deltaTime);
 
 
 
@@ -143,8 +128,7 @@ void Draw()
 
 	static wchar_t szFrame[15];
 	static int iFrame = 0;
-	static DWORD dwTick = timeGetTime();
-
+	static DWORD dwTick = 0;
 
 	//2. 캐릭터 출력
 	list<CBaseObject*>::iterator iter;
