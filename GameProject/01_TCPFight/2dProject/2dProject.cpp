@@ -12,7 +12,7 @@
 #include "CPlayerObject.h"
 
 #pragma comment (lib, "winmm")
-//#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
 //printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
 
 #define MAX_LOADSTRING 100
@@ -53,6 +53,7 @@ std::list<CBaseObject*> objectList;
 
 bool g_bActiveApp = true; //지금 활성화 됐는지 안됐는지
 
+bool flag = false;
 void Update()
 {
 	if (g_bActiveApp == true)
@@ -63,10 +64,12 @@ void Update()
 	static int cur = timeGetTime();
 	static int old = timeGetTime();
 	static int deltaTime = cur - old;
-
+	
 	cur = timeGetTime();
 
 	deltaTime = cur - old;
+	
+	printf("deltaTime : %d \t cur : %d \t old : %d \n", deltaTime, cur, old);
 	
 	//여기서 시작시간과 끝 시간을 재는 이유 -> draw를 패스할지 말지 정한다
 	//프레임스킵 안해도 되면 그리고, 스킵해야하면 건너뛰자.
@@ -83,7 +86,12 @@ void Update()
 		Draw();
 	}
 	else
-		old = cur + (20 - deltaTime);
+	{
+		//flag = true;
+		old = timeGetTime();
+		//printf("deltaTime : %d \t cur : %d \t old : %d \n", deltaTime, cur, old);
+	}
+
 
 	//프레임스킵 여부, 델타타입 결과값, curr 차감시킨값. 
 
@@ -91,7 +99,6 @@ void Update()
 	//dib버퍼의 내용을 화면으로 출력
 	g_cScreenDib.Flip(hWnd);
 
-	Sleep(0);
 }
 
 bool FrameSkip(int deltaTime)
@@ -120,11 +127,8 @@ void Draw()
 	int iDestPitch = g_cScreenDib.GetPitch();
 	objectSort();
 
-
 	//1. 맵 화면 출력
 	g_cSprite.DrawImage(0, 0, 0, bypDest, iDestWidth, iDestHeight, iDestPitch);
-
-
 
 	static wchar_t szFrame[15];
 	static int iFrame = 0;
@@ -428,9 +432,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_bActiveApp = true;
 		else if (LOWORD(wParam) == WA_CLICKACTIVE)
 			g_bActiveApp = true;
-		else if(LOWORD(wParam) == WA_INACTIVE)
+		else if (LOWORD(wParam) == WA_INACTIVE)
+		{
 			g_bActiveApp = false;
-
+			printf("=============================================\n");
+		}
 		break;
     case WM_PAINT:
         {

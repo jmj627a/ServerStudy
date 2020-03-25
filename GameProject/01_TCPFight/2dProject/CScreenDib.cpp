@@ -87,11 +87,9 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 
 	//화면에 프레임 표시 부분, 필요에 따라 사용
 	{
-		//timeBeginPeriod(1);
-
 		static wchar_t szFrame[15];
 		static int iFrame = 0;
-		static DWORD dwTick = timeGetTime();
+		static DWORD dwTick = 0;
 
 		iFrame++;
 
