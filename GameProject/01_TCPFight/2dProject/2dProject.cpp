@@ -13,6 +13,7 @@
 
 #pragma comment (lib, "winmm")
 //#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+//printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
 
 #define MAX_LOADSTRING 100
 
@@ -66,7 +67,6 @@ void Update()
 	cur = timeGetTime();
 
 	deltaTime = cur - old;
-	//printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
 	
 	//여기서 시작시간과 끝 시간을 재는 이유 -> draw를 패스할지 말지 정한다
 	//프레임스킵 안해도 되면 그리고, 스킵해야하면 건너뛰자.
@@ -76,7 +76,7 @@ void Update()
 			Sleep(20 - deltaTime);
 		
 		//20ms를 초과 X -> Sleep 한 시간만큼 old에 더한다.
-		//20ms를 초과 O -> 초과한 시간만큼 old에서 뺀다.
+		//20ms를 초과 O -> 초과한 시간만큼 old에서 뺀다. (그냥 누적하다가 1프레임이 넘으면 스킵)
 		
 		old = cur - (deltaTime - 20);
 
@@ -85,7 +85,7 @@ void Update()
 	else
 		old = cur + (20 - deltaTime);
 
-
+	//프레임스킵 여부, 델타타입 결과값, curr 차감시킨값. 
 
 	//screen dib을 화면으로 플립
 	//dib버퍼의 내용을 화면으로 출력
