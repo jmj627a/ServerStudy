@@ -14,6 +14,7 @@
 #pragma comment (lib, "winmm")
 #pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
 //printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
+//printf("deltaTime : %d \t cur : %d \t old : %d \n", deltaTime, cur, old);
 
 #define MAX_LOADSTRING 100
 
@@ -65,20 +66,31 @@ void Update()
 	static int old = timeGetTime();
 	static int deltaTime = cur - old;
 	
+	static int skiptime = 0;
+
 	cur = timeGetTime();
+
+	if (flag)
+	{
+		old = cur - (deltaTime - (20 - (cur - skiptime)));
+		flag = false;
+	}
 
 	deltaTime = cur - old;
 
-	printf("deltaTime : %d \t cur : %d \t old : %d \n", deltaTime, cur, old);
 	
 	//여기서 시작시간과 끝 시간을 재는 이유 -> draw를 패스할지 말지 정한다
 	//프레임스킵 안해도 되면 그리고, 스킵해야하면 건너뛰자.
 	if (false == FrameSkip(deltaTime))
 	{
-		if (deltaTime < 20)
+		if (deltaTime < 0)
+		{
+			Sleep(20);
+			deltaTime = 0;
+		}
+		else if (deltaTime < 20)
 		{
 			Sleep(20 - deltaTime);
-			//printf("sleep \n");
 		}
 		//20ms를 초과 X -> Sleep 한 시간만큼 old에 더한다.
 		//20ms를 초과 O -> 초과한 시간만큼 old에서 뺀다. (그냥 누적하다가 1프레임이 넘으면 스킵)
@@ -89,8 +101,8 @@ void Update()
 	}
 	else
 	{
-		//flag = true;
-		old = cur;
+		flag = true;
+		skiptime = cur;
 	}
 
 	//프레임스킵 여부, 델타타입 결과값, curr 차감시킨값. 
