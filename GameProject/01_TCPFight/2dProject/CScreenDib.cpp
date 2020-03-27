@@ -89,7 +89,7 @@ void CScreenDib::Flip(HWND hWnd, int iX, int iY)
 	{
 		static wchar_t szFrame[15];
 		static int iFrame = 0;
-		static DWORD dwTick = 0;
+		static DWORD dwTick = timeGetTime();
 
 		iFrame++;
 
