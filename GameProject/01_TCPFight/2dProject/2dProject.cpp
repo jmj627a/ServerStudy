@@ -74,6 +74,7 @@ void Update()
 	{
 		old = cur - (deltaTime - (20 - (cur - skiptime)));
 		flag = false;
+		printf("deltaTime : %d \n", cur - old);
 	}
 
 	deltaTime = cur - old;
@@ -83,12 +84,7 @@ void Update()
 	//프레임스킵 안해도 되면 그리고, 스킵해야하면 건너뛰자.
 	if (false == FrameSkip(deltaTime))
 	{
-		if (deltaTime < 0)
-		{
-			Sleep(20);
-			deltaTime = 0;
-		}
-		else if (deltaTime < 20)
+		if (deltaTime < 20)
 		{
 			Sleep(20 - deltaTime);
 		}
@@ -447,7 +443,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		else if (LOWORD(wParam) == WA_INACTIVE)
 		{
 			g_bActiveApp = false;
-			printf("=============================================\n");
+			//printf("=============================================\n");
 		}
 		break;
     case WM_PAINT:
