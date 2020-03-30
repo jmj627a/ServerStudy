@@ -74,7 +74,7 @@ void Update()
 	{
 		old = cur - (deltaTime - (20 - (cur - skiptime)));
 		flag = false;
-		printf("deltaTime : %d \n", cur - old);
+		printf("deltaTime : %d \t old : %d \t cur : %d \n", cur - old, old, cur);
 	}
 
 	deltaTime = cur - old;
