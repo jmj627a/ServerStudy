@@ -178,7 +178,6 @@ void CSpriteDib::DrawSprite(int iSpriteIndex, int iDrawX, int iDrawY, BYTE* bypD
 	BYTE* bypSpriteOrigin = (BYTE*)dwpSprite;
 
 	//전체 크기를 돌면서 투명색 처리를 한다
-	int	A1, R1, G1, B1;
 	for (iCountY = 0; iSpriteHeight > iCountY; iCountY++)
 	{
 		for (iCountX = 0; iSpriteWidth > iCountX; iCountX++)

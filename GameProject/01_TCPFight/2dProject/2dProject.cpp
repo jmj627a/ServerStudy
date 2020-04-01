@@ -74,7 +74,8 @@ void Update()
 	{
 		old = cur - (deltaTime - (20 - (cur - skiptime)));
 		flag = false;
-		printf("deltaTime : %d \t old : %d \t cur : %d \n", cur - old, old, cur);
+		printf("deltaTime : %d \t old : %d \t cur : %d oldCur : %d\n", 
+			cur - old, old, cur, skiptime);
 	}
 
 	deltaTime = cur - old;
@@ -158,11 +159,13 @@ void Draw()
 		dwTick = timeGetTime();
 	}
 
-	TextOut(GetDC(hWnd), 700, 500, szFrame, wcslen(szFrame));
+	HDC hDC = GetDC(hWnd);
+	TextOut(hDC, 700, 500, szFrame, wcslen(szFrame));
 
 	//버퍼 포인터에 그림을 그린다
 	//스트라이프 출력부
 
+	ReleaseDC(hWnd, hDC);
 }
 
 void KeyProcess()
@@ -429,9 +432,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
 	case WM_CREATE:
-		SetTimer(hWnd, 1, 100, NULL);
-		break;
-	case WM_TIMER:
 		break;
 	case WM_MOUSEMOVE:
 		break;
