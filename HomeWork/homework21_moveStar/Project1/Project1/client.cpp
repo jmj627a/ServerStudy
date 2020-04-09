@@ -31,6 +31,10 @@ _PLAYER player[64];
 
 bool myConnect(SOCKET socket, SOCKADDR_IN &serveraddr, int namelen)
 {
+	unsigned long nonblock = 1; // nonblock ¼³Á¤ 
+	ioctlsocket(socket, FIONBIO, &nonblock);
+
+
 	int ret = 0;
 	ret = connect(socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
 	ret = GetLastError();
