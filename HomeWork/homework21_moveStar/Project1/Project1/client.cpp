@@ -4,11 +4,10 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 
-#define SERVERDOMAIN   L"procademyserver.iptime.org"
 #define SERVERPORT 3000
 #define BUFSIZE    1600
 
-struct MSG
+struct _MSG
 {
 	int type;
 	int id;
@@ -17,8 +16,9 @@ struct MSG
 };
 
 
-struct PLAYER
+struct _PLAYER
 {
+	int connect;
 	int id = -1;
 	int x = -1;
 	int y = -1;
@@ -27,24 +27,28 @@ struct PLAYER
 
 int myID = -1;
 bool isChangePos = false;
-PLAYER player[64];
+_PLAYER player[64];
 
-bool myConnect(SOCKET socket, const sockaddr* serveraddr, int namelen)
+bool myConnect(SOCKET socket, SOCKADDR_IN &serveraddr, int namelen)
 {
+	int ret = 0;
+	ret = connect(socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
+	ret = GetLastError();
+
 	FD_SET ReadSet;
 	FD_ZERO(&ReadSet);
+	FD_SET(socket, &ReadSet);
 
-	int ret = 0;
-	ret = select(0, &ReadSet, NULL, NULL, 0);
+	timeval time;
+	time.tv_usec = 500000;
+
+	ret = select(0, &ReadSet, NULL, NULL, &time);
 	if (ret > 0)
 	{
-		ret = connect(socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-		if (ret == SOCKET_ERROR)
-			return 1;
 		return true;
 	}
-
-	return false;
+	else
+		return false;
 }
 
 bool keyProcess()
@@ -62,23 +66,35 @@ bool keyProcess()
 	//내 id도 정해지고, 캐릭터도 생성됨
 	if (GetAsyncKeyState(VK_UP))
 	{
-		player[myID].x--;
-		isChangePos = true;
+		if (player[myID].y > 0)
+		{
+			player[myID].y--;
+			isChangePos = true;
+		}
 	}
 	if (GetAsyncKeyState(VK_DOWN))
 	{
-		player[myID].x++;
-		isChangePos = true;
+		if (player[myID].y < 22)
+		{
+			player[myID].y++;
+			isChangePos = true;
+		}
 	}
 	if (GetAsyncKeyState(VK_LEFT))
 	{
-		player[myID].y--;
-		isChangePos = true;
+		if (player[myID].x > 0)
+		{
+			player[myID].x--;
+			isChangePos = true;
+		}
 	}
 	if (GetAsyncKeyState(VK_RIGHT))
 	{
-		player[myID].y++;
-		isChangePos = true;
+		if (player[myID].x < 79)
+		{
+			player[myID].x++;
+			isChangePos = true;
+		}
 	}
 
 
@@ -93,71 +109,88 @@ bool network(SOCKET clientSock)
 {
 	FD_SET ReadSet;
 	FD_ZERO(&ReadSet);
+	FD_SET(clientSock, &ReadSet);
+
+	timeval time;
+	time.tv_usec = 500000;
 
 	int ret = 100;
-
-	ret = select(0, &ReadSet, NULL, NULL, 0);
+	ret = select(0, &ReadSet, NULL, NULL, &time);
 	if (ret > 0)
 	{
-		ret = recv(clientSock, buf, sizeof(buf), 0);	//select 결과가 받을 거 있으면 받기
-		if (ret == SOCKET_ERROR)
+		int recvSize = recv(clientSock, buf, sizeof(buf), 0);	//select 결과가 받을 거 있으면 받기
+		if (recvSize == SOCKET_ERROR)
 			return false;
 
 		//버퍼에서 받은거 16바이트씩 꺼내서 버퍼 다 비워질때까지 처리.
-		PLAYER tempPlayer;
-		char* ptr = buf;
+		_MSG* msg;
+		char* ptr;
+		ptr = buf;
 		int count = 0;
+		_PLAYER* tempPlayer;
 		while (true)
 		{
-			//아아ㅏㅇ 플레이어에 받으면 안되고 패킷에 받아야하는구나 msg에다가 받고서 하기.
+			//msg에다가 꺼내보고 type 분류하기.
+			msg = (_MSG*)ptr;
 
+			switch (msg->type)
+			{
+			case 0:	//id 할당
+				tempPlayer = (_PLAYER*)msg;
+				myID = tempPlayer->id;
+				break;
 
+			case 1:	//별 생성
+				tempPlayer = (_PLAYER*)msg;
+				player[tempPlayer->id].id = tempPlayer->id;
+				player[tempPlayer->id].x = tempPlayer->x;
+				player[tempPlayer->id].y = tempPlayer->y;
+				break;
 
+			case 2:	//별 삭제
+				tempPlayer = (_PLAYER*)msg;
+				player[tempPlayer->id].id = -1;
+				player[tempPlayer->id].x = -1;
+				player[tempPlayer->id].y = -1;
+				break;
 
+			case 3: //이동
+				tempPlayer = (_PLAYER*)msg;
+				player[tempPlayer->id].x = tempPlayer->x;
+				player[tempPlayer->id].y = tempPlayer->y;
+				break;
+			}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			memcpy(&tempPlayer, ptr, sizeof(PLAYER));
-
-			player[tempPlayer.id].x = tempPlayer.x;
-			player[tempPlayer.id].y = tempPlayer.y;
-
-			count += sizeof(PLAYER);
-			ptr += sizeof(PLAYER);
-			if (ptr == NULL || count > BUFSIZE)	//이게 근데 1600넘은 메모리 봤는데 널아니면 안멈출텐데
+			count += sizeof(_MSG);
+			ptr += sizeof(_MSG);
+			
+			//recv에 쌓인 만큼 데이터를 다 읽었거나, 버퍼 사이즈인 1600이 넘었다면 그만읽기
+			if (count == recvSize || count > BUFSIZE)	
 			{
 				memset(buf, 0, sizeof(buf));
 				break;
 			}
 		}
-
 	}
 
 
 	if (isChangePos)
 	{
 		//select로 검사하진 않았지만 상대 윈도우 사이즈는 당연히 여유있을거라 가정하고 보내기
-		send(clientSock, (const char*)(&player[myID]), sizeof(PLAYER), 0);
+		_MSG sendMSG;
+		sendMSG.type = 3;
+		sendMSG.id = myID;
+		sendMSG.x = player[myID].x;
+		sendMSG.y = player[myID].y;
+
+		send(clientSock, (const char*)(&sendMSG), sizeof(_MSG), 0);
 	}
 
 }
 
-
 char screenBuffer[23][81];
 
-bool rendering()
+void rendering()
 {
 	for (int i = 0; i < 23; ++i)
 	{
@@ -166,7 +199,7 @@ bool rendering()
 			if(j == 80)
 				screenBuffer[i][j] = '\n';
 			else
-				screenBuffer[i][j] = ' ';
+				screenBuffer[i][j] = '.';
 		}
 	}
 
@@ -176,11 +209,11 @@ bool rendering()
 		if (player[i].id == -1)
 			continue;
 
-		screenBuffer[player[i].x][player[i].y] = '*';
+		screenBuffer[player[i].y][player[i].x] = '*';
 	}
 
-	for (int i = 0; i < 23; ++i)
-		printf("%s \n", screenBuffer[i]);
+	printf("%s", screenBuffer);
+
 }
 
 int main(int argc, char* argv[])
@@ -208,29 +241,25 @@ int main(int argc, char* argv[])
 	ZeroMemory(&serveraddr, sizeof(serveraddr));
 
 	serveraddr.sin_family = AF_INET;
-	inet_ntop(AF_INET, &(Addr.S_un.S_addr), serverIP, INET_ADDRSTRLEN);
+	//inet_ntop(AF_INET, &(Addr.S_un.S_addr), serverIP, INET_ADDRSTRLEN);
 	inet_pton(AF_INET, serverIP, &serveraddr.sin_addr);
 	serveraddr.sin_port = htons(SERVERPORT);
 
 	while (true)
 	{
-		myConnect(sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
-
+		if (!myConnect(sock, serveraddr, sizeof(serveraddr)))
+			continue;
 
 		while (true)
 		{
-
 			keyProcess();
-			
 			network(sock);
-
+			system("cls");
 			rendering();
-
 		}
 
 	}
 
-	// closesocket()
 	closesocket(sock);
 
 	// 윈속 종료
