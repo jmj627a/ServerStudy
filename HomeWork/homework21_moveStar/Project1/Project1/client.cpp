@@ -34,7 +34,6 @@ bool myConnect(SOCKET socket, SOCKADDR_IN &serveraddr, int namelen)
 	unsigned long nonblock = 1; // nonblock ¼³Á¤ 
 	ioctlsocket(socket, FIONBIO, &nonblock);
 
-
 	int ret = 0;
 	ret = connect(socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
 	ret = GetLastError();
@@ -48,9 +47,7 @@ bool myConnect(SOCKET socket, SOCKADDR_IN &serveraddr, int namelen)
 
 	ret = select(0, &ReadSet, NULL, NULL, &time);
 	if (ret > 0)
-	{
 		return true;
-	}
 	else
 		return false;
 }
@@ -213,7 +210,14 @@ void rendering()
 		if (player[i].id == -1)
 			continue;
 
-		screenBuffer[player[i].y][player[i].x] = '*';
+		if (player[i].x > 80)
+			continue;
+		if (player[i].y > 22)
+			continue;
+		if(player[i].id == myID)
+			screenBuffer[player[i].y][player[i].x] = '0';
+		else
+			screenBuffer[player[i].y][player[i].x] = '*';
 	}
 
 	printf("%s", screenBuffer);
