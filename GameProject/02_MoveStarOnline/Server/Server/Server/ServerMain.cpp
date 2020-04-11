@@ -223,17 +223,17 @@ void network(SOCKET listenSocket)
 	}
 }
 
-char screenBuffer[23][81];
+char screenBuffer[25][82];
 
 void monitoring()
 {
 	printf("Connect Client : %d  FPS : \n", sessionList.size());
 
-	for (int i = 0; i < 23; ++i)
+	for (int i = 0; i < 24; ++i)
 	{
-		for (int j = 0; j < 81; ++j)
+		for (int j = 0; j < 82; ++j)
 		{
-			if (j == 80)
+			if (j == 81)
 				screenBuffer[i][j] = '\n';
 			else
 				screenBuffer[i][j] = '.';
@@ -244,16 +244,18 @@ void monitoring()
 	std::list<SESSION*>::iterator iter;
 	for (iter = sessionList.begin(); iter != sessionList.end(); iter++)
 	{
-		if ((*iter)->player_id == -1)
+		if ((*iter)->player_id < 0)
 			continue;
 
-		if ((*iter)->player_x > 80)
+		if ((*iter)->player_x > 81)
 			continue;
-		if ((*iter)->player_y > 22)
+		if ((*iter)->player_y > 23)
 			continue;
 
 		screenBuffer[(*iter)->player_y][(*iter)->player_x] = '*';
 	}
+
+	screenBuffer[24][0] = '\0';
 
 	printf("%s", screenBuffer);
 }
@@ -295,22 +297,9 @@ int main()
 
 	while (true)
 	{
-
 		network(serverSocket);
-		
-		//network(serverSocket, (SOCKADDR*)&clientAddr, &clientAddrsize);
-
 		system("cls");
 		monitoring();
-
-
-		//clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddr, &clientAddrsize);	// 클라이언트 연결요청 수락
-		//if (clientSocket == INVALID_SOCKET)
-		//	return -1;
-
-		// accept된 클라이언트 데이터를 전송
-		//send(clientSocket, message, sizeof(message), 0);
-
 	}
 	
 	
