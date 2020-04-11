@@ -38,12 +38,16 @@ std::list<SESSION*> sessionList;
 
 int g_playerID = 0;
 
+char buf[BUFSIZE];
+
+
+
 //첫번째 인자 빼고 전체에게 뿌리기. 
 void sendPacket_broadcast(SESSION* session, char* buf)
 {
 	int ret;
 	std::list<SESSION*>::iterator iter;
-	for (iter = sessionList.begin(); iter != sessionList.end(); ++iter)
+	for (iter = sessionList.begin(); iter != sessionList.end(); iter++)
 	{
 		if (session != NULL)
 		{
@@ -63,46 +67,85 @@ void sendPacket_unicast(SESSION* session, char* buf)
 }
 
 
-void serverAccept(SOCKET listenSocket)
+void serverAccept(SOCKET* listenSocket)
 {
-	SOCKADDR_IN* addr;
-	int addrLen;
+	SOCKADDR_IN addr;
+	int addrLen = sizeof(addr);
 
-	SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&addr, &addrLen);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+	SOCKET clientSocket = accept(*listenSocket, (SOCKADDR*)&addr, &addrLen);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	
-	char Ip[20];
-	inet_ntop(AF_INET, &(addr->sin_addr), Ip, INET_ADDRSTRLEN);
+	//char Ip[20];
+	//inet_ntop(AF_INET, &(addr->sin_addr), Ip, INET_ADDRSTRLEN);
 
-	SESSION newSession;
-	newSession.socket = clientSocket;
-	memcpy(&newSession.ip, &Ip, sizeof(Ip));
-	newSession.port = addr->sin_port;
-	newSession.player_id = g_playerID++;
-	newSession.player_x = 40;
-	newSession.player_y = 10;
+	SESSION* newSession = new SESSION;
+	newSession->socket = clientSocket;
+	memcpy(&newSession->ip, &addr.sin_addr, sizeof(addr.sin_addr));
+	newSession->port = addr.sin_port;
+	newSession->player_id = g_playerID++;
+	newSession->player_x = 40;
+	newSession->player_y = 10;
+
+	//새로 접속한 클라에게 ID 알려주기
+	_MSG msg;
+	msg.type = ID_SET_TYPE;
+	msg.id = newSession->player_id;
+	msg.x = newSession->player_x;
+	msg.y = newSession->player_y;
+	sendPacket_unicast(newSession, (char*)&msg);
+
 
 	//새로 접속한 클라에게 남들 위치를 알려주기 
 	std::list<SESSION*>::iterator iter;
-	for (iter = sessionList.begin(); iter != sessionList.end(); ++iter)
+	for (iter = sessionList.begin(); iter != sessionList.end(); iter++)
 	{
-		_MSG msg;
+		_MSG msg ;
 		msg.type = STAR_SET_TYPE;
 		msg.id = (*iter)->player_id;
 		msg.x = (*iter)->player_x;
 		msg.y = (*iter)->player_y;
-		sendPacket_unicast(&newSession, (char*)&msg);
+		sendPacket_unicast(newSession, (char*)&msg);
 	}
 
 	//list에 삽입
-	sessionList.push_back(&newSession);
+	sessionList.push_back(newSession);
 
 	//모든 클라에게 새로 접속한 클라 생성 뿌리기 (나 포함)
-	_MSG msg;
 	msg.type = STAR_SET_TYPE;
-	msg.id = newSession.player_id;
-	msg.x = newSession.player_x;
-	msg.y = newSession.player_y;
-	sendPacket_unicast(NULL, (char*)&msg);
+	msg.id = newSession->player_id;
+	msg.x = newSession->player_x;
+	msg.y = newSession->player_y;
+	sendPacket_broadcast(NULL, (char*)&msg);
+}
+
+void MoveStar(SESSION* session, int id, int x, int y)
+{
+	session->player_x = x;
+	session->player_y = y;
+
+	_MSG msg;
+	msg.id = id;
+	msg.type = STAR_MOVE_TYPE;
+	msg.x = x;
+	msg.y = y;
+	sendPacket_broadcast(session, (char*)&msg);
+}
+
+std::list<SESSION*>::iterator Disconnect(SESSION* session)
+{
+	closesocket(session->socket);
+
+	_MSG msg ;
+	msg.type = STAR_DELETE_TYPE;
+	msg.id = session->player_id;
+	msg.x = session->player_x;
+	msg.y = session->player_y;
+
+	sendPacket_broadcast(session, (char*)&msg);
+
+	std::list<SESSION*>::iterator iter;
+	iter = std::find(sessionList.begin(), sessionList.end(), session);
+	iter = sessionList.erase(iter);
+	return iter;
 }
 
 void network(SOCKET listenSocket)
@@ -113,10 +156,13 @@ void network(SOCKET listenSocket)
 
 	//전체를 순회하면서 세션 세팅.
 	std::list<SESSION*>::iterator iter;
-	for (iter = sessionList.begin(); iter != sessionList.end(); ++iter)
+	for (iter = sessionList.begin(); iter != sessionList.end(); iter++)
 	{
 		FD_SET((*iter)->socket, &ReadSet);
 	}
+
+	//timeval time;
+	//time.tv_usec = 50000;
 
 	int ret = select(0, &ReadSet, NULL, NULL, NULL); //timeval을 무한으로 하는 이유 -> 서버는 새로운 일이 없으면 아무것도 할 일이 없다.
 	if (ret > 0)
@@ -124,24 +170,92 @@ void network(SOCKET listenSocket)
 		//listenSocket이 반응하면 accept하기
 		if (FD_ISSET(listenSocket, &ReadSet))
 		{
-			serverAccept(listenSocket);
+			serverAccept(&listenSocket);
 		}
 
 		//세션 리스트 돌면서 FD_ISSET으로 니가 반응한 애냐고 물어보고, 걔네 대상으로 recv 시도.
-		for (iter = sessionList.begin(); iter != sessionList.end(); ++iter)
+		for (iter = sessionList.begin(); iter != sessionList.end();)
 		{
 			if (FD_ISSET((*iter)->socket, &ReadSet))
 			{
 				//recv 
+				int recvSize = recv((*iter)->socket, buf, sizeof(buf), 0);
+				if (recvSize == -1)
+				{
+					iter = Disconnect((*iter));
+					continue;
+				}
+				else if (recvSize > 0)
+				{
+					//버퍼에서 받은거 16바이트씩 꺼내서 버퍼 다 비워질때까지 처리.
+					_MSG* msg;
+					char* ptr;
+					ptr = buf;
+					int count = 0;
+
+					while (true)
+					{
+						//msg에다가 꺼내보고 type 분류하기.
+						msg = (_MSG*)ptr;
+
+						switch (msg->type)
+						{
+						case 3: //이동
+							MoveStar(*iter, msg->id, msg->x, msg->y);
+							break;
+						}
+
+						count += sizeof(_MSG);
+						ptr += sizeof(_MSG);
+
+						//recv에 쌓인 만큼 데이터를 다 읽었거나, 버퍼 사이즈인 1600이 넘었다면 그만읽기
+						if (count == recvSize || count > BUFSIZE)
+						{
+							memset(buf, 0, sizeof(buf));
+							break;
+						}
+					}
+				}
 			}
+
+			++iter;
 		}
 	}
-
 }
+
+char screenBuffer[23][81];
 
 void monitoring()
 {
+	printf("Connect Client : %d  FPS : \n", sessionList.size());
 
+	for (int i = 0; i < 23; ++i)
+	{
+		for (int j = 0; j < 81; ++j)
+		{
+			if (j == 80)
+				screenBuffer[i][j] = '\n';
+			else
+				screenBuffer[i][j] = '.';
+		}
+	}
+
+
+	std::list<SESSION*>::iterator iter;
+	for (iter = sessionList.begin(); iter != sessionList.end(); iter++)
+	{
+		if ((*iter)->player_id == -1)
+			continue;
+
+		if ((*iter)->player_x > 80)
+			continue;
+		if ((*iter)->player_y > 22)
+			continue;
+
+		screenBuffer[(*iter)->player_y][(*iter)->player_x] = '*';
+	}
+
+	printf("%s", screenBuffer);
 }
 
 int main()
@@ -174,7 +288,7 @@ int main()
 		return -1;
 
 	// 생성한 소켓을 서버 소켓으로 완성
-	ret = listen(serverSocket, 5);
+	ret = listen(serverSocket, SOMAXCONN);
 	if(ret == SOCKET_ERROR)
 		return -1;
 
@@ -184,11 +298,10 @@ int main()
 
 		network(serverSocket);
 		
-		
 		//network(serverSocket, (SOCKADDR*)&clientAddr, &clientAddrsize);
 
-
-		//monitoring();
+		system("cls");
+		monitoring();
 
 
 		//clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddr, &clientAddrsize);	// 클라이언트 연결요청 수락
