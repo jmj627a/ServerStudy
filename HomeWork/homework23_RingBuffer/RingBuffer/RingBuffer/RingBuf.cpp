@@ -1,5 +1,5 @@
 #include "RingBuf.h"
-
+#include <string>
 
 void RingBuf::Initial(int iBufferSize)
 {
@@ -49,30 +49,53 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 	return count;
 }
 
-int RingBuf::Dequeue(char* &chpData, int iSize)
+int RingBuf::Dequeue(char* chpData, int iSize)
 {
 	int count = 0;
-	
 	int pos = readPos;
 
+	bool isOneCircle = false;
+	int afterCount = 0;
+
+	//끝까지 다 읽을때까지
 	while (iSize != 0)
 	{
-		//배열이 비어있음
+		//읽으려 보니 배열이 비어있음
 		if (pos == writePos)
 		{
-			//printf("배열이 비어있습니다 \n");
-			chpData = arr + readPos;
+			//여기서 반으로 쪼개지는 상황이 있음. (readPos가 배열 끝에서 시작으로 넘어갔을때)
+			if (isOneCircle == true)
+			{
+				memcpy(chpData, arr + readPos, count - afterCount);
+				memcpy(chpData + (count - afterCount), arr , afterCount);
+			}
+			else
+				memcpy(chpData, arr + readPos, count);
+
 			readPos = pos;
  			return count;
 		}
 
 		pos = (pos + 1) % BUFFER_SIZE;
-		//arr[pos] = NULL; //나중에 없앨 코드. 그냥 위치만 바꾸면 됨.
+		
+		if (isOneCircle == true)
+			afterCount++;
+		
+		if (pos == 0)
+			isOneCircle = true; 
+		
 		count++;
 		iSize--;
 	}
 
-	chpData = arr + readPos;
+	if (isOneCircle == true)
+	{
+		memcpy(chpData, arr + readPos, count - afterCount);
+		memcpy(chpData + (count - afterCount), arr, afterCount);
+	}
+	else
+		memcpy(chpData, arr + readPos, count);
+	
 	readPos = pos;
 	return count;
 }

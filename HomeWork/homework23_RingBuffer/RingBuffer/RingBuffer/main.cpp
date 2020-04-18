@@ -12,34 +12,38 @@ char data[] = { "I can hear you but I won't. Some look for trouble while others 
 
 void main()
 {
-	srand(10);
+	srand(30);
 
-	int random;
+	int enqRandom;
+	int deqRandom;
 
 	char* ptr  = data;
 	//char deqCopy[sizeof(data)];
 	char* deqCopy = (char*)malloc(sizeof(data));
-	int leftSize = sizeof(data);
+	int leftSize = sizeof(data)-1;
 
 	while (true)
 	{
+		//printf("%s", data);
+
 		if (leftSize == 0)
 		{
 			ptr = data;
-			leftSize = sizeof(data);
+			leftSize = sizeof(data)-1;
 		}
-
-		random = rand() % leftSize;
-		int ret = buffer.Enqueue(ptr, random); //랜덤한 길이만큼 넣기 
+		
+		enqRandom = rand() % leftSize + 1;
+		int ret = buffer.Enqueue(ptr, enqRandom); //랜덤한 길이만큼 넣기 
 		ptr += ret; //enq된 사이즈만큼 증가.
-		random = rand() % leftSize;
-		leftSize -= ret;
-
+		
 		ZeroMemory(deqCopy, sizeof(data));
-		buffer.Dequeue(deqCopy, random);
+		deqRandom = rand() % leftSize + 1;
+		leftSize -= ret;
+		
+		ret = buffer.Dequeue(deqCopy, deqRandom);
+		if(ret > 0)
+			printf("%s", deqCopy);
 
-
-		printf("%s", deqCopy);
 		Sleep(10);
 	}
 

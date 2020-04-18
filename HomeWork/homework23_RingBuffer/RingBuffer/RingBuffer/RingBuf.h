@@ -35,7 +35,7 @@ public:
 	int Enqueue(char* chpData, int iSize);
 
 	// ReadPos 에서 데이타 가져옴. ReadPos 이동. ((char *)데이타 포인터. (int)크기.) //가져온 크기
-	int Dequeue(char* &chpDest, int iSize);
+	int Dequeue(char* chpDest, int iSize);
 
 	// ReadPos 에서 데이타 읽어옴. ReadPos 고정. ((char *)데이타 포인터. (int)크기.) //가져온 크기
 	int Peek(char* chpDest, int iSize);
