@@ -42,7 +42,7 @@ public:
 
 
 	// 원하는 길이만큼 읽기위치 에서 삭제 / 쓰기 위치 이동
-	void MoveRear(int iSize);
+	int MoveRear(int iSize);
 	int MoveFront(int iSize);
 
 	// 버퍼의 모든 데이타 삭제.
