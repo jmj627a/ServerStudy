@@ -1,5 +1,6 @@
 #include "RingBuf.h"
 #include <string>
+#include <Windows.h>
 
 void RingBuf::Initial(int iBufferSize)
 {
@@ -68,6 +69,9 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 	bool isOneCircle = false;
 	int afterCount = 0;
 
+	char* cmpCopy = (char*)malloc(DATA_SIZE);
+	ZeroMemory(cmpCopy, sizeof(cmpCopy));
+
 	//끝까지 다 읽을때까지
 	while (iSize != 0)
 	{
@@ -77,14 +81,24 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 			//여기서 반으로 쪼개지는 상황이 있음. (readPos가 배열 끝에서 시작으로 넘어갔을때)
 			if (isOneCircle == true)
 			{
-				memcpy(chpData, arr + readPos, count - afterCount);
-				memcpy(chpData + (count - afterCount), arr , afterCount);
+				memcpy(cmpCopy, arr + readPos, count - afterCount);
+				memcpy(cmpCopy + (count - afterCount), arr , afterCount);
 			}
 			else
-				memcpy(chpData, arr + readPos, count);
+				memcpy(cmpCopy, arr + readPos, count);
 
-			readPos = pos;
- 			return count;
+
+			if (memcmp(cmpCopy, chpData, strlen(chpData)) == 0)
+			{
+				readPos = pos;
+				delete cmpCopy;
+				return count;
+			}
+			else
+			{
+				delete cmpCopy;
+				return 0;
+			}
 		}
 
 		pos = (pos + 1) % BUFFER_SIZE;
@@ -101,14 +115,23 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 
 	if (isOneCircle == true)
 	{
-		memcpy(chpData, arr + readPos, count - afterCount);
-		memcpy(chpData + (count - afterCount), arr, afterCount);
+		memcpy(cmpCopy, arr + readPos, count - afterCount);
+		memcpy(cmpCopy + (count - afterCount), arr, afterCount);
 	}
 	else
-		memcpy(chpData, arr + readPos, count);
+		memcpy(cmpCopy, arr + readPos, count);
 	
-	readPos = pos;
-	return count;
+	if (memcmp(cmpCopy, chpData, strlen(chpData)) == 0)
+	{
+		readPos = pos;
+		delete cmpCopy;
+		return count;
+	}
+	else
+	{
+		delete cmpCopy;
+		return 0;
+	}
 }
 
 int RingBuf::Peek(char* chpData, int iSize)

@@ -1,8 +1,8 @@
 #pragma once
 #include <stdio.h>
 
-constexpr int BUFFER_SIZE = 100;
-
+constexpr int BUFFER_SIZE = 1000;
+constexpr int DATA_SIZE = 121;
 class RingBuf
 {
 private:

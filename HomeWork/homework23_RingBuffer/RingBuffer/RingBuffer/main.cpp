@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <stdlib.h>
-#include <stdlib.h>
+
 
 #include "RingBuf.h"
 
@@ -33,16 +33,22 @@ void main()
 		}
 		
 		enqRandom = rand() % leftSize + 1;
-		int ret = buffer.Enqueue(ptr, enqRandom); //랜덤한 길이만큼 넣기 
-		ptr += ret; //enq된 사이즈만큼 증가.
+		int enqRet = buffer.Enqueue(ptr, enqRandom); //랜덤한 길이만큼 넣기 
+		ptr += enqRet; //enq된 사이즈만큼 증가.
 		
-		ZeroMemory(deqCopy, sizeof(data));
 		deqRandom = rand() % leftSize + 1;
-		leftSize -= ret;
+
+		ZeroMemory(deqCopy, sizeof(data));
+		int peekRet = buffer.Peek(deqCopy, deqRandom);
+
+		leftSize -= enqRet;
 		
-		ret = buffer.Dequeue(deqCopy, deqRandom);
-		if(ret > 0)
+		int deqRet = buffer.Dequeue(deqCopy, deqRandom);
+
+		if (deqRet > 0)
 			printf("%s", deqCopy);
+
+
 
 		Sleep(10);
 	}
