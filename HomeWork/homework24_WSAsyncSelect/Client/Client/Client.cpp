@@ -167,29 +167,36 @@ void procWrite()
 	g_isSend = true; //이건 FD_WRITE 호출되고, 이 함수 불리기 전에 해주기 
 
 	//큐에 있는 것 보내주기 
-	char sendBuffer[5000]; //이걸 거쳐서 send 하는데 여기선 peek로 확인 
-	int ret = sendQueue.Peek(sendBuffer, 5000);
-
-	ret = send(Socket, sendBuffer, ret, 0);
-
-	if (ret == SOCKET_ERROR)
+	while (true)
 	{
-		int err = WSAGetLastError();
+		char sendBuffer[5000]; //이걸 거쳐서 send 하는데 여기선 peek로 확인 
+		int ret = sendQueue.Peek(sendBuffer, 5000);
 
-		//우드블럭이 아니라면 
-		if (err != WSAEWOULDBLOCK)
-			return;
-		//우드블럭이 맞다면 -> 아무것도 카피를 못한 것. FD_WRITE가 뜨기 전까지 우드블럭, 더 확인할 필요 없다. isSend=false로 바꾸고 그냥 나간다. 나중에 FD_WRITE에서 true로 바꿔줄거다. 
-		else
+		ret = send(Socket, sendBuffer, ret, 0);
+
+		if (ret == SOCKET_ERROR)
 		{
-			g_isSend = false;
-			return;
+			int err = WSAGetLastError();
+
+			//우드블럭이 아니라면 
+			if (err != WSAEWOULDBLOCK)
+				return;
+			//우드블럭이 맞다면 -> 아무것도 카피를 못한 것. FD_WRITE가 뜨기 전까지 우드블럭, 더 확인할 필요 없다. isSend=false로 바꾸고 그냥 나간다. 나중에 FD_WRITE에서 true로 바꿔줄거다. 
+			else
+			{
+				g_isSend = false;
+				return;
+			}
+
 		}
 
-	}
+		//에러가 나지 않았으면 뭐라도 갔다는 것. sendQueue에서 removeFront(ret)로 copy에 성공한 ret만큼만 지워줌
+		sendQueue.MoveFront(ret);
 
-	//에러가 나지 않았으면 뭐라도 갔다는 것. sendQueue에서 removeFront(ret)로 copy에 성공한 ret만큼만 지워줌
-	sendQueue.MoveFront(ret);
+		//session->SendQ 를 모두 보내면 반복문 중단
+		if (sendQueue.GetUseSize() == 0)
+			break;
+	}
 }
 
 void sendPacket(char* buffer, int size)

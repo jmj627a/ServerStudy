@@ -1,0 +1,146 @@
+Session
+{
+	SOCKET Socket;
+	AddrInfo;
+	RecvQ;
+	SendQ;
+	SendFlag;
+}
+
+SOCKET g_ListenSocket;
+SessionList;
+------------------------------------------------------------
+
+main()
+{
+	윈도우생성
+	ListenSocket 생성, 바인딩, listen;
+
+	WSAAsyncSelect(g_ListenSocket, hWnd, UM_NETWORK, FD_ACCEPT | FD_CLOSE);
+
+	while ( GetMessage... )
+	{
+		메시지 루프
+
+
+	}
+}
+
+Session *FindSession(SOCKET ClientSocket)
+{
+	SessionList 에서 ClientSocket 검색 후 Session * return;
+	검색에 실패 했다면 return null;
+}
+
+void RemoveSession(Session *p)
+{
+	closesocket(p->socket);
+	해당 세션 List 에서 삭제.
+
+	세션종료에 대한 로그 출력
+}
+
+WndProc( ... )
+{
+
+	case UM_NETWORK:
+	{
+		if ( WSAGETSELECTERROR(lParam) )
+		{
+			// wParam -> Socket  
+			RemoveSession(SOCKET)wParam);
+			break;
+		}
+
+		switch ( WSAGETSELECTEVENT(lParam))
+		case FD_ACCEPT:
+			ProcAccept(); break;
+		case FD_READ:
+			ProcRead(wParam); break;
+		case FD_WRITE:
+			pSession = FindSession(wParam);
+			pSession->SendFlag = true;
+			ProcWrite(pSession); break;
+		case FD_CLOSE:
+			RemoveSession(wParam); break;
+	}
+}
+
+void ProcAccept()
+{
+	Socket = accept(.... );
+
+	Session 동적 할당.
+	Session->Socket = Socket;
+	Session->AddrInfo = 셋팅.
+
+	SessionList 추가
+
+	WSAAsyncSelect(Socket, g_hWnd, UM_NETWORK, FD_READ | FD_WRITE | FD_CLOSE);
+
+	접속자에 대한 로그 출력.
+}
+
+ProcRead(ClientSocket)
+{
+	Session *p = FindSession(ClientSocket);
+	
+	if ( p == null )
+	{
+		로그 .....
+	}
+
+	ret = recv(p->Socket, ... p->RecvQ 로 수신 )
+	if ( 에러 || ret == 0 )
+		RemoveSession
+
+	while ( 1 )
+	{
+		해당 세션의 RecvQ 에 들어있는 완성된  메시지 확인
+		
+		stDRAW_PACKET Packet;
+		RecvQ.Dequeue(&Packet, Header); 
+		SendBroadcast(&Packet);
+	}	
+}
+
+SendBroadcast(*Packet)
+{
+	SessionList 순회 iter;
+		p = *iter;
+		iter++;
+
+		SendPacket(p, Packet);	
+}
+
+SendPacket(*Session, *Packet)
+{
+	Session->SendQ.Enqueue(Packet, 16);
+
+	if ( Session->SendFlag == false )
+		return;
+
+	ProcWrite(Session);
+}
+
+
+ProWrite(Session)
+{
+	while ( 1 )
+	{
+		ret = send(Session->Socket,  Session->SendQ 열심히 샌드
+		if ( ret 에러 WOULDBLOCK 이 아니라면 )
+			RemoveSession(...);
+
+		Session->SendQ 를 모두 보내면 반복문 중단
+	}
+}
+
+
+
+
+
+
+
+
+
