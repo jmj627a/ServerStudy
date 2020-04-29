@@ -14,7 +14,7 @@ private:
 	int m_iDirOld;
 
 public:
-	CPlayerObject();
+	CPlayerObject(bool _isPlayerCharacter, int _dir);
 	~CPlayerObject();
 
 	void ActionProc();
@@ -35,7 +35,6 @@ public:
 	void SetActionStand();
 	
 	void SetDirection(int _dir);
-	void SetcurAction(int _action);
 	void SetHP(char _hp);
 };
 

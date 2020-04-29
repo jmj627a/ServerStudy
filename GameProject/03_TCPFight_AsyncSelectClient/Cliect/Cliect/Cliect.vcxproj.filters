@@ -69,6 +69,9 @@
     <ClInclude Include="CSpriteDib.h">
       <Filter>소스 파일\Dib</Filter>
     </ClInclude>
+    <ClInclude Include="CEffectObject.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -94,6 +97,9 @@
     </ClCompile>
     <ClCompile Include="CSpriteDib.cpp">
       <Filter>소스 파일\Dib</Filter>
+    </ClCompile>
+    <ClCompile Include="CEffectObject.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

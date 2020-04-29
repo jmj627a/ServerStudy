@@ -162,5 +162,5 @@ enum e_SPRITE
 #define dfACTION_PUSH 11
 #define dfACTION_STAND 12
 
-#define dfDIR_LEFT		0
-#define dfDIR_RIGHT		1
+//#define dfDIR_LEFT		0
+//#define dfDIR_RIGHT		4

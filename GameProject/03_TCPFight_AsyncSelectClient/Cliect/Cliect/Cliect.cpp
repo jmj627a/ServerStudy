@@ -48,9 +48,16 @@ void objectSort();
 bool FrameSkip(int deltaTime);
 
 bool PosYComp(const CBaseObject* lhs, const CBaseObject* rhs) {
+	//이펙트면 맨 앞에 그리기
+	if(lhs->GetObjectID() == -1)
+		return 0;
+	else if (rhs->GetObjectID() == -1)
+		return 0;
+
+
 	return lhs->GetCurY() < rhs->GetCurY();
 }
-CSpriteDib g_cSprite(90, 0x00ffffff);
+CSpriteDib g_cSprite(eSPRITE_MAX, 0x00ffffff);
 CScreenDib g_cScreenDib(640, 480, 32);
 HWND hWnd;
 
@@ -123,9 +130,18 @@ bool FrameSkip(int deltaTime)
 void Action()
 {
 	list<CBaseObject*>::iterator iter;
-	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
+	for (iter = g_objectList.begin(); iter != g_objectList.end();)
 	{
-		(*iter)->Run();
+		//이펙트 프레임 다 끝났으면 리턴 true
+		if (!(*iter)->Run())
+			iter++;
+		else
+		{
+			CBaseObject* deleteEffect = (*iter);
+			delete deleteEffect;
+			g_objectList.erase(iter++);
+		}
+
 	}
 }
 
@@ -232,14 +248,12 @@ void InitialGame()
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L03, _T("Sprite_Data\\Stand_L_03.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L04, _T("Sprite_Data\\Stand_L_03.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L05, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
-	g_cSprite.LoadDibSprite(ePLAYER_STAND_L_MAX, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
 
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R01, _T("Sprite_Data\\Stand_R_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R02, _T("Sprite_Data\\Stand_R_02.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R03, _T("Sprite_Data\\Stand_R_03.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R04, _T("Sprite_Data\\Stand_R_03.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_R05, _T("Sprite_Data\\Stand_R_02.bmp"), 71, 90);
-	g_cSprite.LoadDibSprite(ePLAYER_STAND_R_MAX, _T("Sprite_Data\\Stand_R_01.bmp"), 71, 90);
 
 	g_cSprite.LoadDibSprite(ePLAYER_ATTACK1_L01, _T("Sprite_Data\\Attack1_L_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_ATTACK1_L02, _T("Sprite_Data\\Attack1_L_02.bmp"), 71, 90);

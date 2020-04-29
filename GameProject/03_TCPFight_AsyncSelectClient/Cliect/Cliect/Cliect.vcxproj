@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CBaseObject.h" />
+    <ClInclude Include="CEffectObject.h" />
     <ClInclude Include="Cliect.h" />
     <ClInclude Include="CNetwork.h" />
     <ClInclude Include="CPlayerObject.h" />
@@ -162,6 +163,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CBaseObject.cpp" />
+    <ClCompile Include="CEffectObject.cpp" />
     <ClCompile Include="Cliect.cpp" />
     <ClCompile Include="CNetwork.cpp" />
     <ClCompile Include="CPlayerObject.cpp" />

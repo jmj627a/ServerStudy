@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "CNetwork.h"
+#include "CEffectObject.h"
 
 extern CRingBuffer g_RecvBuffer;
 extern CRingBuffer g_SendBuffer;
@@ -126,19 +127,22 @@ void CNetwork::PacketProc(BYTE byPacketType, char* Packet)
 
 	case dfPACKET_SC_MOVE_STOP:
 		netPacketProc_StopCharacter(Packet);
-
 		break;
 
 	case dfPACKET_SC_ATTACK1:
+		netPacketProc_Attack1(Packet);
 		break;
 
 	case dfPACKET_SC_ATTACK2:
+		netPacketProc_Attack2(Packet);
 		break;
 
 	case dfPACKET_SC_ATTACK3:
+		netPacketProc_Attack3(Packet);
 		break;
 
 	case dfPACKET_SC_DAMAGE:
+		netPacketProc_Damage(Packet);
 		break;
 
 		//클라에서 처리해야할 패킷별로 처리 함수 호출
@@ -150,13 +154,17 @@ BOOL CNetwork::netPacketProc_CreateMyCharacter(char *pPacketBuffer)
 {
 	stPACKET_SC_CREATE_MY_CHARACTER * pPacket = (stPACKET_SC_CREATE_MY_CHARACTER*)pPacketBuffer;
 
-	CPlayerObject* player = new CPlayerObject();
+	CPlayerObject* player = new CPlayerObject(true, pPacket->Direction);
 	player->SetPosition(pPacket->X, pPacket->Y);
 	player->SetHP(pPacket->HP);
 	player->SetObjectID(pPacket->ID);
 	player->SetDirection(pPacket->Direction);
 	player->ActionInput(dfACTION_STAND);
-	player->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+
+	if (player->GetDirection()== dfACTION_MOVE_LL)
+		player->SetSprite(ePLAYER_STAND_L01, ePLAYER_STAND_L_MAX, dfDELAY_STAND);
+	else if (player->GetDirection() == dfACTION_MOVE_RR)
+		player->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 
 	g_objectList.push_back(player);
 	g_pPlayerObject = player;
@@ -169,13 +177,19 @@ BOOL CNetwork::netPacketProc_CreateOtherCharacter(char * pPacketBuffer)
 	
 	stPACKET_SC_CREATE_OTHER_CHARACTER *pPacket = (stPACKET_SC_CREATE_OTHER_CHARACTER *)pPacketBuffer;
 	
-	CPlayerObject* otherPlayer = new CPlayerObject();
+	CPlayerObject* otherPlayer = new CPlayerObject(true, pPacket->Direction);
 	otherPlayer->SetPosition(pPacket->X, pPacket->Y);
 	otherPlayer->SetHP(pPacket->HP);
 	otherPlayer->SetObjectID(pPacket->ID);
+
 	otherPlayer->SetDirection(pPacket->Direction);
+	
 	otherPlayer->ActionInput(dfACTION_STAND);
-	otherPlayer->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+	
+	if (otherPlayer->GetDirection() == dfACTION_MOVE_LL)
+		otherPlayer->SetSprite(ePLAYER_STAND_L01, ePLAYER_STAND_L_MAX, dfDELAY_STAND);
+	else if (otherPlayer->GetDirection() == dfACTION_MOVE_RR)
+		otherPlayer->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 	
 	g_objectList.push_back(otherPlayer);
 	
@@ -191,7 +205,7 @@ BOOL CNetwork::netPacketProc_DeleteCharacter(char * pPacketBuffer)
 	{
 		if ((*iter)->GetObjectID() == pPacket->ID)
 		{
-			g_objectList.remove(*iter);
+			g_objectList.erase(iter++);
 			return true;
 		}
 	}
@@ -229,6 +243,86 @@ BOOL CNetwork::netPacketProc_StopCharacter(char * pPacketBuffer)
 			(*iter)->ActionInput(dfACTION_STAND);
 			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
 			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+BOOL CNetwork::netPacketProc_Attack1(char * pPacketBuffer)
+{
+	stPACKET_SC_ATTACK1 *pPacket = (stPACKET_SC_ATTACK1 *)pPacketBuffer;
+
+	list<CBaseObject*>::iterator iter;
+	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
+	{
+		if ((*iter)->GetObjectID() == pPacket->ID)
+		{
+			(*iter)->ActionInput(dfACTION_ATTACK1);
+			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
+			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+BOOL CNetwork::netPacketProc_Attack2(char * pPacketBuffer)
+{
+	stPACKET_SC_ATTACK2 *pPacket = (stPACKET_SC_ATTACK2 *)pPacketBuffer;
+
+	list<CBaseObject*>::iterator iter;
+	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
+	{
+		if ((*iter)->GetObjectID() == pPacket->ID)
+		{
+			(*iter)->ActionInput(dfACTION_ATTACK2);
+			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
+			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+BOOL CNetwork::netPacketProc_Attack3(char * pPacketBuffer)
+{
+	stPACKET_SC_ATTACK3 *pPacket = (stPACKET_SC_ATTACK3 *)pPacketBuffer;
+
+	list<CBaseObject*>::iterator iter;
+	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
+	{
+		if ((*iter)->GetObjectID() == pPacket->ID)
+		{
+			(*iter)->ActionInput(dfACTION_ATTACK3);
+			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
+			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+BOOL CNetwork::netPacketProc_Damage(char * pPacketBuffer)
+{
+	stPACKET_SC_DAMAGE *pPacket = (stPACKET_SC_DAMAGE *)pPacketBuffer;
+
+	list<CBaseObject*>::iterator iter;
+	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
+	{
+		if ((*iter)->GetObjectID() == pPacket->DamageID)
+		{
+			//이펙트 생성
+			CPlayerObject* damagedPlayer = (CPlayerObject*)(*iter);
+			CBaseObject *pEffect = new CEffectObject(-1, damagedPlayer->GetCurX(), damagedPlayer->GetCurY() - 50, 
+				dfDELAY_ATTACK3, eEFFECT_SPARK_01, eEFFECT_SPARK_04);
+			((CPlayerObject*)(*iter))->SetHP(pPacket->DamageHP);
+
+			g_objectList.push_back(pEffect);
 			return true;
 		}
 	}
@@ -274,11 +368,44 @@ void CNetwork::mpMoveStart(stNETWORK_PACKET_HEADER * pHeader, stPACKET_CS_MOVE_S
 	pPacket->Y = _y;
 }
 
-void CNetwork::mpMoveStop(stNETWORK_PACKET_HEADER * pHeader, stPACKET_CS_MOVE_STOP * pPacket, bool _dir, short _x, short _y)
+void CNetwork::mpMoveStop(stNETWORK_PACKET_HEADER * pHeader, stPACKET_CS_MOVE_STOP * pPacket, int _dir, short _x, short _y)
 {
 	pHeader->byCode = dfNETWORK_PACKET_CODE;
 	pHeader->bySize = sizeof(stPACKET_CS_MOVE_STOP);
 	pHeader->byType = dfPACKET_CS_MOVE_STOP;
+
+	pPacket->Direction = _dir;
+	pPacket->X = _x;
+	pPacket->Y = _y;
+}
+
+void CNetwork::mpAttack1(stNETWORK_PACKET_HEADER *pHeader, stPACKET_CS_ATTACK1 *pPacket, int _dir, short _x, short _y)
+{
+	pHeader->byCode = dfNETWORK_PACKET_CODE;
+	pHeader->bySize = sizeof(stPACKET_CS_ATTACK1);
+	pHeader->byType = dfPACKET_CS_ATTACK1;
+
+	pPacket->Direction = _dir;
+	pPacket->X = _x;
+	pPacket->Y = _y;
+}
+
+void CNetwork::mpAttack2(stNETWORK_PACKET_HEADER *pHeader, stPACKET_CS_ATTACK2 *pPacket, int _dir, short _x, short _y)
+{
+	pHeader->byCode = dfNETWORK_PACKET_CODE;
+	pHeader->bySize = sizeof(stPACKET_CS_ATTACK2);
+	pHeader->byType = dfPACKET_CS_ATTACK2;
+
+	pPacket->Direction = _dir;
+	pPacket->X = _x;
+	pPacket->Y = _y;
+}
+
+void CNetwork::mpAttack3(stNETWORK_PACKET_HEADER *pHeader, stPACKET_CS_ATTACK3 *pPacket, int _dir, short _x, short _y)
+{
+	pHeader->byCode = dfNETWORK_PACKET_CODE;
+	pHeader->bySize = sizeof(stPACKET_CS_ATTACK3);
+	pHeader->byType = dfPACKET_CS_ATTACK3;
 
 	pPacket->Direction = _dir;
 	pPacket->X = _x;

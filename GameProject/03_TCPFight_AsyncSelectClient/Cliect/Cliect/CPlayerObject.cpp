@@ -30,7 +30,7 @@ DWORD CPlayerObject::Run()
 	NextFrame(); //빨리넘어가면 빨리넘어가서 로직의 일부로 들어간것
 	ActionProc();
 
-	return FALSE;
+	return false;
 }
 
 void CPlayerObject::SetActionAttack1()
@@ -38,13 +38,25 @@ void CPlayerObject::SetActionAttack1()
 	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK1;
 
-	if (m_iDirCur == dfDIR_LEFT)
+	if (m_dwActionOld == dfACTION_ATTACK1)
+		return;
+
+	if (m_iDirCur == dfACTION_MOVE_LL)
 		SetSprite(ePLAYER_ATTACK1_L01, ePLAYER_ATTACK1_L_MAX, dfDELAY_ATTACK1);
 	else
 		SetSprite(ePLAYER_ATTACK1_R01, ePLAYER_ATTACK1_R_MAX, dfDELAY_ATTACK1);
 
 
 	//sendPacket
+	//이전과 행동이 바뀌었으면 패킷 보내기
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
+	{
+		stNETWORK_PACKET_HEADER Header;
+		stPACKET_CS_ATTACK1 Packet;
+
+		network->mpAttack1(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
+		network->SendPacket(&Header, (char*)&Packet);
+	}
 }
 
 void CPlayerObject::SetActionAttack2()
@@ -52,13 +64,24 @@ void CPlayerObject::SetActionAttack2()
 	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK2;
 
-	if (m_iDirCur == dfDIR_LEFT)
+	if (m_dwActionOld == dfACTION_ATTACK2)
+		return;
+
+	if (m_iDirCur == dfACTION_MOVE_LL)
 		SetSprite(ePLAYER_ATTACK2_L01, ePLAYER_ATTACK2_L_MAX, dfDELAY_ATTACK2);
 	else
 		SetSprite(ePLAYER_ATTACK2_R01, ePLAYER_ATTACK2_R_MAX, dfDELAY_ATTACK2);
 
 	//sendPacket
+	//이전과 행동이 바뀌었으면 패킷 보내기
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
+	{
+		stNETWORK_PACKET_HEADER Header;
+		stPACKET_CS_ATTACK2 Packet;
 
+		network->mpAttack2(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
+		network->SendPacket(&Header, (char*)&Packet);
+	}
 }
 
 void CPlayerObject::SetActionAttack3()
@@ -66,23 +89,34 @@ void CPlayerObject::SetActionAttack3()
 	m_dwActionOld = m_dwActionCur; 
 	m_dwActionCur = dfACTION_ATTACK3;
 
-	if (m_iDirCur == dfDIR_LEFT)
+	if (m_dwActionOld == dfACTION_ATTACK3)
+		return;
+
+	if (m_iDirCur == dfACTION_MOVE_LL)
 		SetSprite(ePLAYER_ATTACK3_L01, ePLAYER_ATTACK3_L_MAX, dfDELAY_ATTACK3);
 	else
 		SetSprite(ePLAYER_ATTACK3_R01, ePLAYER_ATTACK3_R_MAX, dfDELAY_ATTACK3);
 
 	//sendPacket
+	//이전과 행동이 바뀌었으면 패킷 보내기
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
+	{
+		stNETWORK_PACKET_HEADER Header;
+		stPACKET_CS_ATTACK3 Packet;
 
+		network->mpAttack3(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
+		network->SendPacket(&Header, (char*)&Packet);
+	}
 }
 
-CPlayerObject::CPlayerObject()
+CPlayerObject::CPlayerObject(bool _isPlayerCharacter, int _dir)
 {
-	m_bPlayerCharacter = true;
+	m_bPlayerCharacter = _isPlayerCharacter;
 	m_chHP = 100;
 	m_dwActionCur = dfACTION_STAND;
 	m_dwActionOld = dfACTION_STAND;
-	m_iDirCur = 0;	//위 아래는 얼굴 방향을 알아야함. 위로가는데 왼쪽보는지 그런거
-	m_iDirOld = 0;
+	m_iDirCur = _dir;	//위 아래는 얼굴 방향을 알아야함. 위로가는데 왼쪽보는지 그런거
+	m_iDirOld = _dir;
 }
 
 CPlayerObject::~CPlayerObject()
@@ -143,52 +177,64 @@ void CPlayerObject::InputActionProc()
 	{
 	case dfACTION_MOVE_DD:
 		SetActionMove(dfACTION_MOVE_DD);
-		m_iCurY += 2;
+		if(m_iCurY + 2 < dfRANGE_MOVE_BOTTOM)
+			m_iCurY += 2;
 		break;
 
 	case dfACTION_MOVE_LD:
-		SetDirection(dfDIR_LEFT);
+		SetDirection(dfACTION_MOVE_LL);
 		SetActionMove(dfACTION_MOVE_LD);
-		m_iCurX -= 3;
-		m_iCurY += 2; 
+		if(m_iCurX - 3 > dfRANGE_MOVE_LEFT)
+			m_iCurX -= 3;
+		if (m_iCurY + 2 < dfRANGE_MOVE_BOTTOM)
+			m_iCurY += 2;
 		break;
 
 	case dfACTION_MOVE_LL:
-		SetDirection(dfDIR_LEFT);
+		SetDirection(dfACTION_MOVE_LL);
 		SetActionMove(dfACTION_MOVE_LL);
-		m_iCurX -= 3;
+		if (m_iCurX - 3 > dfRANGE_MOVE_LEFT)
+			m_iCurX -= 3;
 		break;
 
 	case dfACTION_MOVE_LU:
-		SetDirection(dfDIR_LEFT);
+		SetDirection(dfACTION_MOVE_LL);
 		SetActionMove(dfACTION_MOVE_LU);
-		m_iCurX -= 3;
-		m_iCurY -= 2; 
+		if (m_iCurX - 3 > dfRANGE_MOVE_LEFT)
+			m_iCurX -= 3;
+		if (m_iCurY - 2 > dfRANGE_MOVE_TOP)
+			m_iCurY -= 2;
 		break;
 
 	case dfACTION_MOVE_RD:
-		SetDirection(dfDIR_RIGHT);
+		SetDirection(dfACTION_MOVE_RR);
 		SetActionMove(dfACTION_MOVE_RD);
-		m_iCurX += 3;
-		m_iCurY += 2; 
+		if (m_iCurX + 3 < dfRANGE_MOVE_RIGHT)
+			m_iCurX += 3;
+		if (m_iCurY + 2 < dfRANGE_MOVE_BOTTOM)
+			m_iCurY += 2;
 		break;
 
 	case dfACTION_MOVE_RR:
-		SetDirection(dfDIR_RIGHT);
+		SetDirection(dfACTION_MOVE_RR);
 		SetActionMove(dfACTION_MOVE_RR);
-		m_iCurX += 3; 
+		if (m_iCurX + 3 < dfRANGE_MOVE_RIGHT)
+			m_iCurX += 3;
 		break;
 
 	case dfACTION_MOVE_RU:
-		SetDirection(dfDIR_RIGHT);
+		SetDirection(dfACTION_MOVE_RR);
 		SetActionMove(dfACTION_MOVE_RU);
-		m_iCurX += 3;
-		m_iCurY -= 2; 
+		if (m_iCurX + 3 < dfRANGE_MOVE_RIGHT)
+			m_iCurX += 3;
+		if (m_iCurY - 2 > dfRANGE_MOVE_TOP)
+			m_iCurY -= 2;
 		break;
 
 	case dfACTION_MOVE_UU:
 		SetActionMove(dfACTION_MOVE_UU);
-		m_iCurY -= 2; 
+		if (m_iCurY - 2 > dfRANGE_MOVE_TOP)
+			m_iCurY -= 2;
 		break;
 
 	case dfACTION_STAND:
@@ -228,7 +274,7 @@ void CPlayerObject::SetActionMove(int action)
 		//이전 행동이 멈춘거면 이동
 		if (m_dwActionOld == dfACTION_STAND)
 		{
-			if(m_iDirCur == dfDIR_LEFT)
+			if(m_iDirCur == dfACTION_MOVE_LL)
 				SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 			else
 				SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
@@ -237,7 +283,7 @@ void CPlayerObject::SetActionMove(int action)
 
 	case dfACTION_MOVE_LD:
 		//방향이 다르면 무조건 스프라이트 처음부터
-		if (m_iDirOld != dfDIR_LEFT)
+		if (m_iDirOld != dfACTION_MOVE_LL)
 			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		//방향이 같다면 걷기중이 아니었다면 처음부터. 그 전동작이 stand였다면 처음부터 
 		if(m_dwActionOld == dfACTION_STAND)
@@ -245,35 +291,35 @@ void CPlayerObject::SetActionMove(int action)
 		break;
 
 	case dfACTION_MOVE_LL:
-		if (m_iDirOld != dfDIR_LEFT)
+		if (m_iDirOld != dfACTION_MOVE_LL)
 			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
 			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		break;
 
 	case dfACTION_MOVE_LU:
-		if (m_iDirOld != dfDIR_LEFT)
+		if (m_iDirOld != dfACTION_MOVE_LL)
 			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
 			SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE); 
 		break;
 
 	case dfACTION_MOVE_RD:
-		if(m_iDirOld != dfDIR_RIGHT)
+		if(m_iDirOld != dfACTION_MOVE_RR)
 			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
 			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		break;
 
 	case dfACTION_MOVE_RR:
-		if (m_iDirOld != dfDIR_RIGHT)
+		if (m_iDirOld != dfACTION_MOVE_RR)
 			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
 			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE); 
 		break;
 
 	case dfACTION_MOVE_RU:
-		if (m_iDirOld != dfDIR_RIGHT)
+		if (m_iDirOld != dfACTION_MOVE_RR)
 			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
 		if (m_dwActionOld == dfACTION_STAND)
 			SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE); 
@@ -282,7 +328,7 @@ void CPlayerObject::SetActionMove(int action)
 	case dfACTION_MOVE_UU:
 		if (m_dwActionOld == dfACTION_STAND)
 		{
-			if (m_iDirCur == dfDIR_LEFT)
+			if (m_iDirCur == dfACTION_MOVE_LL)
 				SetSprite(ePLAYER_MOVE_L01, ePLAYER_MOVE_L_MAX, dfDELAY_MOVE);
 			else
 				SetSprite(ePLAYER_MOVE_R01, ePLAYER_MOVE_R_MAX, dfDELAY_MOVE);
@@ -310,13 +356,14 @@ void CPlayerObject::SetActionStand()
 	if (m_dwActionOld == dfACTION_STAND)
 		return;
 
-	if (m_iDirCur == dfDIR_LEFT)
+	if (m_iDirCur == dfACTION_MOVE_LL)
 		SetSprite(ePLAYER_STAND_L01, ePLAYER_STAND_L_MAX, dfDELAY_STAND);
-	else if (m_iDirCur == dfDIR_RIGHT)
+	else if (m_iDirCur == dfACTION_MOVE_RR)
 		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 
 
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur )
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
+		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_MOVE_STOP Packet;
@@ -329,20 +376,18 @@ void CPlayerObject::SetActionStand()
 void CPlayerObject::SetDirection(int _dir)
 {
 	m_iDirOld = m_iDirCur;
-	
-	//왼쪽
-	if (_dir == dfDIR_LEFT)
-		m_iDirCur = dfDIR_LEFT;
-	//오른쪽
-	else if (_dir == dfDIR_RIGHT)
-		m_iDirCur = dfDIR_RIGHT;
+	m_iDirCur = _dir;
+
+	//m_iDirOld = m_iDirCur;
+	//
+	////왼쪽
+	//if (_dir == dfDIR_LEFT)
+	//	m_iDirCur = dfDIR_LEFT;
+	////오른쪽
+	//else if (_dir == dfDIR_RIGHT)
+	//	m_iDirCur = dfDIR_RIGHT;
 }
 
-void CPlayerObject::SetcurAction(int _action)
-{
-	m_dwActionOld = m_dwActionCur;
-	m_dwActionCur = _action;
-}
 
 void CPlayerObject::SetHP(char _hp)
 {

@@ -27,7 +27,7 @@ public:
 	void ActionInput(DWORD dwAction);
 	int GetCurX(void);
 	int GetCurY(void) const ;
-	int GetObjectID(void);
+	int GetObjectID(void) const;
 	int GetSprite(void);
 
 	void SetSprite(int iSpriteStart, int iSpriteMax, int iFrameDelay);

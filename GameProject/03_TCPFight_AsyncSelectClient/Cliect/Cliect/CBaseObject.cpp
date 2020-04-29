@@ -51,7 +51,7 @@ int CBaseObject::GetCurY(void) const
 	return m_iCurY;
 }
 
-int CBaseObject::GetObjectID(void)
+int CBaseObject::GetObjectID(void) const
 {
 	return m_iObjectID;
 }
