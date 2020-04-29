@@ -42,6 +42,9 @@ void CPlayerObject::SetActionAttack1()
 		SetSprite(ePLAYER_ATTACK1_L01, ePLAYER_ATTACK1_L_MAX, dfDELAY_ATTACK1);
 	else
 		SetSprite(ePLAYER_ATTACK1_R01, ePLAYER_ATTACK1_R_MAX, dfDELAY_ATTACK1);
+
+
+	//sendPacket
 }
 
 void CPlayerObject::SetActionAttack2()
@@ -53,6 +56,9 @@ void CPlayerObject::SetActionAttack2()
 		SetSprite(ePLAYER_ATTACK2_L01, ePLAYER_ATTACK2_L_MAX, dfDELAY_ATTACK2);
 	else
 		SetSprite(ePLAYER_ATTACK2_R01, ePLAYER_ATTACK2_R_MAX, dfDELAY_ATTACK2);
+
+	//sendPacket
+
 }
 
 void CPlayerObject::SetActionAttack3()
@@ -64,6 +70,9 @@ void CPlayerObject::SetActionAttack3()
 		SetSprite(ePLAYER_ATTACK3_L01, ePLAYER_ATTACK3_L_MAX, dfDELAY_ATTACK3);
 	else
 		SetSprite(ePLAYER_ATTACK3_R01, ePLAYER_ATTACK3_R_MAX, dfDELAY_ATTACK3);
+
+	//sendPacket
+
 }
 
 CPlayerObject::CPlayerObject()
@@ -282,7 +291,7 @@ void CPlayerObject::SetActionMove(int action)
 	}
 
 	//이전과 행동이 바뀌었으면 패킷 보내기
-	if (m_dwActionOld != m_dwActionCur)// && m_dwActionCur != dfACTION_STAND)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_MOVE_START Packet;
@@ -307,12 +316,12 @@ void CPlayerObject::SetActionStand()
 		SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
 
 
-	if (m_dwActionOld != m_dwActionCur)// && m_dwActionCur != dfACTION_STAND)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur )
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_MOVE_STOP Packet;
 
-		network->mpMoveStop(&Header, &Packet, GetCurAction(), GetCurX(), GetCurY());
+		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
 		network->SendPacket(&Header, (char*)&Packet);
 	}
 }
