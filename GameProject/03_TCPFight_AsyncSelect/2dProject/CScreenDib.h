@@ -1,5 +1,5 @@
 #pragma once
-
+#include "framework.h"
 #ifndef __SCREEN_DIB__
 #define __SCREEN_DIB__
 

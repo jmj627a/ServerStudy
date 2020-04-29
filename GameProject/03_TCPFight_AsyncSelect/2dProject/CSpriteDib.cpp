@@ -1,3 +1,5 @@
+#pragma once
+#include "framework.h"
 #include "CSpriteDib.h"
 
 CSpriteDib::CSpriteDib(int iMaxSprite, DWORD dwColorKey)

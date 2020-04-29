@@ -1,5 +1,6 @@
 #pragma once
-#include <Windows.h>
+#include "framework.h"
+
 
 //bmp 파일을 읽어서 스프라이트 관리 클래스 
 

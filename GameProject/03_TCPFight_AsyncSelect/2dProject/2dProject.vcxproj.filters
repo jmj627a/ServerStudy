@@ -22,6 +22,12 @@
     <Filter Include="소스 파일\BaseObject\Effect">
       <UniqueIdentifier>{a5c027dd-05f9-4b83-9ffb-6555da56e019}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Network">
+      <UniqueIdentifier>{75ec2c32-d812-4336-97c0-6c723010a268}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\RingBuffer">
+      <UniqueIdentifier>{d33e28c6-c7eb-4633-ba9b-5ea29972a763}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -51,6 +57,15 @@
     <ClInclude Include="CBaseObject.h">
       <Filter>소스 파일\BaseObject</Filter>
     </ClInclude>
+    <ClInclude Include="CNetwork.h">
+      <Filter>소스 파일\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="CRingBuffer.h">
+      <Filter>소스 파일\RingBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="protocol.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="2dProject.cpp">
@@ -67,6 +82,15 @@
     </ClCompile>
     <ClCompile Include="CPlayerObject.cpp">
       <Filter>소스 파일\BaseObject\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="CNetwork.cpp">
+      <Filter>소스 파일\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="CRingBuffer.cpp">
+      <Filter>소스 파일\RingBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="framework.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

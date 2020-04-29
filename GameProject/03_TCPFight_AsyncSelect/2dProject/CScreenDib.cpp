@@ -1,4 +1,5 @@
-#include <Windows.h>
+#pragma once
+#include "framework.h"
 #include "CScreenDib.h"
 
 //#pragma comment (lib, "winmm")

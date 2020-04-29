@@ -1,3 +1,5 @@
+#pragma once
+#include "framework.h"
 #include "CBaseObject.h"
 
 void CBaseObject::SetSprite(int iSpriteStart, int iSpriteMax, int iFrameDelay)

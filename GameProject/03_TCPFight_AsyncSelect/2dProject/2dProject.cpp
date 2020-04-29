@@ -1,8 +1,6 @@
 ﻿// 2dProject.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
-
-#include <list>
-#include <Windows.h>
+#pragma once
 
 #include "framework.h"
 #include "2dProject.h"
@@ -10,30 +8,32 @@
 #include "CSpriteDib.h"
 #include "CBaseObject.h"
 #include "CPlayerObject.h"
-
-#pragma comment (lib, "winmm")
-#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
-//printf("curr : %d \t old : %d \t deltaTime : %d \n", cur, old, deltaTime);
-//printf("deltaTime : %d \t cur : %d \t old : %d \n", deltaTime, cur, old);
+#include "CRingBuffer.h"
+#include "CNetwork.h"
 
 #define MAX_LOADSTRING 100
 
 
-using namespace std;
-
 // 전역 변수:
-HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
+bool g_connect = false;							//서버에 접속 되었는지(논블록 소켓이라 연결이 안됐을수도)
+CRingBuffer g_RecvBuffer;						//수신용 버퍼 
+CRingBuffer g_SendBuffer;						//송신용 버퍼
+bool g_SendPossible = false;					//없어도 wouldblock에 걸리지만, 애초에 보내지 말자는 의미에서
+SOCKET Socket;
+
+CNetwork *network = new CNetwork();
+
+list<CPlayerObject*> g_objectList;
+
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 void KeyProcess();
-//void Update_Game(void);
 void Update();
 void InitialGame();
 void Action();
@@ -223,7 +223,6 @@ void KeyProcess()
 
 void InitialGame()
 {
-	//g_cSprite.LoadDibSprite(0, (const wchar_t*)("Sprite_Data\\_Map.bmp"), 0, 0);
 	g_cSprite.LoadDibSprite(eMap, _T("Sprite_Data\\_Map.bmp"), 0, 0);
 
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L01, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
@@ -309,26 +308,26 @@ void InitialGame()
 	g_cSprite.LoadDibSprite(eSHADOW, _T("Sprite_Data\\Shadow.bmp"), 32, 4);
 
 
-	g_pPlayerObject = new CPlayerObject();
-	g_pPlayerObject->SetPosition(400, 100);
-	g_pPlayerObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
-	g_pPlayerObject-> SetObjectID(0);
-	g_pPlayerObject->ActionInput(dfACTION_STAND);
+	//g_pPlayerObject = new CPlayerObject();
+	//g_pPlayerObject->SetPosition(400, 100);
+	//g_pPlayerObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+	//g_pPlayerObject-> SetObjectID(0);
+	//g_pPlayerObject->ActionInput(dfACTION_STAND);
 
-	objectList.push_back(g_pPlayerObject);
-	
-	//더미 플레이어 생성 
-	CBaseObject* pObject;
-	for (int i = 0; i < 3; ++i)
-	{
-		pObject = new CPlayerObject();
-		pObject->SetPosition(150 + (i * 100), 150 + (i * 100));
-		pObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
-		pObject->SetObjectID(1);
-		pObject->ActionInput(dfACTION_STAND);
+	//objectList.push_back(g_pPlayerObject);
+	//
+	////더미 플레이어 생성 
+	//CBaseObject* pObject;
+	//for (int i = 0; i < 3; ++i)
+	//{
+	//	pObject = new CPlayerObject();
+	//	pObject->SetPosition(150 + (i * 100), 150 + (i * 100));
+	//	pObject->SetSprite(ePLAYER_STAND_R01, ePLAYER_STAND_R_MAX, dfDELAY_STAND);
+	//	pObject->SetObjectID(1);
+	//	pObject->ActionInput(dfACTION_STAND);
 
-		objectList.push_back(pObject);
-	}
+	//	objectList.push_back(pObject);
+	//}
 
 }
 
@@ -336,7 +335,6 @@ void objectSort()
 {
 	objectList.sort(PosYComp);
 }
-
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -355,34 +353,80 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_MY2DPROJECT, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-	//이미지 불러오기
+	//1. 스프라이트 및 게임 데이터 로드
 	InitialGame();
 
+	//2. 아이피 입력을 위한 다이알로그 생성
+	char serverIP[30];
+	printf("ip 입력 : ");
+	scanf("%s", serverIP);
 
-    // 애플리케이션 초기화를 수행합니다:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
 
-    //HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY2DPROJECT));
+    //3. 윈도우를 생성한다.
+	hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, 0, 800, 700, nullptr, nullptr, hInstance, nullptr);
+	if (!hWnd)
+		return FALSE;
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
+
+
+	//4. 윈속 초기화 및 소켓 생성
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
+
+	// socket()
+	Socket = socket(AF_INET, SOCK_STREAM, 0);
+	if (Socket == INVALID_SOCKET)
+		return 1;
+
+	// connect()
+	SOCKADDR_IN serveraddr;
+	IN_ADDR Addr;
+	ZeroMemory(&serveraddr, sizeof(serveraddr));
+
+	serveraddr.sin_family = AF_INET;
+	inet_pton(AF_INET, serverIP, &serveraddr.sin_addr);
+	serveraddr.sin_port = htons(SERVER_PORT);
+
+
+	//5. WSAAsyncSelect 등록, 비동기 상태로 변경
+	WSAAsyncSelect(Socket, hWnd, WM_NETWORK, FD_CONNECT | FD_WRITE | FD_READ | FD_CLOSE);
+	
+	//6. 서버로 connect 접속 시도
+	int ret = connect(Socket, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
+	if (ret == SOCKET_ERROR)
+	{
+		//진짜 에러
+		int err = WSAGetLastError();
+		if (err != WSAEWOULDBLOCK)
+			return -1;
+	}
 
     MSG msg;
 
     // 기본 메시지 루프입니다:
-    while (true)
-    {
+	while (true)
+	{
 		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-        {
+		{
 			if (msg.message == WM_QUIT)
 				break;
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 		else
-			Update();
-    }
+		{
+			if(g_connect)
+				Update();
+		}
+	}
 
+
+	objectList.clear();
+	closesocket(Socket);
+	timeEndPeriod(1);
     return (int) msg.wParam;
 }
 
@@ -408,43 +452,47 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 }
 
 
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
-
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, 800, 700, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
 	case WM_CREATE:
 		break;
-	case WM_MOUSEMOVE:
+	case WM_NETWORK:
+	{
+		WORD event = WSAGETSELECTEVENT(lParam);
+		WORD error = WSAGETSELECTERROR(lParam);
+
+		if (error)
+			return -1;
+
+		switch (event)
+		{
+		case FD_CONNECT:
+			g_connect = true;
+			return true;
+		case FD_READ:
+			if (!network->RecvEvent())
+				return false;
+			return true;
+		case FD_WRITE:
+			g_SendPossible = true;
+			if (!network->SendEvent())
+				return false;
+			return true;
+		case FD_CLOSE:
+			return false;
+		}
+	}
 		break;
+
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_ACTIVE)
 			g_bActiveApp = true;
 		else if (LOWORD(wParam) == WA_CLICKACTIVE)
 			g_bActiveApp = true;
 		else if (LOWORD(wParam) == WA_INACTIVE)
-		{
 			g_bActiveApp = false;
-			//printf("=============================================\n");
-		}
 		break;
     case WM_PAINT:
         {
@@ -455,7 +503,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DESTROY:
-		timeEndPeriod(1);
         PostQuitMessage(0);
         break;
     default:
