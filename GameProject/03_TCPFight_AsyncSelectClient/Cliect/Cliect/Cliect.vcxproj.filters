@@ -70,7 +70,7 @@
       <Filter>소스 파일\Dib</Filter>
     </ClInclude>
     <ClInclude Include="CEffectObject.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\BaseObject\Effect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -99,7 +99,7 @@
       <Filter>소스 파일\Dib</Filter>
     </ClCompile>
     <ClCompile Include="CEffectObject.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\BaseObject\Effect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

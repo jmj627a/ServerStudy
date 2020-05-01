@@ -49,7 +49,7 @@ void CPlayerObject::SetActionAttack1()
 
 	//sendPacket
 	//이전과 행동이 바뀌었으면 패킷 보내기
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_ATTACK1 Packet;
@@ -74,7 +74,7 @@ void CPlayerObject::SetActionAttack2()
 
 	//sendPacket
 	//이전과 행동이 바뀌었으면 패킷 보내기
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_ATTACK2 Packet;
@@ -99,7 +99,7 @@ void CPlayerObject::SetActionAttack3()
 
 	//sendPacket
 	//이전과 행동이 바뀌었으면 패킷 보내기
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_ATTACK3 Packet;

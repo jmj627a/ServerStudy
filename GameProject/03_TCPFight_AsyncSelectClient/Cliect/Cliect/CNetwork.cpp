@@ -28,41 +28,46 @@ bool CNetwork::RecvEvent()
 	if (ret == SOCKET_ERROR)
 		return false;
 
-	ret = g_RecvBuffer.Enqueue(recvBuffer, ret);
+	char* pbuf = recvBuffer;
 
-	stNETWORK_PACKET_HEADER Header;
-
-	//완료 패킷 처리부
-	while (true)
+	//recv한게 다 enq 될 때까지. 이건 바로 링버퍼에 recv하면 사라질 문제
+	//while (ret != 0)
 	{
-		//1. RecvQ에 최소한의 사이즈가 있는지 확인. 헤더의 길이보다 작으면 아직 덜왔다 판단 후 나가기
-		if (g_RecvBuffer.GetUseSize() <= sizeof(stNETWORK_PACKET_HEADER)) break;
+		ret = g_RecvBuffer.Enqueue(pbuf, ret);
 
-		//2. RecvQ에서 헤더를 Peek
-		ret = g_RecvBuffer.Peek((char*)&Header, sizeof(stNETWORK_PACKET_HEADER));
+		stNETWORK_PACKET_HEADER Header;
 
-		//3. 헤더의 code 확인
-		if (Header.byCode != dfNETWORK_PACKET_CODE) return false;
+		//완료 패킷 처리부
+		while (true)
+		{
+			//1. RecvQ에 최소한의 사이즈가 있는지 확인. 헤더의 길이보다 작으면 아직 덜왔다 판단 후 나가기
+			if (g_RecvBuffer.GetUseSize() <= sizeof(stNETWORK_PACKET_HEADER)) break;
 
-		//4. 헤더의 len 값과 RecvQ의 데이터 사이즈 비교 (헤더 + len + 엔드코드)  패킷 하나가 완성이 안됐으면(헤더에 담긴 패킷 길이 + 헤더 크기) 할 게 없으니 나가기
-		if (g_RecvBuffer.GetUseSize() < sizeof(Header) + Header.bySize + sizeof(BYTE)) return false;
+			//2. RecvQ에서 헤더를 Peek
+			ret = g_RecvBuffer.Peek((char*)&Header, sizeof(stNETWORK_PACKET_HEADER));
 
-		//헤더 지나서 패킷만 읽음
-		g_RecvBuffer.MoveFront(sizeof(Header));
+			//3. 헤더의 code 확인
+			if (Header.byCode != dfNETWORK_PACKET_CODE) return false;
 
-		char *Packet = (char*)malloc(Header.bySize);
-		ret = g_RecvBuffer.Dequeue(Packet, Header.bySize);
+			//4. 헤더의 len 값과 RecvQ의 데이터 사이즈 비교 (헤더 + len + 엔드코드)  패킷 하나가 완성이 안됐으면(헤더에 담긴 패킷 길이 + 헤더 크기) 할 게 없으니 나가기
+			if (g_RecvBuffer.GetUseSize() < sizeof(Header) + Header.bySize + sizeof(BYTE)) return false;
 
-		BYTE endCode;
-		g_RecvBuffer.Peek((char*)&endCode, 1);
-		if (endCode != dfNETWORK_PACKET_END) return false;
-		g_RecvBuffer.MoveFront(sizeof(endCode));
+			//헤더 지나서 패킷만 읽음
+			g_RecvBuffer.MoveFront(sizeof(Header));
 
-		PacketProc(Header.byType, Packet);
-		
-		delete Packet;
+			char* Packet = (char*)malloc(Header.bySize);
+			ret = g_RecvBuffer.Dequeue(Packet, Header.bySize);
+
+			BYTE endCode;
+			g_RecvBuffer.Peek((char*)&endCode, 1);
+			if (endCode != dfNETWORK_PACKET_END) return false;
+			g_RecvBuffer.MoveFront(sizeof(endCode));
+
+			PacketProc(Header.byType, Packet);
+
+			delete Packet;
+		}
 	}
-
 }
 
 //FD_WRITE가 떴을 때. 이 함수는 sendQueue.GetUseSize() <=0 될 때 까지 while문 돌려야 한다. 아니면 우드블럭 뜰 때 까지.
