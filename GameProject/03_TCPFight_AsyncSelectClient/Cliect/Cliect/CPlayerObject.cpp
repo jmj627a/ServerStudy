@@ -46,6 +46,16 @@ void CPlayerObject::SetActionAttack1()
 	else
 		SetSprite(ePLAYER_ATTACK1_R01, ePLAYER_ATTACK1_R_MAX, dfDELAY_ATTACK1);
 
+	//멈추고 공격
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
+		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
+	{
+		stNETWORK_PACKET_HEADER Header;
+		stPACKET_CS_MOVE_STOP Packet;
+
+		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
+		network->SendPacket(&Header, (char*)&Packet);
+	}
 
 	//sendPacket
 	//이전과 행동이 바뀌었으면 패킷 보내기
@@ -72,6 +82,17 @@ void CPlayerObject::SetActionAttack2()
 	else
 		SetSprite(ePLAYER_ATTACK2_R01, ePLAYER_ATTACK2_R_MAX, dfDELAY_ATTACK2);
 
+	//멈추고 공격
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
+		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
+	{
+		stNETWORK_PACKET_HEADER Header;
+		stPACKET_CS_MOVE_STOP Packet;
+
+		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
+		network->SendPacket(&Header, (char*)&Packet);
+	}
+
 	//sendPacket
 	//이전과 행동이 바뀌었으면 패킷 보내기
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
@@ -96,6 +117,17 @@ void CPlayerObject::SetActionAttack3()
 		SetSprite(ePLAYER_ATTACK3_L01, ePLAYER_ATTACK3_L_MAX, dfDELAY_ATTACK3);
 	else
 		SetSprite(ePLAYER_ATTACK3_R01, ePLAYER_ATTACK3_R_MAX, dfDELAY_ATTACK3);
+
+	//멈추고 공격
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
+		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
+	{
+		stNETWORK_PACKET_HEADER Header;
+		stPACKET_CS_MOVE_STOP Packet;
+
+		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
+		network->SendPacket(&Header, (char*)&Packet);
+	}
 
 	//sendPacket
 	//이전과 행동이 바뀌었으면 패킷 보내기
@@ -126,28 +158,58 @@ CPlayerObject::~CPlayerObject()
 void CPlayerObject::ActionProc()
 {
 	//몇몇 동작 시(공격)의 경우 강제적으로 해당 동작 처리를 완료해야만 한다
-
-	switch (m_dwActionCur)
+	//다른 플레이어의 동작이라면 공격이 안끝났어도 반영하기 
+	if (g_pPlayerObject->GetObjectID() == GetObjectID())
 	{
-		//공격동작 또는 데미지 동작은 애니메이션이 끝날 때까지 강제적으로 애니메이션이 되어야만 하며
-		//애니메이션이 끝난 후 기본동작으로 자동으로 돌아가야 한다.
-
-	case dfACTION_ATTACK1:
-	case dfACTION_ATTACK2:
-	case dfACTION_ATTACK3:
-		if (IsEndFrame())
+		switch (m_dwActionCur)
 		{
-			//스프라이트 바꿔주기
-			SetActionStand();
-			//공격이 끝났으면 액션을 바꿔 연속으로 공격을 할 때 재 전송이 가능하도록
-			m_dwActionInput = dfACTION_STAND;
-		}
-		break;
+			//공격동작 또는 데미지 동작은 애니메이션이 끝날 때까지 강제적으로 애니메이션이 되어야만 하며
+			//애니메이션이 끝난 후 기본동작으로 자동으로 돌아가야 한다.
 
-	default:
-		//이외의 경우에는 사용자 입력 처리를 해준다
-		InputActionProc();
-		break;
+		case dfACTION_ATTACK1:
+		case dfACTION_ATTACK2:
+		case dfACTION_ATTACK3:
+			if (IsEndFrame())
+			{
+				//스프라이트 바꿔주기
+				SetActionStand();
+				//공격이 끝났으면 액션을 바꿔 연속으로 공격을 할 때 재 전송이 가능하도록
+				m_dwActionInput = dfACTION_STAND;
+			}
+			break;
+
+		default:
+			//이외의 경우에는 사용자 입력 처리를 해준다
+			InputActionProc();
+			break;
+		}
+	}
+	else
+	{
+		switch (m_dwActionCur)
+		{
+			//공격동작 또는 데미지 동작은 애니메이션이 끝날 때까지 강제적으로 애니메이션이 되어야만 하며
+			//애니메이션이 끝난 후 기본동작으로 자동으로 돌아가야 한다.
+
+		case dfACTION_ATTACK1:
+		case dfACTION_ATTACK2:
+		case dfACTION_ATTACK3:
+			if (IsEndFrame())
+			{
+				//스프라이트 바꿔주기
+				SetActionStand();
+				//공격이 끝났으면 액션을 바꿔 연속으로 공격을 할 때 재 전송이 가능하도록
+				m_dwActionInput = dfACTION_STAND;
+			}
+			else
+				InputActionProc();
+			break;
+
+		default:
+			//이외의 경우에는 사용자 입력 처리를 해준다
+			InputActionProc();
+			break;
+		}
 	}
 }
 
