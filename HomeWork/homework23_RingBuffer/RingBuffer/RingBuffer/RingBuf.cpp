@@ -87,7 +87,7 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 			else
 				memcpy(cmpCopy, arr + readPos, count);
 
-
+			//먼저 했던 peek의 결과와 비교
 			if (memcmp(cmpCopy, chpData, strlen(chpData)) == 0)
 			{
 				readPos = pos;
@@ -121,6 +121,8 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 	else
 		memcpy(cmpCopy, arr + readPos, count);
 	
+	//이부분은 테스트할 때 peek의 결과와 deq의 결과가 같을때만 진짜 deq를 하기 위해 넣은 코드. 
+	//반드시 peek를 먼저 했어야 데이터 비교가 가능하고, 쓰지 않을거면 	readPos = pos;	return count; 만 남기고 지워야 함.
 	if (memcmp(cmpCopy, chpData, strlen(chpData)) == 0)
 	{
 		readPos = pos;
@@ -197,6 +199,7 @@ int RingBuf::MoveFront(int iSize)
 
 void RingBuf::ClearBuffer(void)
 {
+	//사실 0으로 지울 필요 없고, pos를 같게 위치시키면 데이터가 없다는 의미와 같음.
 	memset(arr, 0, sizeof(arr));
 	readPos = 0;
 	writePos= 0;

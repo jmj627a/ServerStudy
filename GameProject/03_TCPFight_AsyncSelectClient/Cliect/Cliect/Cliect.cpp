@@ -110,8 +110,6 @@ void Update()
 		skiptime = cur;
 	}
 
-	//프레임스킵 여부, 델타타입 결과값, curr 차감시킨값. 
-
 	//screen dib을 화면으로 플립
 	//dib버퍼의 내용을 화면으로 출력
 	g_cScreenDib.Flip(hWnd);

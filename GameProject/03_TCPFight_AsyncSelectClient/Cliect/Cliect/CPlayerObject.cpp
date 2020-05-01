@@ -47,8 +47,7 @@ void CPlayerObject::SetActionAttack1()
 		SetSprite(ePLAYER_ATTACK1_R01, ePLAYER_ATTACK1_R_MAX, dfDELAY_ATTACK1);
 
 	//¸ØÃß°í °ø°Ý
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
-		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_MOVE_STOP Packet;
@@ -83,8 +82,7 @@ void CPlayerObject::SetActionAttack2()
 		SetSprite(ePLAYER_ATTACK2_R01, ePLAYER_ATTACK2_R_MAX, dfDELAY_ATTACK2);
 
 	//¸ØÃß°í °ø°Ý
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
-		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_MOVE_STOP Packet;
@@ -119,8 +117,7 @@ void CPlayerObject::SetActionAttack3()
 		SetSprite(ePLAYER_ATTACK3_R01, ePLAYER_ATTACK3_R_MAX, dfDELAY_ATTACK3);
 
 	//¸ØÃß°í °ø°Ý
-	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
-		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
+	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
 		stPACKET_CS_MOVE_STOP Packet;
