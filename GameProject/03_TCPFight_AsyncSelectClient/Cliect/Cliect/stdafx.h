@@ -28,7 +28,7 @@
 
 #include "global.h"
 #include "protocol.h"
-
+#include "CPacket.h"
 
 #pragma comment(lib, "ws2_32.lib")
 

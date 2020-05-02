@@ -50,10 +50,11 @@ void CPlayerObject::SetActionAttack1()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_MOVE_STOP Packet;
+		//stPACKET_CS_MOVE_STOP Packet;
+		CPacket Packet;
 
 		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 
 	//sendPacket
@@ -61,10 +62,11 @@ void CPlayerObject::SetActionAttack1()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_ATTACK1 Packet;
+		//stPACKET_CS_ATTACK1 Packet;
+		CPacket Packet;
 
 		network->mpAttack1(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 }
 
@@ -85,10 +87,11 @@ void CPlayerObject::SetActionAttack2()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_MOVE_STOP Packet;
+		//stPACKET_CS_MOVE_STOP Packet;
+		CPacket Packet;
 
 		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 
 	//sendPacket
@@ -96,10 +99,11 @@ void CPlayerObject::SetActionAttack2()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_ATTACK2 Packet;
+		//stPACKET_CS_ATTACK2 Packet;
+		CPacket Packet;
 
 		network->mpAttack2(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 }
 
@@ -120,10 +124,11 @@ void CPlayerObject::SetActionAttack3()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_MOVE_STOP Packet;
+		//stPACKET_CS_MOVE_STOP Packet;
+		CPacket Packet;
 
 		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 
 	//sendPacket
@@ -131,10 +136,11 @@ void CPlayerObject::SetActionAttack3()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_ATTACK3 Packet;
+		//stPACKET_CS_ATTACK3 Packet;
+		CPacket Packet;
 
 		network->mpAttack3(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 }
 
@@ -399,10 +405,11 @@ void CPlayerObject::SetActionMove(int action)
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_MOVE_START Packet;
+		//stPACKET_CS_MOVE_START Packet;
+		CPacket Packet;
 
 		network->mpMoveStart(&Header, &Packet, GetCurAction(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 
 }
@@ -425,10 +432,11 @@ void CPlayerObject::SetActionStand()
 		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
 	{
 		stNETWORK_PACKET_HEADER Header;
-		stPACKET_CS_MOVE_STOP Packet;
+		//stPACKET_CS_MOVE_STOP Packet;
+		CPacket Packet;
 
 		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
-		network->SendPacket(&Header, (char*)&Packet);
+		network->SendPacket(&Header, &Packet);
 	}
 }
 

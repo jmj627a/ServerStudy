@@ -31,6 +31,9 @@
     <Filter Include="소스 파일\Dib">
       <UniqueIdentifier>{de90fed6-21ee-4784-8134-411984ab78de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Packet">
+      <UniqueIdentifier>{e247b42a-cbbf-4293-b430-be32413ae9da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -72,6 +75,9 @@
     <ClInclude Include="CEffectObject.h">
       <Filter>소스 파일\BaseObject\Effect</Filter>
     </ClInclude>
+    <ClInclude Include="CPacket.h">
+      <Filter>소스 파일\Packet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -100,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="CEffectObject.cpp">
       <Filter>소스 파일\BaseObject\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="CPacket.cpp">
+      <Filter>소스 파일\Packet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

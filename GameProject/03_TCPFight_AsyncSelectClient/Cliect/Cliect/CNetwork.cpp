@@ -55,17 +55,17 @@ bool CNetwork::RecvEvent()
 			//헤더 지나서 패킷만 읽음
 			g_RecvBuffer.MoveFront(sizeof(Header));
 
-			char* Packet = (char*)malloc(Header.bySize);
-			ret = g_RecvBuffer.Dequeue(Packet, Header.bySize);
+			//char* Packet = (char*)malloc(Header.bySize);
+			CPacket Packet;
+
+			ret = g_RecvBuffer.Dequeue((char*)Packet.GetBufferPtr(), Header.bySize);
 
 			BYTE endCode;
 			g_RecvBuffer.Peek((char*)&endCode, 1);
 			if (endCode != dfNETWORK_PACKET_END) return false;
 			g_RecvBuffer.MoveFront(sizeof(endCode));
 
-			PacketProc(Header.byType, Packet);
-
-			delete Packet;
+			PacketProc(Header.byType, &Packet);
 		}
 	}
 }
@@ -110,7 +110,7 @@ bool CNetwork::SendEvent()
 }
 
 
-void CNetwork::PacketProc(BYTE byPacketType, char* Packet)
+void CNetwork::PacketProc(BYTE byPacketType, CPacket* Packet)
 {
 	switch (byPacketType)
 	{
@@ -155,15 +155,26 @@ void CNetwork::PacketProc(BYTE byPacketType, char* Packet)
 
 }
 
-BOOL CNetwork::netPacketProc_CreateMyCharacter(char *pPacketBuffer)
+BOOL CNetwork::netPacketProc_CreateMyCharacter(CPacket *pPacketBuffer)
 {
-	stPACKET_SC_CREATE_MY_CHARACTER * pPacket = (stPACKET_SC_CREATE_MY_CHARACTER*)pPacketBuffer;
+	//stPACKET_SC_CREATE_MY_CHARACTER * pPacket = (stPACKET_SC_CREATE_MY_CHARACTER*)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+	BYTE HP;
 
-	CPlayerObject* player = new CPlayerObject(true, pPacket->Direction);
-	player->SetPosition(pPacket->X, pPacket->Y);
-	player->SetHP(pPacket->HP);
-	player->SetObjectID(pPacket->ID);
-	player->SetDirection(pPacket->Direction);
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
+	*pPacketBuffer >> HP;
+
+	CPlayerObject* player = new CPlayerObject(true, Direction);
+	player->SetPosition(X, Y);
+	player->SetHP(HP);
+	player->SetObjectID(ID);
+	player->SetDirection(Direction);
 	player->ActionInput(dfACTION_STAND);
 
 	if (player->GetDirection()== dfACTION_MOVE_LL)
@@ -177,18 +188,27 @@ BOOL CNetwork::netPacketProc_CreateMyCharacter(char *pPacketBuffer)
 	return true;
 }
 
-BOOL CNetwork::netPacketProc_CreateOtherCharacter(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_CreateOtherCharacter(CPacket * pPacketBuffer)
 {
+	//stPACKET_SC_CREATE_OTHER_CHARACTER *pPacket = (stPACKET_SC_CREATE_OTHER_CHARACTER *)pPacketBuffer;
 	
-	stPACKET_SC_CREATE_OTHER_CHARACTER *pPacket = (stPACKET_SC_CREATE_OTHER_CHARACTER *)pPacketBuffer;
-	
-	CPlayerObject* otherPlayer = new CPlayerObject(true, pPacket->Direction);
-	otherPlayer->SetPosition(pPacket->X, pPacket->Y);
-	otherPlayer->SetHP(pPacket->HP);
-	otherPlayer->SetObjectID(pPacket->ID);
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+	BYTE HP;
 
-	otherPlayer->SetDirection(pPacket->Direction);
-	
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
+	*pPacketBuffer >> HP;
+
+	CPlayerObject* otherPlayer = new CPlayerObject(true, Direction);
+	otherPlayer->SetPosition(X, Y);
+	otherPlayer->SetHP(HP);
+	otherPlayer->SetObjectID(ID);
+	otherPlayer->SetDirection(Direction);
 	otherPlayer->ActionInput(dfACTION_STAND);
 	
 	if (otherPlayer->GetDirection() == dfACTION_MOVE_LL)
@@ -201,14 +221,25 @@ BOOL CNetwork::netPacketProc_CreateOtherCharacter(char * pPacketBuffer)
 	return true;
 }
 
-BOOL CNetwork::netPacketProc_DeleteCharacter(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_DeleteCharacter(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_DELETE_CHARACTER *pPacket = (stPACKET_SC_DELETE_CHARACTER *)pPacketBuffer;
+	//stPACKET_SC_DELETE_CHARACTER *pPacket = (stPACKET_SC_DELETE_CHARACTER *)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+	BYTE HP;
+
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
+	*pPacketBuffer >> HP;
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->ID)
+		if ((*iter)->GetObjectID() == ID)
 		{
 			g_objectList.erase(iter++);
 			return true;
@@ -218,17 +249,26 @@ BOOL CNetwork::netPacketProc_DeleteCharacter(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::netPacketProc_MoveCharacter(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_MoveCharacter(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_MOVE_START *pPacket = (stPACKET_SC_MOVE_START *)pPacketBuffer;
+	//stPACKET_SC_MOVE_START *pPacket = (stPACKET_SC_MOVE_START *)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->ID)
+		if ((*iter)->GetObjectID() == ID)
 		{
-			(*iter)->ActionInput(pPacket->Direction);
-			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			(*iter)->ActionInput(Direction);
+			(*iter)->SetPosition(X, Y);
 			return true;
 		}
 	}
@@ -236,18 +276,27 @@ BOOL CNetwork::netPacketProc_MoveCharacter(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::netPacketProc_StopCharacter(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_StopCharacter(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_MOVE_STOP *pPacket = (stPACKET_SC_MOVE_STOP *)pPacketBuffer;
+	//stPACKET_SC_MOVE_STOP *pPacket = (stPACKET_SC_MOVE_STOP *)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->ID)
+		if ((*iter)->GetObjectID() == ID)
 		{
 			(*iter)->ActionInput(dfACTION_STAND);
-			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
-			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			((CPlayerObject*)(*iter))->SetDirection(Direction);
+			(*iter)->SetPosition(X, Y);
 			return true;
 		}
 	}
@@ -255,18 +304,27 @@ BOOL CNetwork::netPacketProc_StopCharacter(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::netPacketProc_Attack1(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_Attack1(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_ATTACK1 *pPacket = (stPACKET_SC_ATTACK1 *)pPacketBuffer;
+	//stPACKET_SC_ATTACK1 *pPacket = (stPACKET_SC_ATTACK1 *)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->ID)
+		if ((*iter)->GetObjectID() == ID)
 		{
 			(*iter)->ActionInput(dfACTION_ATTACK1);
-			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
-			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			((CPlayerObject*)(*iter))->SetDirection(Direction);
+			(*iter)->SetPosition(X, Y);
 			return true;
 		}
 	}
@@ -274,18 +332,27 @@ BOOL CNetwork::netPacketProc_Attack1(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::netPacketProc_Attack2(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_Attack2(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_ATTACK2 *pPacket = (stPACKET_SC_ATTACK2 *)pPacketBuffer;
+	//stPACKET_SC_ATTACK2 *pPacket = (stPACKET_SC_ATTACK2 *)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->ID)
+		if ((*iter)->GetObjectID() == ID)
 		{
 			(*iter)->ActionInput(dfACTION_ATTACK2);
-			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
-			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			((CPlayerObject*)(*iter))->SetDirection(Direction);
+			(*iter)->SetPosition(X,Y);
 			return true;
 		}
 	}
@@ -293,18 +360,27 @@ BOOL CNetwork::netPacketProc_Attack2(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::netPacketProc_Attack3(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_Attack3(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_ATTACK3 *pPacket = (stPACKET_SC_ATTACK3 *)pPacketBuffer;
+	//stPACKET_SC_ATTACK3 *pPacket = (stPACKET_SC_ATTACK3 *)pPacketBuffer;
+	DWORD ID;
+	BYTE Direction;
+	WORD X;
+	WORD Y;
+
+	*pPacketBuffer >> ID;
+	*pPacketBuffer >> Direction;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->ID)
+		if ((*iter)->GetObjectID() == ID)
 		{
 			(*iter)->ActionInput(dfACTION_ATTACK3);
-			((CPlayerObject*)(*iter))->SetDirection(pPacket->Direction);
-			(*iter)->SetPosition(pPacket->X, pPacket->Y);
+			((CPlayerObject*)(*iter))->SetDirection(Direction);
+			(*iter)->SetPosition(X, Y);
 			return true;
 		}
 	}
@@ -312,20 +388,28 @@ BOOL CNetwork::netPacketProc_Attack3(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::netPacketProc_Damage(char * pPacketBuffer)
+BOOL CNetwork::netPacketProc_Damage(CPacket * pPacketBuffer)
 {
-	stPACKET_SC_DAMAGE *pPacket = (stPACKET_SC_DAMAGE *)pPacketBuffer;
+	//stPACKET_SC_DAMAGE *pPacket = (stPACKET_SC_DAMAGE *)pPacketBuffer;
+	DWORD AttackID;
+	DWORD DamageID;
+	BYTE DamageHP;
+
+	*pPacketBuffer >> AttackID;
+	*pPacketBuffer >> DamageID;
+	*pPacketBuffer >> DamageHP;
+
+
 
 	list<CBaseObject*>::iterator iter;
 	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		if ((*iter)->GetObjectID() == pPacket->DamageID)
+		if ((*iter)->GetObjectID() == DamageID)
 		{
 			//이펙트 생성
 			CPlayerObject* damagedPlayer = (CPlayerObject*)(*iter);
-			CBaseObject *pEffect = new CEffectObject(-1, damagedPlayer->GetCurX(), damagedPlayer->GetCurY() - 50, 
-				dfDELAY_ATTACK3, eEFFECT_SPARK_01, eEFFECT_SPARK_04);
-			((CPlayerObject*)(*iter))->SetHP(pPacket->DamageHP);
+			CBaseObject *pEffect = new CEffectObject(-1, damagedPlayer->GetCurX(), damagedPlayer->GetCurY() - 50, dfDELAY_ATTACK3, eEFFECT_SPARK_01, eEFFECT_SPARK_04);
+			((CPlayerObject*)(*iter))->SetHP(DamageHP);
 
 			g_objectList.push_back(pEffect);
 			return true;
@@ -335,7 +419,7 @@ BOOL CNetwork::netPacketProc_Damage(char * pPacketBuffer)
 	return false;
 }
 
-BOOL CNetwork::SendPacket(stNETWORK_PACKET_HEADER * pHeader, char * pPacket)
+BOOL CNetwork::SendPacket(stNETWORK_PACKET_HEADER * pHeader, CPacket * pPacket)
 {
 	//접속상태 예외처리
 
@@ -344,7 +428,7 @@ BOOL CNetwork::SendPacket(stNETWORK_PACKET_HEADER * pHeader, char * pPacket)
 	ret = g_SendBuffer.Enqueue((char*)pHeader, sizeof(stNETWORK_PACKET_HEADER));
 
 	//sendQ에 패킷 넣기
-	ret = g_SendBuffer.Enqueue((char*)pPacket, pHeader->bySize);
+	ret = g_SendBuffer.Enqueue((char*)pPacket->GetBufferPtr(), pHeader->bySize);
 
 	//sendQ에 EndCode 넣기
 	BYTE endCode = dfNETWORK_PACKET_END;
@@ -362,57 +446,58 @@ BOOL CNetwork::SendPacket(stNETWORK_PACKET_HEADER * pHeader, char * pPacket)
 	return 0;
 }
 
-void CNetwork::mpMoveStart(stNETWORK_PACKET_HEADER * pHeader, stPACKET_CS_MOVE_START * pPacket, int _dir, short _x, short _y)
+void CNetwork::mpMoveStart(stNETWORK_PACKET_HEADER * pHeader, CPacket * pPacket, int _dir, short _x, short _y)
 {
+	*pPacket << (BYTE)_dir;
+	*pPacket << (WORD)_x;
+	*pPacket << (WORD)_y;
+
 	pHeader->byCode = dfNETWORK_PACKET_CODE;
-	pHeader->bySize = sizeof(stPACKET_CS_MOVE_START);
+	pHeader->bySize = pPacket->GetDataSize();
 	pHeader->byType = dfPACKET_CS_MOVE_START;
-
-	pPacket->Direction = _dir;
-	pPacket->X = _x;
-	pPacket->Y = _y;
 }
 
-void CNetwork::mpMoveStop(stNETWORK_PACKET_HEADER * pHeader, stPACKET_CS_MOVE_STOP * pPacket, int _dir, short _x, short _y)
+void CNetwork::mpMoveStop(stNETWORK_PACKET_HEADER * pHeader, CPacket * pPacket, int _dir, short _x, short _y)
 {
+	*pPacket << (BYTE)_dir;
+	*pPacket << (WORD)_x;
+	*pPacket << (WORD)_y;
+
 	pHeader->byCode = dfNETWORK_PACKET_CODE;
-	pHeader->bySize = sizeof(stPACKET_CS_MOVE_STOP);
+	pHeader->bySize = pPacket->GetDataSize();
 	pHeader->byType = dfPACKET_CS_MOVE_STOP;
-
-	pPacket->Direction = _dir;
-	pPacket->X = _x;
-	pPacket->Y = _y;
 }
 
-void CNetwork::mpAttack1(stNETWORK_PACKET_HEADER *pHeader, stPACKET_CS_ATTACK1 *pPacket, int _dir, short _x, short _y)
+void CNetwork::mpAttack1(stNETWORK_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y)
 {
+	*pPacket << (BYTE)_dir;
+	*pPacket << (WORD)_x;
+	*pPacket << (WORD)_y;
+
 	pHeader->byCode = dfNETWORK_PACKET_CODE;
-	pHeader->bySize = sizeof(stPACKET_CS_ATTACK1);
+	pHeader->bySize = pPacket->GetDataSize();
 	pHeader->byType = dfPACKET_CS_ATTACK1;
-
-	pPacket->Direction = _dir;
-	pPacket->X = _x;
-	pPacket->Y = _y;
 }
 
-void CNetwork::mpAttack2(stNETWORK_PACKET_HEADER *pHeader, stPACKET_CS_ATTACK2 *pPacket, int _dir, short _x, short _y)
+void CNetwork::mpAttack2(stNETWORK_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y)
 {
+	*pPacket << (BYTE)_dir;
+	*pPacket << (WORD)_x;
+	*pPacket << (WORD)_y;
+
 	pHeader->byCode = dfNETWORK_PACKET_CODE;
-	pHeader->bySize = sizeof(stPACKET_CS_ATTACK2);
+	pHeader->bySize = pPacket->GetDataSize();
 	pHeader->byType = dfPACKET_CS_ATTACK2;
 
-	pPacket->Direction = _dir;
-	pPacket->X = _x;
-	pPacket->Y = _y;
 }
 
-void CNetwork::mpAttack3(stNETWORK_PACKET_HEADER *pHeader, stPACKET_CS_ATTACK3 *pPacket, int _dir, short _x, short _y)
+void CNetwork::mpAttack3(stNETWORK_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y)
 {
+	*pPacket << (BYTE)_dir;
+	*pPacket << (WORD)_x;
+	*pPacket << (WORD)_y;
+	
 	pHeader->byCode = dfNETWORK_PACKET_CODE;
-	pHeader->bySize = sizeof(stPACKET_CS_ATTACK3);
+	pHeader->bySize = pPacket->GetDataSize();
 	pHeader->byType = dfPACKET_CS_ATTACK3;
-
-	pPacket->Direction = _dir;
-	pPacket->X = _x;
-	pPacket->Y = _y;
 }
