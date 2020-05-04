@@ -65,7 +65,13 @@ bool CNetwork::RecvEvent()
 			if (endCode != dfNETWORK_PACKET_END) return false;
 			g_RecvBuffer.MoveFront(sizeof(endCode));
 
-			PacketProc(Header.byType, &Packet);
+			try {
+				PacketProc(Header.byType, &Packet);
+			}
+			catch (...)//오류받는 구조체 만들어야함
+			{
+
+			}
 		}
 	}
 }
