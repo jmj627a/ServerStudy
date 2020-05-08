@@ -29,7 +29,10 @@ void main()
 	Tree.InsertNode(22);
 	Tree.InsertNode(25);
 	Tree.InsertNode(26);
+	Tree.Print_Mid();	// 중위순회 출력
 
+
+	Tree.deleteNode(100);
 	Tree.Print_Mid();	// 중위순회 출력
 
 
