@@ -45,7 +45,7 @@ private:
 	//deleteNode에서 노드 삭제용 재귀함수로 호출
 	NODE* popNode(NODE* _ParentPtr, NODE* _ptr, int _data);
 	//popNode에서 나를 대체할, 나보다 작은 애중에 제일 큰 애의 포인터를 구하는 함수
-	NODE* findMinMax(NODE* _ParentPtr, NODE* _ptr);
+	NODE* findMinMax(NODE* &_ParentPtr, NODE* _ptr);
 
 	void print_this(NODE* _ptr);
 	void print_left(NODE* _ptr);

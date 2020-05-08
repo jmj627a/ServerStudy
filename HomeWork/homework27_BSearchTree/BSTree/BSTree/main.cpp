@@ -27,12 +27,13 @@ void main()
 	Tree.InsertNode(24);
 	Tree.InsertNode(23);
 	Tree.InsertNode(22);
-	Tree.InsertNode(25);
 	Tree.InsertNode(26);
+	Tree.InsertNode(25);
 	Tree.Print_Mid();	// 중위순회 출력
 
 
 	Tree.deleteNode(100);
+	Tree.deleteNode(11);
 	Tree.Print_Mid();	// 중위순회 출력
 
 

@@ -105,8 +105,8 @@ NODE* CBSearchTree::popNode(NODE* _ParentPtr, NODE* _ptr, int _data)
 			NODE* changenode = findMinMax(parnentnode, _ptr->left);
 
 			_ptr->data = changenode->data;
-			_ptr->right = changenode->right;
-			_ptr->left = changenode->left;
+
+			parnentnode->right = nullptr;
 
 			//데이터 바꿔치기하고 원본을 삭제하기전에, 왼쪽에 딸린 노드가 있었다면 삭제될 노드 부모랑 이어주기
 			if(changenode->left != nullptr)
@@ -140,7 +140,7 @@ NODE* CBSearchTree::popNode(NODE* _ParentPtr, NODE* _ptr, int _data)
 	}
 }
 
-NODE* CBSearchTree::findMinMax(NODE* _ParentPtr, NODE* _ptr)
+NODE* CBSearchTree::findMinMax(NODE* &_ParentPtr, NODE* _ptr)
 {
 	NODE* ptr = _ptr;
 
