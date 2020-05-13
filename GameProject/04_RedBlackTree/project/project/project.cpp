@@ -91,14 +91,17 @@ RECT	Rect;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static RBTree* tree = new RBTree();
-    static int nextData;
-    static bool flag = false;
+    static int nextData = rand() % 1000;
+    static int flag = 0; //0-nothing 1-insert 2-delete
     static TCHAR inputStr[256] = { };
+    static RECT rect;
     switch (message)
     {
     case WM_LBUTTONDOWN:
         tree->InsertNode(nextData);
         nextData = rand() % 1000;
+        GetClientRect(hWnd, &rect);
+        InvalidateRect(hWnd, &rect, true);
         break;
 
 
@@ -106,21 +109,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (wParam)
         {
         case VK_F1:
-            flag = true;
+            flag = 1;
             break;
 
         case VK_F2:
             tree->InsertNode(nextData);
             nextData = rand() % 1000;
+            GetClientRect(hWnd, &rect);
+            InvalidateRect(hWnd, &rect, true);
             break;
-
+        case VK_F3:
+            flag = 2;
+            break;
         case VK_RETURN:
-            if (flag)
+            if (flag == 1)
             {
                 tree->InsertNode(_wtoi(inputStr));
-                flag = false;
+                flag = 0;
                 ZeroMemory(inputStr, 256);
             }
+            else if (flag == 2)
+            {
+                tree->deleteNode(_wtoi(inputStr));
+                flag = 0;
+                ZeroMemory(inputStr, 256);
+            }
+            GetClientRect(hWnd, &rect);
+            InvalidateRect(hWnd, &rect, true);
             break;
         }
         break;
@@ -131,15 +146,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         int len;
         
-        if (flag == true)
+        if (flag != 0)
         {
             len = lstrlen(inputStr);
             inputStr[len] = (TCHAR)wParam;
             inputStr[len + 1] = 0;
         }
         
-        wsprintf(data, TEXT("삽입데이터 :%s "), inputStr);
-        TextOut(hdc, 100, 50, data, wcslen(data));
+        if (flag == 1)
+        {
+            wsprintf(data, TEXT("삽입데이터 :%s "), inputStr);
+            TextOut(hdc, 100, 50, data, wcslen(data));
+        }
+        else if (flag == 2)
+        {
+            wsprintf(data, TEXT("삭제데이터 :%s "), inputStr);
+            TextOut(hdc, 100, 50, data, wcslen(data));
+        }
         ReleaseDC(hWnd, hdc);
     }
     break;
@@ -155,9 +178,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             wsprintf(text, TEXT("f1(삽입-데이터입력), f2(삽입-랜덤숫자) , f3(삭제-데이터입력)"));
             TextOut(hdc, 100, 30, text, wcslen(text));
 
-            if (flag)
+            if (flag == 1)
             {
                 wsprintf(text, TEXT("삽입데이터 :"));
+                TextOut(hdc, 100, 50, text, wcslen(text));
+            }
+            else if (flag == 2)
+            {
+                wsprintf(text, TEXT("삭제데이터 :"));
                 TextOut(hdc, 100, 50, text, wcslen(text));
             }
             else

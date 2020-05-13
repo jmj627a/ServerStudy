@@ -64,7 +64,8 @@ private:
 public:
     
     //newNode를 기준으로 밸런싱
-    void makeBalanceTree(stNODE* newNode);
+    void makeBalanceTree_insert(stNODE* newNode);
+    void makeBalanceTree_delete(stNODE* deletenode);
     
     //왼쪽으로 회전
     stNODE* turnLeft(stNODE* newNode);
