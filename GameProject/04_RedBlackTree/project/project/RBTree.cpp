@@ -4,9 +4,9 @@
 RBTree::RBTree()
 {
     Nil.Color = BLACK;
-    Nil.pParent = nullptr;
-    Nil.pLeft = nullptr;
-    Nil.pRight = nullptr;
+    Nil.pParent = &Nil;
+    Nil.pLeft = &Nil;
+    Nil.pRight = &Nil;
 
     m_pRoot = &Nil;
 }
@@ -108,14 +108,18 @@ bool RBTree::deleteNode(int _data)
 
 	stNODE* deletenode = popNode(NULL, m_pRoot, _data);
 
-	makeBalanceTree_delete(deletenode);
+	if (deletenode != &Nil)
+	{
+		/*makeBalanceTree_delete(deletenode);*/
 
-	if (deletenode->pParent->pLeft == deletenode)
-		deletenode->pParent->pLeft = &Nil;
-	else if(deletenode->pParent->pRight == deletenode)
-		deletenode->pParent->pRight = &Nil;
+		if (deletenode->pParent->pLeft == deletenode)
+			deletenode->pParent->pLeft = &Nil;
+		else if (deletenode->pParent->pRight == deletenode)
+			deletenode->pParent->pRight = &Nil;
 
 		delete deletenode;
+	}
+
 	//루트는 항상 BLACK
 	m_pRoot->Color = BLACK;
 	return true;
@@ -124,7 +128,11 @@ bool RBTree::deleteNode(int _data)
 void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 {
 	//삭제할 노드 RED -> 부모는 이미 BLACK이었으니 밸런스에 문제가 없다.
-	if (deletenode->Color == RED) {}
+	if (deletenode->Color == RED) 
+	{
+		deletenode->pLeft->Color = BLACK;
+		deletenode->pRight->Color = BLACK;
+	}
 	//삭제할 노드 BLACK -> BLACK노드를 삭제해서 블랙 개수가 틀어지므로 밸런스 작업 필요 + 부모자식이 레드레드인 경우 작업 필요
 	else
 	{
@@ -137,6 +145,11 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 			{
 				//레드레드의 문제는 자식을 black으로 바꾸면서 해결
 				deletenode->pLeft->Color = BLACK;
+			}
+			else if (deletenode->pParent->Color == RED && deletenode->pRight->Color == RED)
+			{
+				//레드레드의 문제는 자식을 black으로 바꾸면서 해결
+				deletenode->pRight->Color = BLACK;
 			}
 			//삭제 노드의 형제가 RED
 			else if (pSibling->Color == RED)
@@ -183,6 +196,11 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 				//레드레드의 문제는 자식을 black으로 바꾸면서 해결
 				deletenode->pRight->Color = BLACK;
 			}
+			else if (deletenode->pParent->Color == RED && deletenode->pLeft->Color == RED)
+			{
+				//레드레드의 문제는 자식을 black으로 바꾸면서 해결
+				deletenode->pLeft->Color = BLACK;
+			}
 			//삭제 노드의 형제가 RED
 			else if (pSibling->Color == RED)
 			{
@@ -203,19 +221,20 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 			else if (pSibling->Color == BLACK &&
 				(pSibling->pLeft->Color == RED) || (pSibling->pRight->Color == RED))
 			{
-				//삭제노드의 형제가 블랙이고 형제의 왼자식이 레드
+				//삭제노드의 형제가 블랙이고 형제의 오른자식이 레드
 				if (pSibling->pRight->Color == RED)
 				{
 					pSibling->pRight->Color = BLACK;
 					pSibling->Color = RED;
-					turnRight(pSibling);
+					turnLeft(pSibling);
 				}
 
-				//삭제 노드의 형제가 블랙이고 형제의 오른자식이 레드
+				//삭제 노드의 형제가 블랙이고 형제의 왼자식이 레드
+				pSibling = deletenode->pParent->pLeft;
 				pSibling->Color = pSibling->pParent->Color;
 				pSibling->pParent->Color = BLACK;
 				pSibling->pLeft->Color = BLACK;
-				turnLeft(pSibling->pParent);
+				turnRight(pSibling->pParent);
 			}
 		}
 	}
@@ -252,6 +271,8 @@ stNODE* RBTree::popNode(stNODE* _ParentPtr, stNODE* _ptr, int _data)
 			stNODE* parnentnode = _ptr->pParent;
 			stNODE* changenode = findMinMax(parnentnode, _ptr->pLeft);
 
+			makeBalanceTree_delete(changenode);
+
 			_ptr->iData = changenode->iData;
 
 			//??
@@ -259,28 +280,42 @@ stNODE* RBTree::popNode(stNODE* _ParentPtr, stNODE* _ptr, int _data)
 
 			//데이터 바꿔치기하고 원본을 삭제하기전에, 왼쪽에 딸린 노드가 있었다면 삭제될 노드 부모랑 이어주기
 			if (changenode->pLeft != &Nil)
+			{
 				changenode->pParent->pLeft = changenode->pLeft;
-			//else if(changenode->pRight != &Nil)
-			//	changenode->pParent->pRight = changenode->pRight;
-
+				changenode->pLeft->pParent = changenode->pParent;
+			}
 			return changenode;
 		}
 		//삭제될 녀석의 left가 없고 right만 있는경우 -> 내 부모와 내 right를 이어주고 나는 삭제
 		else if (_ptr->pLeft == &Nil && _ptr->pRight != &Nil)
 		{
+			makeBalanceTree_delete(_ptr);
+
+			//내가 루트인경우
+			if(_ptr==m_pRoot)
+			{
+				stNODE* parnentnode = _ptr->pParent;
+				stNODE* changenode = findMaxMin(parnentnode, _ptr->pRight);
+				_ptr->iData = changenode->iData;
+				_ptr = changenode;
+			}
 			//내가 부모의 오른쪽 자식이면
-			if (_ParentPtr->pRight == _ptr)
+			else if (_ParentPtr->pRight == _ptr)
 				_ParentPtr->pRight = _ptr->pRight;
 
 			//내가 부모의 왼쪽 자식이면
-			else
-				_ParentPtr->pLeft = _ptr->pLeft;
+			else if(_ParentPtr->pLeft == _ptr)
+				_ParentPtr->pLeft = _ptr->pRight;
+			
+
 
 			return _ptr;
 		}
 		//삭제될 녀석의 left right가 모두 없는 경우 
 		else
 		{
+			makeBalanceTree_delete(_ptr);
+
 			if (_ParentPtr->pRight == _ptr)
 				_ParentPtr->pRight = &Nil;
 			else
@@ -458,6 +493,23 @@ stNODE* RBTree:: findMinMax(stNODE*& _ParentPtr, stNODE* _ptr)
 			_ParentPtr = ptr;
 
 		ptr = ptr->pRight;
+	}
+
+
+	return ptr;
+}
+
+stNODE* RBTree::findMaxMin(stNODE*& _ParentPtr, stNODE* _ptr)
+{
+	stNODE* ptr = _ptr;
+
+	while (ptr->pLeft != &Nil)
+	{
+		//내 다음 노드가 leaf노드. 내가 부모여야함 
+		if (ptr->pLeft->pLeft == &Nil)
+			_ParentPtr = ptr;
+
+		ptr = ptr->pLeft;
 	}
 
 
