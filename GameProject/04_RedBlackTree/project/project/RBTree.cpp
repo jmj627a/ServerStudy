@@ -130,8 +130,7 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 	//삭제할 노드 RED -> 부모는 이미 BLACK이었으니 밸런스에 문제가 없다.
 	if (deletenode->Color == RED) 
 	{
-		deletenode->pLeft->Color = BLACK;
-		deletenode->pRight->Color = BLACK;
+		deletenode->Color = BLACK;
 	}
 	//삭제할 노드 BLACK -> BLACK노드를 삭제해서 블랙 개수가 틀어지므로 밸런스 작업 필요 + 부모자식이 레드레드인 경우 작업 필요
 	else
@@ -205,7 +204,7 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 			else if (pSibling->Color == RED)
 			{
 				pSibling->Color = BLACK;
-				stNODE* temp = turnLeft(deletenode->pParent);
+				stNODE* temp = turnRight(deletenode->pParent);
 				temp->Color = RED;
 
 				makeBalanceTree_delete(deletenode->pRight);
