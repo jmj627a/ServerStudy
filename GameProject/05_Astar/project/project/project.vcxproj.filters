@@ -27,9 +27,15 @@
     <ClInclude Include="project.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="CAStar.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="project.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CAStar.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

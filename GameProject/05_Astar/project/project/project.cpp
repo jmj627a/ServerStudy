@@ -3,19 +3,9 @@
 
 #include "framework.h"
 #include "project.h"
+#include "CAStar.h"
 
 #define MAX_LOADSTRING 100
-
-enum GRID_TYPE
-{
-    eBLANK,
-    eSTART,
-    eEND,
-    eBLOCKED,
-    eOPEN,
-    eCLOSE
-};
-char g_Grid[30][50] = { eBLANK, };
 
 
 
@@ -103,16 +93,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static int mouseX;
     static int mouseY;
 
-   
+
+	static CAStar astar;
 
     switch (message)
     {
+	
         //시작위치
     case WM_LBUTTONDBLCLK:
         g_Grid[startY][startX] = eBLANK;
 
-        startX = LOWORD(lParam) / 50;
-        startY = HIWORD(lParam) / 30;
+        startX = LOWORD(lParam) / 20;
+        startY = HIWORD(lParam) / 20;
 
         g_Grid[startY][startX] = eSTART;
         InvalidateRect(hWnd, NULL, false);
@@ -122,8 +114,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_RBUTTONDBLCLK:
         g_Grid[endY][endX] = eBLANK;
 
-        endX = LOWORD(lParam) / 50;
-        endY = HIWORD(lParam) / 30;
+        endX = LOWORD(lParam) / 20;
+        endY = HIWORD(lParam) / 20;
 
         g_Grid[endY][endX] = eEND;
         InvalidateRect(hWnd, NULL, false);
@@ -131,6 +123,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         //길찾기 시작
     case WM_LBUTTONDOWN:
+
+		//openlist에 시작 노드 추가
+		NODE* newNode;
+
+		for (int i = 0; i < 50; ++i)
+			for (int j = 0; j < 30; ++j)
+				if(g_Grid[j][i] == eSTART)
+					newNode = new NODE(i,j,nullptr);
+
+		for (int i = 0; i < 50; ++i)
+			for (int j = 0; j < 30; ++j)
+				if (g_Grid[j][i] == eEND)
+				{
+					astar.setEndPos(i, j);
+					astar.setG(newNode);
+					astar.setH(newNode);
+					astar.setF(newNode);
+					astar.openList.push_back(newNode);
+				}
+
+		astar.searchLoad(hWnd);
+
         InvalidateRect(hWnd, NULL, false);
         break;
 
@@ -146,8 +160,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_MOUSEMOVE:
         if (blockedFlag)
         {
-            mouseX = LOWORD(lParam)/50;
-            mouseY = HIWORD(lParam)/30;
+            mouseX = LOWORD(lParam)/20;
+            mouseY = HIWORD(lParam)/20;
 
             if (g_Grid[mouseY][mouseX] == eBLANK)
                 g_Grid[mouseY][mouseX] = eBLOCKED;
@@ -162,9 +176,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-
-
             for (int i = 0; i < 50; ++i)
             {
                 for (int j = 0; j < 30; ++j)
@@ -172,7 +183,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     HBRUSH Brush, oBrush;
                     switch (g_Grid[j][i])
                     {
-                    case eBLANK:    Brush = CreateSolidBrush(RGB(0, 0, 0)); break;    //흰색
+                    case eBLANK:    Brush = CreateSolidBrush(RGB(255, 255, 255)); break;    //흰색
                     case eSTART:    Brush = CreateSolidBrush(RGB(255, 0, 255)); break;      //보라
                     case eEND:      Brush = CreateSolidBrush(RGB(255, 0, 0)); break;        //빨강
                     case eBLOCKED:  Brush = CreateSolidBrush(RGB(200, 200, 200)); break;    //회색
@@ -188,22 +199,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
             }
 
-
-            ////가로그리드
-            //for (int i = 0; i < 30; ++i)
-            //{
-            //    MoveToEx(hdc, 0, i * 20, NULL);
-            //    LineTo(hdc, 1000, i * 20);
-            //}
-            //
-            ////세로그리드
-            //for (int i = 0; i < 50; ++i)
-            //{
-            //    MoveToEx(hdc,i * 20, 0, NULL);
-            //    LineTo(hdc, i * 20, 600);
-            //}
-
-            EndPaint(hWnd, &ps);
+			//TCHAR str[100];
+			//wsprintf(str, TEXT("%d, %d"), testX, testY);
+			//TextOut(hdc, testX, testY, str, lstrlen(str));
+            //EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:

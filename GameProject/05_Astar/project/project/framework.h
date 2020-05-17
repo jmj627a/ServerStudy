@@ -13,3 +13,14 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+
+enum GRID_TYPE
+{
+	eBLANK,
+	eSTART,
+	eEND,
+	eBLOCKED,
+	eOPEN,
+	eCLOSE
+};
+char g_Grid[30][50] = { eBLANK, };
