@@ -48,7 +48,7 @@ public:
 	void setEndPos(int x, int y);
 
 	void searchLoad(HWND hWnd);
-
+	void pathDraw(HWND hWnd);
 
 };
 

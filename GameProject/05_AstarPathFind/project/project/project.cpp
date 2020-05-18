@@ -170,7 +170,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (g_Grid[mouseY][mouseX] == eBLANK)
                 g_Grid[mouseY][mouseX] = eBLOCKED;
             else if (g_Grid[mouseY][mouseX] == eBLOCKED)
-                g_Grid[mouseY][mouseX] = eBLANK;
+              //  g_Grid[mouseY][mouseX] = eBLANK;
             InvalidateRect(hWnd, NULL, false);
         }
         break;
@@ -202,6 +202,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DeleteObject(Brush);
             }
         }
+
+
+        astar.pathDraw(hWnd);
 
         //TCHAR str[100];
         //wsprintf(str, TEXT("%d, %d"), testX, testY);

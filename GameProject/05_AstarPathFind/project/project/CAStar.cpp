@@ -60,8 +60,6 @@ void CAStar::searchLoad(HWND hWnd)
 
 	while (true)
 	{
-		//HDC hDC = GetDC(hWnd);
-
 		openList.sort(FComp);
 		NODE* popNode = openList.front();
 		openList.pop_front();
@@ -233,9 +231,36 @@ void CAStar::searchLoad(HWND hWnd)
 		}
 
 
-		InvalidateRect(hWnd, NULL, false);
 
-		//ReleaseDC(hWnd, hDC);
+	}
+	InvalidateRect(hWnd, NULL, false);
+}
+
+void CAStar::pathDraw(HWND hWnd)
+{
+	if (endNode == nullptr)
+		return;
+
+	HDC hdc = GetDC(hWnd);
+
+
+	NODE* temp = endNode;
+	while (true)
+	{
+		HPEN Pen, oPen;
+		Pen = CreatePen(PS_SOLID	, 3, RGB(255, 0, 0));
+		oPen = (HPEN)SelectObject(hdc, Pen);
+		MoveToEx(hdc, temp->pParent->ix* 20 + 10, temp->pParent->iy * 20+10,NULL);
+		LineTo(hdc, temp->pParent->pParent->ix* 20 + 10, temp->pParent->pParent->iy* 20 + 10);
+		SelectObject(hdc, oPen);
+		DeleteObject(Pen);
+
+		temp = temp->pParent;
+
+		if (temp->pParent->pParent == nullptr)
+			return;
 	}
 
+	InvalidateRect(hWnd, NULL, false);
+	ReleaseDC(hWnd, hdc);
 }
