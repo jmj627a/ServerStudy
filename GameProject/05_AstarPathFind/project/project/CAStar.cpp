@@ -1,7 +1,9 @@
 #pragma once
-#include <windows.h>
-#include "global.h"
+#include "pch.h"
 #include "CAStar.h"
+
+extern char g_Grid[30][50];
+
 
 bool FComp(const NODE* lhs, const NODE* rhs) {
 	return lhs->F < rhs->F;
@@ -53,8 +55,13 @@ void CAStar::setEndPos(int x, int y)
 
 void CAStar::searchLoad(HWND hWnd)
 {
+	if (openList.size() == 0)
+		return;
+
 	while (true)
 	{
+		//HDC hDC = GetDC(hWnd);
+
 		openList.sort(FComp);
 		NODE* popNode = openList.front();
 		openList.pop_front();
@@ -67,9 +74,10 @@ void CAStar::searchLoad(HWND hWnd)
 		}
 
 		closeList.push_back(popNode);
-
 		int x = popNode->ix;
 		int y = popNode->iy;
+		g_Grid[y][x] = eCLOSE;
+
 
 		//■□□
 		//□□□
@@ -80,7 +88,7 @@ void CAStar::searchLoad(HWND hWnd)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y - 1][x - 1] == eBLANK)
+			else if ((g_Grid[y - 1][x - 1] == eBLANK) || (g_Grid[y - 1][x - 1] == eEND))
 			{
 				NODE* newNode = new NODE(x - 1, y - 1, popNode);
 				setG_dia(newNode);
@@ -93,13 +101,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□■□
 		//□□□
 		//□□□
-		else if (g_Grid[y - 1][x] != eBLOCKED)
+		if (g_Grid[y - 1][x] != eBLOCKED)
 		{
 			if (g_Grid[y - 1][x] == eOPEN || g_Grid[y - 1][x] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y - 1][x] == eBLANK)
+			else if ((g_Grid[y - 1][x] == eBLANK) || (g_Grid[y - 1][x] == eEND))
 			{
 				NODE* newNode = new NODE(x, y - 1, popNode);
 				setG(newNode);
@@ -112,13 +120,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□□■
 		//□□□
 		//□□□
-		else if (g_Grid[y - 1][x + 1] != eBLOCKED)
+		if (g_Grid[y - 1][x + 1] != eBLOCKED)
 		{
 			if (g_Grid[y - 1][x + 1] == eOPEN || g_Grid[y - 1][x + 1] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y - 1][x + 1] == eBLANK)
+			else if ((g_Grid[y - 1][x + 1] == eBLANK) || (g_Grid[y - 1][x + 1] == eEND))
 			{
 				NODE* newNode = new NODE(x + 1, y - 1, popNode);
 				setG_dia(newNode);
@@ -131,13 +139,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□□□
 		//■□□
 		//□□□
-		else if (g_Grid[y][x - 1] != eBLOCKED)
+		if (g_Grid[y][x - 1] != eBLOCKED)
 		{
 			if (g_Grid[y][x - 1] == eOPEN || g_Grid[y][x - 1] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y][x - 1] == eBLANK)
+			else if ((g_Grid[y][x - 1] == eBLANK) || (g_Grid[y][x - 1] == eEND))
 			{
 				NODE* newNode = new NODE(x - 1, y, popNode);
 				setG(newNode);
@@ -150,13 +158,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□□□
 		//□□■
 		//□□□
-		else if (g_Grid[y][x + 1] != eBLOCKED)
+		if (g_Grid[y][x + 1] != eBLOCKED)
 		{
 			if (g_Grid[y][x + 1] == eOPEN || g_Grid[y][x + 1] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y][x + 1] == eBLANK)
+			else if ((g_Grid[y][x + 1] == eBLANK)|| (g_Grid[y][x + 1] == eEND))
 			{
 				NODE* newNode = new NODE(x + 1, y, popNode);
 				setG(newNode);
@@ -169,13 +177,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□□□
 		//□□□
 		//■□□
-		else if (g_Grid[y + 1][x - 1] != eBLOCKED)
+		if (g_Grid[y + 1][x - 1] != eBLOCKED)
 		{
 			if (g_Grid[y + 1][x - 1] == eOPEN || g_Grid[y + 1][x - 1] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y + 1][x - 1] == eBLANK)
+			else if ((g_Grid[y + 1][x - 1] == eBLANK) || (g_Grid[y + 1][x - 1] == eEND))
 			{
 				NODE* newNode = new NODE(x - 1, y + 1, popNode);
 				setG_dia(newNode);
@@ -188,13 +196,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□□□
 		//□□□
 		//□■□
-		else if (g_Grid[y + 1][x] != eBLOCKED)
+		if (g_Grid[y + 1][x] != eBLOCKED)
 		{
 			if (g_Grid[y + 1][x] == eOPEN || g_Grid[y + 1][x] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y + 1][x] == eBLANK)
+			else if ((g_Grid[y + 1][x] == eBLANK) || (g_Grid[y + 1][x] == eEND))
 			{
 				NODE* newNode = new NODE(x, y + 1, popNode);
 				setG(newNode);
@@ -207,13 +215,13 @@ void CAStar::searchLoad(HWND hWnd)
 		//□□□
 		//□□□
 		//□□■
-		else if (g_Grid[y + 1][x + 1] != eBLOCKED)
+		if (g_Grid[y + 1][x + 1] != eBLOCKED)
 		{
 			if (g_Grid[y + 1][x + 1] == eOPEN || g_Grid[y + 1][x + 1] == eCLOSE)
 			{
 				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
 			}
-			else if (g_Grid[y + 1][x + 1] == eBLANK)
+			else if ((g_Grid[y + 1][x + 1] == eBLANK) || (g_Grid[y + 1][x + 1] == eEND))
 			{
 				NODE* newNode = new NODE(x + 1, y + 1, popNode);
 				setG_dia(newNode);
@@ -226,6 +234,8 @@ void CAStar::searchLoad(HWND hWnd)
 
 
 		InvalidateRect(hWnd, NULL, false);
+
+		//ReleaseDC(hWnd, hDC);
 	}
 
 }
