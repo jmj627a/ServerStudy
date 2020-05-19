@@ -36,6 +36,11 @@ void CAStar::setG_dia(NODE * _node)
 		_node->G = 0;
 }
 
+void CAStar::compareG(NODE* _node)
+{
+
+}
+
 void CAStar::setH(NODE * _node)
 {
 	_node->H = abs(_node->ix - iendX) + abs(_node->iy - iendY);
@@ -55,11 +60,11 @@ void CAStar::setEndPos(int x, int y)
 
 void CAStar::searchLoad(HWND hWnd)
 {
-	if (openList.size() == 0)
-		return;
-
 	while (true)
 	{
+		if (openList.size() == 0)
+			return;
+	
 		openList.sort(FComp);
 		NODE* popNode = openList.front();
 		openList.pop_front();
@@ -263,4 +268,17 @@ void CAStar::pathDraw(HWND hWnd)
 
 	InvalidateRect(hWnd, NULL, false);
 	ReleaseDC(hWnd, hdc);
+}
+
+void CAStar::setEndNodeNULL()
+{
+	endNode = nullptr;
+}
+
+bool CAStar::isEndNode()
+{
+	if (endNode == nullptr)
+		return false;
+	else
+		return true;
 }

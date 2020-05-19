@@ -174,7 +174,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             InvalidateRect(hWnd, NULL, false);
         }
         break;
+	case WM_KEYDOWN:
+		if (GetAsyncKeyState(VK_SPACE))
+		{
+			std::list<NODE*>::iterator iter;
+			while (astar.openList.empty() == false)
+			{
+				iter = astar.openList.begin();
+				delete[](*iter);
+				astar.openList.erase(iter);
+			}
+			while (astar.closeList.empty() == false)
+			{
+				iter = astar.closeList.begin();
+				delete[](*iter);
+				astar.closeList.erase(iter);
+			}
+			
+			for (int i = 0; i < 50; ++i)
+				for (int j = 0; j < 30; ++j)
+					g_Grid[j][i] = eBLANK;
 
+			astar.setEndNodeNULL();
+
+			InvalidateRect(hWnd, NULL, false);
+		}
+		break;
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
@@ -190,9 +215,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 case eBLANK:    Brush = CreateSolidBrush(RGB(255, 255, 255)); break;    //흰색
                 case eSTART:    Brush = CreateSolidBrush(RGB(255, 0, 255)); break;      //보라
                 case eEND:      Brush = CreateSolidBrush(RGB(255, 0, 0)); break;        //빨강
-                case eBLOCKED:  Brush = CreateSolidBrush(RGB(200, 200, 200)); break;    //회색
-                case eOPEN:     Brush = CreateSolidBrush(RGB(255, 255, 0)); break;      //노랑
-                case eCLOSE:    Brush = CreateSolidBrush(RGB(0, 0, 255)); break;        //파랑
+                case eBLOCKED:		Brush = CreateSolidBrush(RGB(200, 200, 200)); break;    //회색
+                case eCLOSE:  Brush = CreateSolidBrush(RGB(255, 255, 0)); break;      //노랑
+                case eOPEN:    Brush = CreateSolidBrush(RGB(0, 0, 255)); break;        //파랑
                 default:        Brush = CreateSolidBrush(RGB(0, 0, 0)); break;
                 }
                 oBrush = (HBRUSH)SelectObject(hdc, Brush);
@@ -203,13 +228,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
 
+		if(astar.isEndNode())
+			astar.pathDraw(hWnd);
 
-        astar.pathDraw(hWnd);
-
-        //TCHAR str[100];
-        //wsprintf(str, TEXT("%d, %d"), testX, testY);
-        //TextOut(hdc, testX, testY, str, lstrlen(str));
-        //EndPaint(hWnd, &ps);
+        EndPaint(hWnd, &ps);
     }
     break;
     case WM_DESTROY:
