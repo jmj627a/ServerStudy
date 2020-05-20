@@ -41,7 +41,7 @@ public:
 	void setG(NODE* _node);
 	//´ë°¢¼±
 	void setG_dia(NODE* _node);
-	void compareG(NODE* _node);
+	bool compareG(NODE* _node);
 
 	void setH(NODE* _node);
 	void setF(NODE* _node);

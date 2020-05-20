@@ -36,7 +36,7 @@ void CAStar::setG_dia(NODE * _node)
 		_node->G = 0;
 }
 
-void CAStar::compareG(NODE* _node)
+bool CAStar::compareG(NODE* _node)
 {
 
 }
@@ -73,6 +73,7 @@ void CAStar::searchLoad(HWND hWnd)
 		if (popNode->ix == iendX && popNode->iy == iendY)
 		{
 			endNode = popNode;
+			g_Grid[iendY][iendX] = eEND;
 			return;
 		}
 
@@ -92,6 +93,19 @@ void CAStar::searchLoad(HWND hWnd)
 				if (g_Grid[y - 1][x - 1] == eOPEN || g_Grid[y - 1][x - 1] == eCLOSE)
 				{
 					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+					NODE* newNode = new NODE(x - 1, y - 1, popNode);
+					bool flag = compareG(newNode); //new노드랑, list 싹찾아서 비교
+					if (!flag)
+						delete newNode;
+					else
+					{
+						setG_dia(newNode);
+						setH(newNode);
+						setF(newNode);
+						openList.push_back(newNode);
+						g_Grid[y - 1][x - 1] = eOPEN;
+					}
+
 				}
 				else if ((g_Grid[y - 1][x - 1] == eBLANK) || (g_Grid[y - 1][x - 1] == eEND))
 				{
