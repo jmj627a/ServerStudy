@@ -22,10 +22,11 @@ struct NODE
 class CAStar
 {
 
-private :
+public :
 	int iendX;
 	int iendY;
-
+	int istartX;
+	int istartY;
 	NODE* endNode;
 public:
 	std::list<NODE*> openList;
@@ -41,7 +42,7 @@ public:
 	void setG(NODE* _node);
 	//´ë°¢¼±
 	void setG_dia(NODE* _node);
-	bool compareG(NODE* _node);
+	bool compareG(NODE* _node, bool isDia);
 
 	void setH(NODE* _node);
 	void setF(NODE* _node);

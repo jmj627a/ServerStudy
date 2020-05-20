@@ -170,7 +170,7 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 			else if(pSibling->Color == BLACK &&
 				(pSibling->pLeft->Color ==RED) || (pSibling->pRight->Color == RED))
 			{
-				//삭제노드의 형제가 블랙이고 형제의 왼자식이 레드
+				//삭제노드의 형제가 블랙이고 형제의 왼자식이 레드//35들어갈때부터 테스트
 				if (pSibling->pLeft->Color == RED)
 				{
 					pSibling->pLeft->Color = BLACK;

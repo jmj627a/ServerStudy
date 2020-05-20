@@ -98,6 +98,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message)
     {
+    case WM_CREATE:
+        SetTimer(hWnd, 1, 16, NULL);
+        break;
+    case WM_TIMER:
+
+        if(!astar.isEndNode())
+            astar.searchLoad(hWnd);
+        break;
         //시작위치
     case WM_LBUTTONDBLCLK:
         g_Grid[startY][startX] = eBLANK;
@@ -141,7 +149,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     astar.setF(newNode);
                     astar.openList.push_back(newNode);
                 }
-
+        astar.istartX = startX;
+        astar.istartY = startY;
         astar.searchLoad(hWnd);
 
         InvalidateRect(hWnd, NULL, false);
