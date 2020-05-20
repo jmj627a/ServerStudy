@@ -179,6 +179,7 @@ void RBTree::makeBalanceTree_delete(stNODE* deletenode)
 				}
 
 				//삭제 노드의 형제가 블랙이고 형제의 오른자식이 레드
+				pSibling = deletenode->pParent->pRight;
 				pSibling->Color = pSibling->pParent->Color;
 				pSibling->pParent->Color = BLACK;
 				pSibling->pRight->Color = BLACK;

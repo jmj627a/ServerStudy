@@ -42,7 +42,7 @@ stNODE* RBTree::InsertNode(int _data)
 
 stNODE* RBTree::pushNode(stNODE* _ptr, int _data)
 {
-	stNODE* newNode;
+	stNODE* newNode = nullptr;
 
 	//들어온 데이터 < 포인터 데이터
 	if (_data < _ptr->iData)
