@@ -85,153 +85,177 @@ void CAStar::searchLoad(HWND hWnd)
 		//■□□
 		//□□□
 		//□□□
-		if (g_Grid[y - 1][x - 1] != eBLOCKED)
+		if (x - 1 >= 0 && y - 1 >= 0) //배열 다음줄로 밀리는경우
 		{
-			if (g_Grid[y - 1][x - 1] == eOPEN || g_Grid[y - 1][x - 1] == eCLOSE)
+			if (g_Grid[y - 1][x - 1] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y - 1][x - 1] == eBLANK) || (g_Grid[y - 1][x - 1] == eEND))
-			{
-				NODE* newNode = new NODE(x - 1, y - 1, popNode);
-				setG_dia(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y - 1][x - 1] = eOPEN;
+				if (g_Grid[y - 1][x - 1] == eOPEN || g_Grid[y - 1][x - 1] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y - 1][x - 1] == eBLANK) || (g_Grid[y - 1][x - 1] == eEND))
+				{
+					NODE* newNode = new NODE(x - 1, y - 1, popNode);
+					setG_dia(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y - 1][x - 1] = eOPEN;
+				}
 			}
 		}
 		//□■□
 		//□□□
 		//□□□
-		if (g_Grid[y - 1][x] != eBLOCKED)
+		if (y - 1 >= 0)
 		{
-			if (g_Grid[y - 1][x] == eOPEN || g_Grid[y - 1][x] == eCLOSE)
+			if (g_Grid[y - 1][x] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y - 1][x] == eBLANK) || (g_Grid[y - 1][x] == eEND))
-			{
-				NODE* newNode = new NODE(x, y - 1, popNode);
-				setG(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y - 1][x] = eOPEN;
+				if (g_Grid[y - 1][x] == eOPEN || g_Grid[y - 1][x] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y - 1][x] == eBLANK) || (g_Grid[y - 1][x] == eEND))
+				{
+					NODE* newNode = new NODE(x, y - 1, popNode);
+					setG(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y - 1][x] = eOPEN;
+				}
 			}
 		}
 		//□□■
 		//□□□
 		//□□□
-		if (g_Grid[y - 1][x + 1] != eBLOCKED)
+		if (x + 1 <= 50 && y - 1 >= 0)
 		{
-			if (g_Grid[y - 1][x + 1] == eOPEN || g_Grid[y - 1][x + 1] == eCLOSE)
+			if (g_Grid[y - 1][x + 1] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y - 1][x + 1] == eBLANK) || (g_Grid[y - 1][x + 1] == eEND))
-			{
-				NODE* newNode = new NODE(x + 1, y - 1, popNode);
-				setG_dia(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y - 1][x + 1] = eOPEN;
+				if (g_Grid[y - 1][x + 1] == eOPEN || g_Grid[y - 1][x + 1] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y - 1][x + 1] == eBLANK) || (g_Grid[y - 1][x + 1] == eEND))
+				{
+					NODE* newNode = new NODE(x + 1, y - 1, popNode);
+					setG_dia(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y - 1][x + 1] = eOPEN;
+				}
 			}
 		}
 		//□□□
 		//■□□
 		//□□□
-		if (g_Grid[y][x - 1] != eBLOCKED)
+		if (x - 1 >= 0)
 		{
-			if (g_Grid[y][x - 1] == eOPEN || g_Grid[y][x - 1] == eCLOSE)
+			if (g_Grid[y][x - 1] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y][x - 1] == eBLANK) || (g_Grid[y][x - 1] == eEND))
-			{
-				NODE* newNode = new NODE(x - 1, y, popNode);
-				setG(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y][x - 1] = eOPEN;
+				if (g_Grid[y][x - 1] == eOPEN || g_Grid[y][x - 1] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y][x - 1] == eBLANK) || (g_Grid[y][x - 1] == eEND))
+				{
+					NODE* newNode = new NODE(x - 1, y, popNode);
+					setG(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y][x - 1] = eOPEN;
+				}
 			}
 		}
 		//□□□
 		//□□■
 		//□□□
-		if (g_Grid[y][x + 1] != eBLOCKED)
+		if (x + 1 <= 50)
 		{
-			if (g_Grid[y][x + 1] == eOPEN || g_Grid[y][x + 1] == eCLOSE)
+			if (g_Grid[y][x + 1] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y][x + 1] == eBLANK)|| (g_Grid[y][x + 1] == eEND))
-			{
-				NODE* newNode = new NODE(x + 1, y, popNode);
-				setG(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y][x + 1] = eOPEN;
+				if (g_Grid[y][x + 1] == eOPEN || g_Grid[y][x + 1] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y][x + 1] == eBLANK) || (g_Grid[y][x + 1] == eEND))
+				{
+					NODE* newNode = new NODE(x + 1, y, popNode);
+					setG(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y][x + 1] = eOPEN;
+				}
 			}
 		}
 		//□□□
 		//□□□
 		//■□□
-		if (g_Grid[y + 1][x - 1] != eBLOCKED)
+		if (x - 1 >= 0 && y + 1 <= 30)
 		{
-			if (g_Grid[y + 1][x - 1] == eOPEN || g_Grid[y + 1][x - 1] == eCLOSE)
+			if (g_Grid[y + 1][x - 1] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y + 1][x - 1] == eBLANK) || (g_Grid[y + 1][x - 1] == eEND))
-			{
-				NODE* newNode = new NODE(x - 1, y + 1, popNode);
-				setG_dia(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y + 1][x - 1] = eOPEN;
+				if (g_Grid[y + 1][x - 1] == eOPEN || g_Grid[y + 1][x - 1] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y + 1][x - 1] == eBLANK) || (g_Grid[y + 1][x - 1] == eEND))
+				{
+					NODE* newNode = new NODE(x - 1, y + 1, popNode);
+					setG_dia(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y + 1][x - 1] = eOPEN;
+				}
 			}
 		}
 		//□□□
 		//□□□
 		//□■□
-		if (g_Grid[y + 1][x] != eBLOCKED)
+		if (y + 1 <= 30)
 		{
-			if (g_Grid[y + 1][x] == eOPEN || g_Grid[y + 1][x] == eCLOSE)
+			if (g_Grid[y + 1][x] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y + 1][x] == eBLANK) || (g_Grid[y + 1][x] == eEND))
-			{
-				NODE* newNode = new NODE(x, y + 1, popNode);
-				setG(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y + 1][x] = eOPEN;
+				if (g_Grid[y + 1][x] == eOPEN || g_Grid[y + 1][x] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y + 1][x] == eBLANK) || (g_Grid[y + 1][x] == eEND))
+				{
+					NODE* newNode = new NODE(x, y + 1, popNode);
+					setG(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y + 1][x] = eOPEN;
+				}
 			}
 		}
 		//□□□
 		//□□□
 		//□□■
-		if (g_Grid[y + 1][x + 1] != eBLOCKED)
+		if (x + 1 <= 50 && y + 1 >= 30)
 		{
-			if (g_Grid[y + 1][x + 1] == eOPEN || g_Grid[y + 1][x + 1] == eCLOSE)
+			if (g_Grid[y + 1][x + 1] != eBLOCKED)
 			{
-				//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
-			}
-			else if ((g_Grid[y + 1][x + 1] == eBLANK) || (g_Grid[y + 1][x + 1] == eEND))
-			{
-				NODE* newNode = new NODE(x + 1, y + 1, popNode);
-				setG_dia(newNode);
-				setH(newNode);
-				setF(newNode);
-				openList.push_back(newNode);
-				g_Grid[y + 1][x + 1] = eOPEN;
+				if (g_Grid[y + 1][x + 1] == eOPEN || g_Grid[y + 1][x + 1] == eCLOSE)
+				{
+					//노드는 만들지 않는데, 여기 해당하는 노드의 F값을 비교해서 더 빠른길이면 새로 넣어주기
+				}
+				else if ((g_Grid[y + 1][x + 1] == eBLANK) || (g_Grid[y + 1][x + 1] == eEND))
+				{
+					NODE* newNode = new NODE(x + 1, y + 1, popNode);
+					setG_dia(newNode);
+					setH(newNode);
+					setF(newNode);
+					openList.push_back(newNode);
+					g_Grid[y + 1][x + 1] = eOPEN;
+				}
 			}
 		}
 
