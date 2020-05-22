@@ -1,6 +1,4 @@
 #pragma once
-#include <cmath>
-#include <list>
 
 struct NODE
 {
@@ -24,10 +22,11 @@ struct NODE
 class CAStar
 {
 
-private :
+public :
 	int iendX;
 	int iendY;
-
+	int istartX;
+	int istartY;
 	NODE* endNode;
 public:
 	std::list<NODE*> openList;
@@ -43,14 +42,18 @@ public:
 	void setG(NODE* _node);
 	//´ë°¢¼±
 	void setG_dia(NODE* _node);
-	
+	bool compareG(NODE* _node, bool isDia, int dir);
+
 	void setH(NODE* _node);
 	void setF(NODE* _node);
 
 	void setEndPos(int x, int y);
 
 	void searchLoad(HWND hWnd);
+	void pathDraw(HWND hWnd);
 
+	void setEndNodeNULL();
+	bool isEndNode();
 
 };
 

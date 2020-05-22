@@ -1,3 +1,6 @@
+
+
+
 enum GRID_TYPE
 {
 	eBLANK,
@@ -7,4 +10,4 @@ enum GRID_TYPE
 	eOPEN,
 	eCLOSE
 };
-extern char g_Grid[30][50] = { eBLANK, };
+
