@@ -3,11 +3,11 @@
 #pragma once
 #include "pch.h"
 #include "project.h"
-#include "CAStar.h"
+#include "CJumpPointSearch.h"
 
 #define MAX_LOADSTRING 100
 
-char g_Grid[30][50] = { eBLANK, };
+TILE g_Grid[WORLD_HEIGHT][WORLD_WIDTH] = { eBLANK, };
 
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
@@ -94,7 +94,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static int mouseY;
 
 
-    static CAStar astar;
+    static CJumpPointSearch pathfind;
 
     switch (message)
     {
@@ -103,28 +103,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_TIMER:
 
-        if(!astar.isEndNode())
-            astar.searchLoad(hWnd);
+        //if(!astar.isEndNode())
+        //    astar.searchLoad(hWnd);
         break;
         //시작위치
     case WM_LBUTTONDBLCLK:
-        g_Grid[startY][startX] = eBLANK;
+        g_Grid[startY][startX].grid_type = eBLANK;
 
         startX = LOWORD(lParam) / 20;
         startY = HIWORD(lParam) / 20;
 
-        g_Grid[startY][startX] = eSTART;
+        g_Grid[startY][startX].grid_type = eSTART;
         InvalidateRect(hWnd, NULL, false);
         break;
 
         //종료위치
     case WM_RBUTTONDBLCLK:
-        g_Grid[endY][endX] = eBLANK;
+        g_Grid[endY][endX].grid_type = eBLANK;
 
         endX = LOWORD(lParam) / 20;
         endY = HIWORD(lParam) / 20;
 
-        g_Grid[endY][endX] = eEND;
+        g_Grid[endY][endX].grid_type = eEND;
         InvalidateRect(hWnd, NULL, false);
         break;
 
@@ -136,22 +136,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         for (int i = 0; i < 50; ++i)
             for (int j = 0; j < 30; ++j)
-                if (g_Grid[j][i] == eSTART)
+                if (g_Grid[j][i].grid_type == eSTART)
                     newNode = new NODE(i, j, nullptr);
 
-        for (int i = 0; i < 50; ++i)
-            for (int j = 0; j < 30; ++j)
-                if (g_Grid[j][i] == eEND)
-                {
-                    astar.setEndPos(i, j);
-                    astar.setG(newNode);
-                    astar.setH(newNode);
-                    astar.setF(newNode);
-                    astar.openList.push_back(newNode);
-                }
-        astar.istartX = startX;
-        astar.istartY = startY;
-        astar.searchLoad(hWnd);
+       // for (int i = 0; i < 50; ++i)
+       //     for (int j = 0; j < 30; ++j)
+       //         if (g_Grid[j][i] == eEND)
+       //         {
+       //             astar.setEndPos(i, j);
+       //             astar.setG(newNode);
+       //             astar.setH(newNode);
+       //             astar.setF(newNode);
+       //             astar.openList.push_back(newNode);
+       //         }
+       // astar.istartX = startX;
+       // astar.istartY = startY;
+       // astar.searchLoad(hWnd);
 
         InvalidateRect(hWnd, NULL, false);
     }
@@ -176,35 +176,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             mouseX = LOWORD(lParam) / 20;
             mouseY = HIWORD(lParam) / 20;
 
-            if (g_Grid[mouseY][mouseX] == eBLANK)
-                g_Grid[mouseY][mouseX] = eBLOCKED;
-            else if (g_Grid[mouseY][mouseX] == eBLOCKED)
+            if (g_Grid[mouseY][mouseX].grid_type == eBLANK)
+                g_Grid[mouseY][mouseX].grid_type = eBLOCKED;
+            else if (g_Grid[mouseY][mouseX].grid_type == eBLOCKED)
               //  g_Grid[mouseY][mouseX] = eBLANK;
             InvalidateRect(hWnd, NULL, false);
         }
         break;
 	case WM_KEYDOWN:
+        //리셋
 		if (GetAsyncKeyState(VK_SPACE))
 		{
-			std::list<NODE*>::iterator iter;
-			while (astar.openList.empty() == false)
-			{
-				iter = astar.openList.begin();
-				delete[](*iter);
-				astar.openList.erase(iter);
-			}
-			while (astar.closeList.empty() == false)
-			{
-				iter = astar.closeList.begin();
-				delete[](*iter);
-				astar.closeList.erase(iter);
-			}
-			
-			for (int i = 0; i < 50; ++i)
-				for (int j = 0; j < 30; ++j)
-					g_Grid[j][i] = eBLANK;
-
-			astar.setEndNodeNULL();
+			//std::list<NODE*>::iterator iter;
+			//while (astar.openList.empty() == false)
+			//{
+			//	iter = astar.openList.begin();
+			//	delete[](*iter);
+			//	astar.openList.erase(iter);
+			//}
+			//while (astar.closeList.empty() == false)
+			//{
+			//	iter = astar.closeList.begin();
+			//	delete[](*iter);
+			//	astar.closeList.erase(iter);
+			//}
+			//
+			//for (int i = 0; i < 50; ++i)
+			//	for (int j = 0; j < 30; ++j)
+			//		g_Grid[j][i] = eBLANK;
+            //
+			//astar.setEndNodeNULL();
 
 			InvalidateRect(hWnd, NULL, false);
 		}
@@ -219,7 +220,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             for (int j = 0; j < 30; ++j)
             {
                 HBRUSH Brush, oBrush;
-                switch (g_Grid[j][i])
+                switch (g_Grid[j][i].grid_type)
                 {
                 case eBLANK:    Brush = CreateSolidBrush(RGB(255, 255, 255)); break;    //흰색
                 case eSTART:    Brush = CreateSolidBrush(RGB(255, 0, 255)); break;      //보라
@@ -237,8 +238,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
 
-		if(astar.isEndNode())
-			astar.pathDraw(hWnd);
+		//if(astar.isEndNode())
+		//	astar.pathDraw(hWnd);
 
         EndPaint(hWnd, &ps);
     }

@@ -13,6 +13,12 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="소스 파일\AStarPathFind">
+      <UniqueIdentifier>{7657f61e-81bc-49a4-a271-d9a7890081a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\JumpPointSearch">
+      <UniqueIdentifier>{69a39649-62ba-4bee-ae37-f68fd207d935}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -34,7 +40,10 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="CAStar.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>소스 파일\AStarPathFind</Filter>
+    </ClInclude>
+    <ClInclude Include="CJumpPointSearch.h">
+      <Filter>소스 파일\JumpPointSearch</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -45,7 +54,10 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="CAStar.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\AStarPathFind</Filter>
+    </ClCompile>
+    <ClCompile Include="CJumpPointSearch.cpp">
+      <Filter>소스 파일\JumpPointSearch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
