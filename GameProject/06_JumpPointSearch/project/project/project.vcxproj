@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CAStar.h" />
+    <ClInclude Include="CBresenham.h" />
     <ClInclude Include="CJumpPointSearch.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="global.h" />
@@ -158,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAStar.cpp" />
+    <ClCompile Include="CBresenham.cpp" />
     <ClCompile Include="CJumpPointSearch.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

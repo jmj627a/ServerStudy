@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "project.h"
 #include "CJumpPointSearch.h"
+#include "CBresenham.h"
 
 #define MAX_LOADSTRING 100
 
@@ -93,8 +94,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static int mouseX;
     static int mouseY;
 
+	static bool lineFlag = false;
 
     static CJumpPointSearch JPS;
+	static CBresenham line;
 
     switch (message)
     {
@@ -156,6 +159,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         InvalidateRect(hWnd, NULL, false);
     }
     break;
+	case WM_RBUTTONDOWN:
+		lineFlag = true;
+		InvalidateRect(hWnd, NULL, false);
+		break;
+	case WM_RBUTTONUP:
+		lineFlag = false;
+		InvalidateRect(hWnd, NULL, false);
+		break;
 
     //장애물
     case WM_MBUTTONDOWN:
@@ -182,6 +193,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
               //  g_Grid[mouseY][mouseX] = eBLANK;
             InvalidateRect(hWnd, NULL, false);
         }
+
+		line.startPos.m_ix = LOWORD(lParam) / 20;
+		line.startPos.m_iy = HIWORD(lParam) / 20;
+		if (lineFlag)
+		{
+			line.endPos.m_ix = LOWORD(lParam) / 20;
+			line.endPos.m_iy = HIWORD(lParam) / 20;
+
+			line.checkDot();
+			InvalidateRect(hWnd, NULL, true);
+		}
         break;
 	case WM_KEYDOWN:
         //리셋
@@ -240,6 +262,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		if(JPS.m_pEndNode != nullptr)
 			JPS.pathDraw(hWnd);
+
+		line.LineDraw(hWnd);
 
         EndPaint(hWnd, &ps);
     }
