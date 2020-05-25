@@ -38,7 +38,19 @@ public:
 	void pathFind(HWND hWnd);
 
 
-private:
+public:
+	//직선
+	void setG(NODE* _node);
+	//대각선
+	void setG_dia(NODE* _node);
+	bool compareG(NODE* _node, int dir);
+
+	void setH(NODE* _node);
+	void setF(NODE* _node);
+
+	void setEndPos(int x, int y);
+	void setEndNodeNULL();
+
 	//x,y좌표의 칸이 막힌칸인가?
 	bool checkWalkAble(int _x, int _y);
 
@@ -46,9 +58,9 @@ private:
 	void checkDirection(NODE* _pNode, int _x, int _y, int dir);
 
 	//checkDirection 에서 노드를 찾는 함수
-	bool findJumpNode(int _x, int _y, int& _jumpX, int& _jumpY);
+	bool findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& _jumpY);
 
-
+	void pathDraw(HWND hWnd);
 
 };
 

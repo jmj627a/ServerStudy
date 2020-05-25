@@ -94,7 +94,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static int mouseY;
 
 
-    static CJumpPointSearch pathfind;
+    static CJumpPointSearch JPS;
 
     switch (message)
     {
@@ -103,8 +103,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_TIMER:
 
-        //if(!astar.isEndNode())
-        //    astar.searchLoad(hWnd);
+        if(JPS.m_pEndNode == nullptr)
+			JPS.pathFind(hWnd);
         break;
         //시작위치
     case WM_LBUTTONDBLCLK:
@@ -139,19 +139,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if (g_Grid[j][i].grid_type == eSTART)
                     newNode = new NODE(i, j, nullptr);
 
-       // for (int i = 0; i < 50; ++i)
-       //     for (int j = 0; j < 30; ++j)
-       //         if (g_Grid[j][i] == eEND)
-       //         {
-       //             astar.setEndPos(i, j);
-       //             astar.setG(newNode);
-       //             astar.setH(newNode);
-       //             astar.setF(newNode);
-       //             astar.openList.push_back(newNode);
-       //         }
-       // astar.istartX = startX;
-       // astar.istartY = startY;
-       // astar.searchLoad(hWnd);
+        for (int i = 0; i < 50; ++i)
+            for (int j = 0; j < 30; ++j)
+                if (g_Grid[j][i].grid_type == eEND)
+                {
+                    JPS.setEndPos(i, j);
+                    JPS.setG(newNode);
+                    JPS.setH(newNode);
+                    JPS.setF(newNode);
+                    JPS.openList.push_back(newNode);
+                }
+        JPS.m_iStartX= startX;
+        JPS.m_iStartY = startY;
+        JPS.pathFind(hWnd);
 
         InvalidateRect(hWnd, NULL, false);
     }
@@ -187,25 +187,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //리셋
 		if (GetAsyncKeyState(VK_SPACE))
 		{
-			//std::list<NODE*>::iterator iter;
-			//while (astar.openList.empty() == false)
-			//{
-			//	iter = astar.openList.begin();
-			//	delete[](*iter);
-			//	astar.openList.erase(iter);
-			//}
-			//while (astar.closeList.empty() == false)
-			//{
-			//	iter = astar.closeList.begin();
-			//	delete[](*iter);
-			//	astar.closeList.erase(iter);
-			//}
-			//
-			//for (int i = 0; i < 50; ++i)
-			//	for (int j = 0; j < 30; ++j)
-			//		g_Grid[j][i] = eBLANK;
-            //
-			//astar.setEndNodeNULL();
+			std::list<NODE*>::iterator iter;
+			while (JPS.openList.empty() == false)
+			{
+				iter = JPS.openList.begin();
+				delete[](*iter);
+				JPS.openList.erase(iter);
+			}
+			while (JPS.closeList.empty() == false)
+			{
+				iter = JPS.closeList.begin();
+				delete[](*iter);
+				JPS.closeList.erase(iter);
+			}
+			
+			for (int i = 0; i < 50; ++i)
+				for (int j = 0; j < 30; ++j)
+					g_Grid[j][i].grid_type = eBLANK;
+            
+			JPS.setEndNodeNULL();
 
 			InvalidateRect(hWnd, NULL, false);
 		}
@@ -238,8 +238,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
 
-		//if(astar.isEndNode())
-		//	astar.pathDraw(hWnd);
+		if(JPS.m_pEndNode != nullptr)
+			JPS.pathDraw(hWnd);
 
         EndPaint(hWnd, &ps);
     }

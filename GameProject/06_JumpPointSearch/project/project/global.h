@@ -22,9 +22,9 @@ struct TILE
 
 enum DIR_TYPE
 {
-	eDIR_UL, eDIR_UU, eDIR_UR,
-	eDIR_LL,		  eDIR_RR, 
-	eDIR_DL, eDIR_DD, eDIR_DR
+	eDIR_UL, eDIR_UU, eDIR_UR,		//012
+	eDIR_LL,		  eDIR_RR=5,	//3 5
+	eDIR_DL, eDIR_DD, eDIR_DR		//678
 };
 
 
