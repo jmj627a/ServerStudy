@@ -99,7 +99,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        SetTimer(hWnd, 1, 10, NULL);
+        SetTimer(hWnd, 1, 50, NULL);
         break;
     case WM_TIMER:
 

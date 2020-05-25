@@ -572,7 +572,7 @@ void CJumpPointSearch::pathFind(HWND hWnd)
 
 			//왼쪽으로 코너
 			if (g_Grid[y][x - 1].grid_type == eBLOCKED && g_Grid[y + 1][x - 1].grid_type == eBLANK)
-				checkDirection(popNode, x - 1, y - 1, eDIR_DL);
+				checkDirection(popNode, x - 1, y + 1, eDIR_DL);
 
 			//오른쪽으로 코너
 			if (g_Grid[y][x + 1].grid_type == eBLOCKED && g_Grid[y + 1][x + 1].grid_type == eBLANK)
