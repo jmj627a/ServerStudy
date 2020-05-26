@@ -43,7 +43,6 @@ public:
 	void setG(NODE* _node);
 	//대각선
 	void setG_dia(NODE* _node);
-	bool compareG(NODE* _node, int dir);
 
 	void setH(NODE* _node);
 	void setF(NODE* _node);
@@ -61,6 +60,13 @@ public:
 	bool findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& _jumpY);
 
 	void pathDraw(HWND hWnd);
+	void fastPathDraw(HWND hWnd);
+
+public:
+	//직선보정
+	void checkPathCorrection();
+	std::list<NODE*> fastPathList;
+
 
 };
 

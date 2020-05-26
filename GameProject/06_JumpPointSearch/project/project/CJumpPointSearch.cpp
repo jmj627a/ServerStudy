@@ -1,5 +1,6 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "CJumpPointSearch.h"
+#include "CBresenham.h"
 
 extern TILE g_Grid[WORLD_HEIGHT][WORLD_WIDTH];
 
@@ -33,81 +34,6 @@ void CJumpPointSearch::setG_dia(NODE * _node)
 		_node->G = 0;
 }
 
-bool CJumpPointSearch::compareG(NODE* _node, int dir)
-{
-	std::list<NODE*>::iterator iter;
-
-	int x = _node->ix;
-	int y = _node->iy;
-
-	switch (dir)
-	{
-	case 1:
-		x = x - 1;
-		y = y - 1;
-		break;
-	case 2:
-		y = y - 1;
-		break;
-	case 3:
-		x = x + 1;
-		y = y - 1;
-		break;
-	case 4:
-		x = x - 1;
-		break;
-	case 5:
-		x = x + 1;
-		break;
-	case 6:
-		x = x - 1;
-		y = y + 1;
-		break;
-	case 7:
-		y = y + 1;
-		break;
-	case 8:
-		x = x + 1;
-		y = y + 1;
-		break;
-	}
-
-
-
-
-	for (iter = openList.begin(); iter != openList.end(); ++iter)
-	{
-		if ((*iter)->iy == y && (*iter)->ix == x)
-		{
-			if (dir % 2 ==0 )
-			{
-				if ((*iter)->G >= _node->G + 1.5)
-				{
-					(*iter)->pParent = _node;
-					(*iter)->G = _node->G + 1.5;
-					(*iter)->F = (*iter)->G + (*iter)->H;
-					g_Grid[(*iter)->iy][(*iter)->ix].grid_type = eOPEN;
-				}
-
-				return true;
-			}
-			else
-			{
-				if ((*iter)->G >= _node->G + 1)
-				{
-					(*iter)->pParent = _node;
-					(*iter)->G = _node->G + 1;
-					(*iter)->F = (*iter)->G + (*iter)->H;
-					g_Grid[(*iter)->iy][(*iter)->ix].grid_type = eOPEN;
-				}
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 void CJumpPointSearch::setH(NODE * _node)
 {
 	_node->H = abs(_node->ix - m_iEndX) + abs(_node->iy - m_iEndY);
@@ -123,10 +49,10 @@ void CJumpPointSearch::checkDirection(NODE* _pNode, int _x, int _y, int _dir)
 	int jumpX;
 	int jumpY;
 
-	//Á¡ÇÁÇØ¼­ ³ëµå¸¦ ¸¸µé À§Ä¡ jump¿¡ ´ã¾Æ¿À±â
+	//ì í”„í•´ì„œ ë…¸ë“œë¥¼ ë§Œë“¤ ìœ„ì¹˜ jumpì— ë‹´ì•„ì˜¤ê¸°
 	if(findJumpNode(_x, _y, _dir, jumpX, jumpY))
 	{
-		//ÀÌ¹Ì openµÇ¾îÀÖ´Ù¸é g°ª ºñ±³
+		//ì´ë¯¸ openë˜ì–´ìˆë‹¤ë©´ gê°’ ë¹„êµ
 		if (g_Grid[jumpY][jumpX].grid_type == eOPEN)
 		{
 			std::list<NODE*>::iterator iter;
@@ -135,7 +61,7 @@ void CJumpPointSearch::checkDirection(NODE* _pNode, int _x, int _y, int _dir)
 			{
 				if ((*iter)->iy == jumpY && (*iter)->ix == jumpX)
 				{
-					if (_dir % 2 == 0) // ´ë°¢¼±
+					if (_dir % 2 == 0) // ëŒ€ê°ì„ 
 					{
 						if ((*iter)->G >= _pNode->G + 1.5)
 						{
@@ -145,7 +71,7 @@ void CJumpPointSearch::checkDirection(NODE* _pNode, int _x, int _y, int _dir)
 							g_Grid[(*iter)->iy][(*iter)->ix].grid_type = eOPEN;
 						}
 					}
-					else //Á÷¼±
+					else //ì§ì„ 
 					{
 						if ((*iter)->G >= _pNode->G + 1.0)
 						{
@@ -159,7 +85,7 @@ void CJumpPointSearch::checkDirection(NODE* _pNode, int _x, int _y, int _dir)
 				}
 			}
 		}
-		//¾ø´Ù¸é »õ·Î ³ëµå ¸¸µé±â
+		//ì—†ë‹¤ë©´ ìƒˆë¡œ ë…¸ë“œ ë§Œë“¤ê¸°
 		else if (g_Grid[jumpY][jumpX].grid_type == eBLANK || g_Grid[jumpY][jumpX].grid_type == eEND)
 		{
 			NODE* newNode = new NODE(jumpX, jumpY, _pNode);
@@ -187,10 +113,10 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 	if (_x == m_iEndX && _y == m_iEndY) 
 		return true;
 
-	//ÄÚ³Ê³ª, Àú ¸Ö¸® ÄÚ³Ê¸¦ Ã£°ÔµÇ¸é ÁÂÇ¥¸¦ jump¿¡ ´ã¾Æ¼­ return true;
+	//ì½”ë„ˆë‚˜, ì € ë©€ë¦¬ ì½”ë„ˆë¥¼ ì°¾ê²Œë˜ë©´ ì¢Œí‘œë¥¼ jumpì— ë‹´ì•„ì„œ return true;
 	switch (_dir)
 	{
-		//¢Ø
+		//â†–
 	case eDIR_UL:
 		if (_y + 1 < WORLD_HEIGHT && _x - 1 >= 0)
 		{
@@ -221,38 +147,38 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 		findJumpNode(_x - 1, _y - 1, _dir, _jumpX, _jumpY);
 		break;
 
-		//¡è
+		//â†‘
 	case eDIR_UU:
 		//o
-		//x ¤±
+		//x ã…
 		if (_x - 1 >= 0 && _y - 1 >= 0)
 		{
 			if ((g_Grid[_y][_x - 1].grid_type == eBLOCKED && g_Grid[_y - 1][_x - 1].grid_type == eBLANK))
 				return true;
 		}
 		//   o
-		//¤± x 
+		//ã… x 
 		if (_x + 1 < WORLD_WIDTH && _y - 1 >= 0)
 		{
 			if (g_Grid[_y][_x + 1].grid_type == eBLOCKED && g_Grid[_y - 1][_x + 1].grid_type == eBLANK)
 				return true;
 		}
 
-		//ÁøÇà¹æÇâ Å½»ö
+		//ì§„í–‰ë°©í–¥ íƒìƒ‰
 		findJumpNode(_x, _y - 1, _dir, _jumpX, _jumpY);
 		break;
 
-		//¢Ö
+		//â†—
 	case eDIR_UR:
 
 		//O
-		//X¤±
+		//Xã…
 		if (_x - 1 >= 0 && _y - 1 >= 0)
 		{
 			if (g_Grid[_y][_x - 1].grid_type == eBLOCKED && g_Grid[_y - 1][_x - 1].grid_type == eBLANK)
 				return true;
 		}
-		// ¤±
+		// ã…
 		// X O		
 		if (_y + 1 < WORLD_HEIGHT && _x + 1 < WORLD_WIDTH)
 		{
@@ -260,38 +186,38 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 				return true;
 		}
 
-		//À§·Î Å½»ö
+		//ìœ„ë¡œ íƒìƒ‰
 		if (findJumpNode(_x, _y - 1, eDIR_UU, _jumpX, _jumpY))
 		{
-			//Àú¸Ö¸® ÄÚ³Ê¸¦ ¹ß°ßÇØ¼­ ÁÂÇ¥¸¦ °¡Á®¿Ô¾îµµ Áö±İ ³» ÀÚ¸®¿¡´Ù°¡ ¸¸µé¾î¾ß ÇÏ±â¶§¹®¿¡ ³» ÁÂÇ¥ ³Ö¾î¼­ ¸®ÅÏ
+			//ì €ë©€ë¦¬ ì½”ë„ˆë¥¼ ë°œê²¬í•´ì„œ ì¢Œí‘œë¥¼ ê°€ì ¸ì™”ì–´ë„ ì§€ê¸ˆ ë‚´ ìë¦¬ì—ë‹¤ê°€ ë§Œë“¤ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì— ë‚´ ì¢Œí‘œ ë„£ì–´ì„œ ë¦¬í„´
 			_jumpX = _x;
 			_jumpY = _y;
 			return true;
 		}
 
-		//¿À¸¥ÂÊ Å½»ö
+		//ì˜¤ë¥¸ìª½ íƒìƒ‰
 		if (findJumpNode(_x + 1, _y, eDIR_RR, _jumpX, _jumpY))
 		{
-			//Àú¸Ö¸® ÄÚ³Ê¸¦ ¹ß°ßÇØ¼­ ÁÂÇ¥¸¦ °¡Á®¿Ô¾îµµ Áö±İ ³» ÀÚ¸®¿¡´Ù°¡ ¸¸µé¾î¾ß ÇÏ±â¶§¹®¿¡ ³» ÁÂÇ¥ ³Ö¾î¼­ ¸®ÅÏ
+			//ì €ë©€ë¦¬ ì½”ë„ˆë¥¼ ë°œê²¬í•´ì„œ ì¢Œí‘œë¥¼ ê°€ì ¸ì™”ì–´ë„ ì§€ê¸ˆ ë‚´ ìë¦¬ì—ë‹¤ê°€ ë§Œë“¤ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì— ë‚´ ì¢Œí‘œ ë„£ì–´ì„œ ë¦¬í„´
 			_jumpX = _x;
 			_jumpY = _y; 
 			return true;
 		}
 
-		//ÀÚ±â ÁøÇà¹æÇâÀ¸·Î Å½»ö
+		//ìê¸° ì§„í–‰ë°©í–¥ìœ¼ë¡œ íƒìƒ‰
 		findJumpNode(_x + 1, _y - 1, _dir, _jumpX, _jumpY);
 		break;
 
-		//¡ç
+		//â†
 	case eDIR_LL:
 		//o x
-		//  ¤±
+		//  ã…
 		if (_y - 1 >= 0 && _x - 1 >= 0)
 		{
 			if (g_Grid[_y - 1][_x].grid_type == eBLOCKED && g_Grid[_y - 1][_x - 1].grid_type == eBLANK)
 				return true;
 		}
-		//  ¤±
+		//  ã…
 		//o x
 		if (_y + 1 < WORLD_HEIGHT && _x - 1 >= 0)
 		{
@@ -299,11 +225,11 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 				return true;
 		}
 		
-		//ÀÚ±â ÁøÇà¹æÇâÀ¸·Î Å½»ö
+		//ìê¸° ì§„í–‰ë°©í–¥ìœ¼ë¡œ íƒìƒ‰
 		findJumpNode(_x - 1, _y, _dir, _jumpX, _jumpY);
 		break;
 
-		//¡æ
+		//â†’
 	case eDIR_RR:
 		if (_y + 1 < WORLD_HEIGHT && _x + 1 < WORLD_WIDTH)
 		{
@@ -319,7 +245,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 		findJumpNode(_x + 1, _y, _dir, _jumpX, _jumpY);
 		break;
 
-		//¢×
+		//â†™
 	case eDIR_DL:
 		if (_y - 1 >= 0 && _x - 1 >= 0)
 		{
@@ -335,7 +261,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 
 		if (findJumpNode(_x, _y + 1, eDIR_DD, _jumpX, _jumpY))
 		{
-			//Àú¸Ö¸® ÄÚ³Ê¸¦ ¹ß°ßÇØ¼­ ÁÂÇ¥¸¦ °¡Á®¿Ô¾îµµ Áö±İ ³» ÀÚ¸®¿¡´Ù°¡ ¸¸µé¾î¾ß ÇÏ±â¶§¹®¿¡ ³» ÁÂÇ¥ ³Ö¾î¼­ ¸®ÅÏ
+			//ì €ë©€ë¦¬ ì½”ë„ˆë¥¼ ë°œê²¬í•´ì„œ ì¢Œí‘œë¥¼ ê°€ì ¸ì™”ì–´ë„ ì§€ê¸ˆ ë‚´ ìë¦¬ì—ë‹¤ê°€ ë§Œë“¤ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì— ë‚´ ì¢Œí‘œ ë„£ì–´ì„œ ë¦¬í„´
 			_jumpX = _x;
 			_jumpY = _y;
 			return true;
@@ -343,7 +269,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 
 		if (findJumpNode(_x - 1, _y, eDIR_LL, _jumpX, _jumpY))
 		{
-			//Àú¸Ö¸® ÄÚ³Ê¸¦ ¹ß°ßÇØ¼­ ÁÂÇ¥¸¦ °¡Á®¿Ô¾îµµ Áö±İ ³» ÀÚ¸®¿¡´Ù°¡ ¸¸µé¾î¾ß ÇÏ±â¶§¹®¿¡ ³» ÁÂÇ¥ ³Ö¾î¼­ ¸®ÅÏ
+			//ì €ë©€ë¦¬ ì½”ë„ˆë¥¼ ë°œê²¬í•´ì„œ ì¢Œí‘œë¥¼ ê°€ì ¸ì™”ì–´ë„ ì§€ê¸ˆ ë‚´ ìë¦¬ì—ë‹¤ê°€ ë§Œë“¤ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì— ë‚´ ì¢Œí‘œ ë„£ì–´ì„œ ë¦¬í„´
 			_jumpX = _x;
 			_jumpY = _y;
 			return true;
@@ -352,7 +278,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 		findJumpNode(_x - 1, _y + 1, _dir, _jumpX, _jumpY);
 		break;
 
-		//¡é
+		//â†“
 	case eDIR_DD:
 		if (_x - 1 >= 0 && _y + 1 < WORLD_HEIGHT)
 		{
@@ -368,7 +294,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 		findJumpNode(_x, _y + 1, _dir, _jumpX, _jumpY);
 		break;
 
-		//¢Ù
+		//â†˜
 	case eDIR_DR:
 		if (_y - 1 >=0  && _x + 1 < WORLD_WIDTH)
 		{
@@ -383,7 +309,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 
 		if (findJumpNode(_x, _y + 1, eDIR_DD, _jumpX, _jumpY))
 		{
-			//Àú¸Ö¸® ÄÚ³Ê¸¦ ¹ß°ßÇØ¼­ ÁÂÇ¥¸¦ °¡Á®¿Ô¾îµµ Áö±İ ³» ÀÚ¸®¿¡´Ù°¡ ¸¸µé¾î¾ß ÇÏ±â¶§¹®¿¡ ³» ÁÂÇ¥ ³Ö¾î¼­ ¸®ÅÏ
+			//ì €ë©€ë¦¬ ì½”ë„ˆë¥¼ ë°œê²¬í•´ì„œ ì¢Œí‘œë¥¼ ê°€ì ¸ì™”ì–´ë„ ì§€ê¸ˆ ë‚´ ìë¦¬ì—ë‹¤ê°€ ë§Œë“¤ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì— ë‚´ ì¢Œí‘œ ë„£ì–´ì„œ ë¦¬í„´
 			_jumpX = _x;
 			_jumpY = _y;
 			return true;
@@ -391,7 +317,7 @@ bool CJumpPointSearch::findJumpNode(int _x, int _y, int _dir, int& _jumpX, int& 
 
 		if (findJumpNode(_x + 1, _y, eDIR_RR, _jumpX, _jumpY))
 		{
-			//Àú¸Ö¸® ÄÚ³Ê¸¦ ¹ß°ßÇØ¼­ ÁÂÇ¥¸¦ °¡Á®¿Ô¾îµµ Áö±İ ³» ÀÚ¸®¿¡´Ù°¡ ¸¸µé¾î¾ß ÇÏ±â¶§¹®¿¡ ³» ÁÂÇ¥ ³Ö¾î¼­ ¸®ÅÏ
+			//ì €ë©€ë¦¬ ì½”ë„ˆë¥¼ ë°œê²¬í•´ì„œ ì¢Œí‘œë¥¼ ê°€ì ¸ì™”ì–´ë„ ì§€ê¸ˆ ë‚´ ìë¦¬ì—ë‹¤ê°€ ë§Œë“¤ì–´ì•¼ í•˜ê¸°ë•Œë¬¸ì— ë‚´ ì¢Œí‘œ ë„£ì–´ì„œ ë¦¬í„´
 			_jumpX = _x;
 			_jumpY = _y;
 			return true;
@@ -413,8 +339,8 @@ const bool FComp(const NODE* lhs, const NODE* rhs) {
 
 int setDir(int _dirX, int _dirY)
 {
-	// 0ÀÌÇÏ-¿ŞÂÊ  0=°°À½  0ÀÌ»ó-¿À¸¥ÂÊ
-	// 0ÀÌÇÏ-À§ÂÊ  0=°°À½  0ÀÌ»ó-¾Æ·¡ÂÊ
+	// 0ì´í•˜-ì™¼ìª½  0=ê°™ìŒ  0ì´ìƒ-ì˜¤ë¥¸ìª½
+	// 0ì´í•˜-ìœ„ìª½  0=ê°™ìŒ  0ì´ìƒ-ì•„ë˜ìª½
 
 	if (_dirX < 0 && _dirY < 0)		return eDIR_UL;
 	if (_dirX == 0 && _dirY < 0)	return eDIR_UU;
@@ -437,14 +363,16 @@ void CJumpPointSearch::pathFind(HWND hWnd)
 	NODE* popNode = openList.front();
 	openList.pop_front();
 
-	//±æÃ£±â ³¡
+	//ê¸¸ì°¾ê¸° ë
 	if (popNode->ix == m_iEndX && popNode->iy == m_iEndY)
 	{
 		m_pEndNode = popNode;
 		g_Grid[m_iEndY][m_iEndX].grid_type = eEND;
 		g_Grid[m_iStartY][m_iStartX].grid_type = eSTART;
 
-		//´Ü°èº° Ãâ·Â¶§¹®¿¡ ¸¶Áö¸· ÇÑ¹ø ´õ È£Ãâ ±×³É ¾ø¾îµµ µÊ
+		checkPathCorrection();
+
+		//ë‹¨ê³„ë³„ ì¶œë ¥ë•Œë¬¸ì— ë§ˆì§€ë§‰ í•œë²ˆ ë” í˜¸ì¶œ ê·¸ëƒ¥ ì—†ì–´ë„ ë¨
 		InvalidateRect(hWnd, NULL, false);
 		return;
 	}
@@ -455,142 +383,145 @@ void CJumpPointSearch::pathFind(HWND hWnd)
 	g_Grid[y][x].grid_type = eCLOSE;
 
 
-	//Ã¹ ³ëµå¸é 8¹æÇâ Å½»ö
+
+
+
+	//ì²« ë…¸ë“œë©´ 8ë°©í–¥ íƒìƒ‰
 	if (popNode->pParent == nullptr)
 	{
-		checkDirection(popNode, x - 1, y - 1, eDIR_UL); //¢Ø eDIR_UL
-		checkDirection(popNode, x + 0, y - 1, eDIR_UU); //¡è eDIR_UU
-		checkDirection(popNode, x + 1, y - 1, eDIR_UR); //¢Ö eDIR_UR
-		checkDirection(popNode, x - 1, y + 0, eDIR_LL); //¡ç eDIR_LL
-		checkDirection(popNode, x + 1, y + 0, eDIR_RR); //¡æ eDIR_RR
-		checkDirection(popNode, x - 1, y + 1, eDIR_DL); //¢× eDIR_DL
-		checkDirection(popNode, x + 0, y + 1, eDIR_DD); //¡é eDIR_DD
-		checkDirection(popNode, x + 1, y + 1, eDIR_DR); //¢Ù eDIR_DR
+		checkDirection(popNode, x - 1, y - 1, eDIR_UL); //â†– eDIR_UL
+		checkDirection(popNode, x + 0, y - 1, eDIR_UU); //â†‘ eDIR_UU
+		checkDirection(popNode, x + 1, y - 1, eDIR_UR); //â†— eDIR_UR
+		checkDirection(popNode, x - 1, y + 0, eDIR_LL); //â† eDIR_LL
+		checkDirection(popNode, x + 1, y + 0, eDIR_RR); //â†’ eDIR_RR
+		checkDirection(popNode, x - 1, y + 1, eDIR_DL); //â†™ eDIR_DL
+		checkDirection(popNode, x + 0, y + 1, eDIR_DD); //â†“ eDIR_DD
+		checkDirection(popNode, x + 1, y + 1, eDIR_DR); //â†˜ eDIR_DR
 	}
 	else
 	{
-		int dirX = popNode->ix - popNode->pParent->ix; // 0ÀÌÇÏ-¿ŞÂÊ  0=°°À½  0ÀÌ»ó-¿À¸¥ÂÊ
-		int dirY = popNode->iy - popNode->pParent->iy; // 0ÀÌÇÏ-À§ÂÊ  0=°°À½  0ÀÌ»ó-¾Æ·¡ÂÊ 
+		int dirX = popNode->ix - popNode->pParent->ix; // 0ì´í•˜-ì™¼ìª½  0=ê°™ìŒ  0ì´ìƒ-ì˜¤ë¥¸ìª½
+		int dirY = popNode->iy - popNode->pParent->iy; // 0ì´í•˜-ìœ„ìª½  0=ê°™ìŒ  0ì´ìƒ-ì•„ë˜ìª½ 
 		int dir;
 		
 		switch (setDir(dirX, dirY))
 		{
-			//¢Ø
+			//â†–
 		case eDIR_UL:
-			//±âº» 3¹æÇâ
+			//ê¸°ë³¸ 3ë°©í–¥
 			checkDirection(popNode, x - 1, y, eDIR_LL);
 			checkDirection(popNode, x - 1, y - 1, eDIR_UL); 
 			checkDirection(popNode, x , y - 1, eDIR_UU);
 
-			//¾Æ·¡·Î ÄÚ³Ê
+			//ì•„ë˜ë¡œ ì½”ë„ˆ
 			if (g_Grid[y + 1][x].grid_type == eBLOCKED && g_Grid[y + 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y + 1, eDIR_DL);
 
-			//¿À¸¥ÂÊÀ¸·Î ÄÚ³Ê
+			//ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x + 1].grid_type == eBLOCKED && g_Grid[y - 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y - 1, eDIR_UR);
 			break;
 
-			//¡è
+			//â†‘
 		case eDIR_UU:
-			//±âº» 1¹æÇâ
+			//ê¸°ë³¸ 1ë°©í–¥
 			checkDirection(popNode, x, y - 1, eDIR_UU);
 
-			//¿ŞÂÊÀ¸·Î ÄÚ³Ê
+			//ì™¼ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x-1].grid_type == eBLOCKED && g_Grid[y - 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y - 1, eDIR_UL);
 
-			//¿À¸¥ÂÊÀ¸·Î ÄÚ³Ê
+			//ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x + 1].grid_type == eBLOCKED && g_Grid[y - 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y - 1, eDIR_UR);
 			break;
 
-			//¢Ö
+			//â†—
 		case eDIR_UR:
-			//±âº» 3¹æÇâ
+			//ê¸°ë³¸ 3ë°©í–¥
 			checkDirection(popNode, x, y-1, eDIR_UU);
 			checkDirection(popNode, x + 1, y - 1, eDIR_UR);
 			checkDirection(popNode, x + 1, y, eDIR_RR);
 
-			//¿ŞÂÊÀ¸·Î ÄÚ³Ê
+			//ì™¼ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x - 1].grid_type == eBLOCKED && g_Grid[y - 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y - 1, eDIR_UL);
 
-			//¾Æ·¡·Î ÄÚ³Ê
+			//ì•„ë˜ë¡œ ì½”ë„ˆ
 			if (g_Grid[y + 1][x].grid_type == eBLOCKED && g_Grid[y + 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y + 1, eDIR_DR);
 			break;
 
-			//¡ç
+			//â†
 		case eDIR_LL :
-			//±âº» 1¹æÇâ
+			//ê¸°ë³¸ 1ë°©í–¥
 			checkDirection(popNode, x - 1 , y, eDIR_LL);
 
-			//À§·Î ÄÚ³Ê
+			//ìœ„ë¡œ ì½”ë„ˆ
 			if (g_Grid[y-1][x].grid_type == eBLOCKED && g_Grid[y - 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y - 1, eDIR_UL);
 
-			//¾Æ·¡·Î ÄÚ³Ê
+			//ì•„ë˜ë¡œ ì½”ë„ˆ
 			if (g_Grid[y+1][x].grid_type == eBLOCKED && g_Grid[y + 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y + 1, eDIR_DL); 
 			break;
 
-			//¡æ
+			//â†’
 		case eDIR_RR:
-			//±âº» 1¹æÇâ
+			//ê¸°ë³¸ 1ë°©í–¥
 			checkDirection(popNode, x+1, y , eDIR_RR);
 
-			//À§·Î ÄÚ³Ê
+			//ìœ„ë¡œ ì½”ë„ˆ
 			if (g_Grid[y-1][x ].grid_type == eBLOCKED && g_Grid[y - 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y - 1, eDIR_UR);
 
-			//¾Æ·¡·Î ÄÚ³Ê
+			//ì•„ë˜ë¡œ ì½”ë„ˆ
 			if (g_Grid[y+1][x].grid_type == eBLOCKED && g_Grid[y + 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y + 1, eDIR_DR);
 			break;
 
-			//¢×
+			//â†™
 		case eDIR_DL:
-			//±âº» 3¹æÇâ
+			//ê¸°ë³¸ 3ë°©í–¥
 			checkDirection(popNode, x - 1, y, eDIR_LL);
 			checkDirection(popNode, x - 1, y + 1, eDIR_DL);
 			checkDirection(popNode, x, y + 1, eDIR_DD);
 
-			//À§·Î ÄÚ³Ê
+			//ìœ„ë¡œ ì½”ë„ˆ
 			if (g_Grid[y - 1][x].grid_type == eBLOCKED && g_Grid[y - 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y - 1, eDIR_UL);
 
-			//¿À¸¥ÂÊÀ¸·Î ÄÚ³Ê
+			//ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x + 1].grid_type == eBLOCKED && g_Grid[y + 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y + 1, eDIR_DR);
 			break;
 
-			//¡é
+			//â†“
 		case eDIR_DD:
-			//±âº» 1¹æÇâ
+			//ê¸°ë³¸ 1ë°©í–¥
 			checkDirection(popNode, x, y + 1, eDIR_DD);
 
-			//¿ŞÂÊÀ¸·Î ÄÚ³Ê
+			//ì™¼ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x - 1].grid_type == eBLOCKED && g_Grid[y + 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y + 1, eDIR_DL);
 
-			//¿À¸¥ÂÊÀ¸·Î ÄÚ³Ê
+			//ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x + 1].grid_type == eBLOCKED && g_Grid[y + 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y + 1, eDIR_DR); 
 			break;
 
-			//¢Ù
+			//â†˜
 		case eDIR_DR:
-			//±âº» 3¹æÇâ
+			//ê¸°ë³¸ 3ë°©í–¥
 			checkDirection(popNode, x, y + 1, eDIR_DD);
 			checkDirection(popNode, x + 1, y + 1, eDIR_DR);
 			checkDirection(popNode, x + 1, y, eDIR_RR);
 
-			//À§·Î ÄÚ³Ê
+			//ìœ„ë¡œ ì½”ë„ˆ
 			if (g_Grid[y - 1][x].grid_type == eBLOCKED && g_Grid[y - 1][x + 1].grid_type == eBLANK)
 				checkDirection(popNode, x + 1, y - 1, eDIR_UR);
 
-			//¿ŞÂÊÀ¸·Î ÄÚ³Ê
+			//ì™¼ìª½ìœ¼ë¡œ ì½”ë„ˆ
 			if (g_Grid[y][x - 1].grid_type == eBLOCKED && g_Grid[y + 1][x - 1].grid_type == eBLANK)
 				checkDirection(popNode, x - 1, y + 1, eDIR_DL);
 			break;
@@ -603,6 +534,67 @@ void CJumpPointSearch::pathFind(HWND hWnd)
 
 }
 
+
+void CJumpPointSearch::checkPathCorrection()
+{
+	if (m_pEndNode == nullptr)
+		return;
+
+	NODE* temp = m_pEndNode;
+
+	//ì¼ë‹¨ ê²½ë¡œ ì˜®ê²¨ë‹´ê¸°
+	while (true)
+	{
+		fastPathList.push_back(temp);
+		temp = temp->pParent;
+		if (temp == nullptr)
+			break;
+	}
+
+	// ë§Œë“  ê¸¸ì˜ ë…¸ë“œê°€ 2ê°œ ì´í•˜ë©´( ì‹œì‘ì , ëª©ì ì§€ ì™¸ì— ì—†ë‹¤ë©´ ë¸Œë ˆì¦Œí—´ ì•Œê³ ë¦¬ì¦˜ì„ ì‹¤í–‰í•˜ì§€ ì•ŠìŒ)  
+	if (fastPathList.size() <= 2)
+		return;
+
+	NODE* pStart;	//ì‹œì‘ ë…¸ë“œ
+	NODE* pFirst;	//ì‹œì‘ ë…¸ë“œì˜ ë‹¤ìŒ
+	NODE* pSecond;	//ì‹œì‘ ë…¸ë“œì˜ ë‹¤ë‹¤ìŒ(í•˜ë‚˜ ê±´ë„ˆë›´ ë…¸ë“œ)
+	std::list<NODE*>::iterator Iter = fastPathList.begin();
+	std::list<NODE*>::iterator IterSuce;	// ì„±ê³µí–ˆì„ë•Œ ë³€ê²½í•˜ê¸° ìœ„í•œ ì´í„°ë ˆì´í„° ìœ„ì¹˜
+	std::list<NODE*>::iterator IterFail;	// ì‹¤íŒ¨í–ˆì„ë•Œ ë³€ê²½í•˜ê¸° ìœ„í•œ ì´í„°ë ˆì´í„° ìœ„ì¹˜
+	while (true)
+	{
+		// 1ë²ˆ ë…¸ë“œ & ì„±ê³µ ì´í„°ë ˆì´í„°
+		pStart = (*Iter);
+		IterSuce = Iter;
+		Iter++;
+
+		// 2ë²ˆ ë…¸ë“œ & ì‹¤íŒ¨ ì´í„°ë ˆì´í„°
+		pFirst = (*Iter);
+		IterFail = Iter;
+		Iter++;
+
+		if (Iter == fastPathList.end())
+			return;
+		pSecond = (*Iter);
+
+		CBresenham line;
+		line.setPos(pStart->ix, pStart->iy, pSecond->ix, pSecond->iy);
+		
+		// ì§ì„ ì„ ê·¸ì„ ìˆ˜ ìˆë‹¤ë©´, ì¤‘ê°„ ë…¸ë“œë¥¼ ì œê±°
+		if(line.checkDot())
+		{
+			fastPathList.remove(pFirst);
+			if (fastPathList.size() <= 2)
+				return;
+
+			Iter = IterSuce;
+		}
+		else
+		{
+			Iter = IterFail;
+		}
+	}
+}
 
 void CJumpPointSearch::pathDraw(HWND hWnd)
 {
@@ -626,9 +618,37 @@ void CJumpPointSearch::pathDraw(HWND hWnd)
 		temp = temp->pParent;
 
 		if (temp->pParent == nullptr)
-			return;
+			break;
 	}
 
-	InvalidateRect(hWnd, NULL, false);
 	ReleaseDC(hWnd, hdc);
+}
+
+void CJumpPointSearch::fastPathDraw(HWND hWnd)
+{
+	if (fastPathList.size() != 0)
+	{
+		HDC hdc = GetDC(hWnd);
+		
+		std::list<NODE*>::iterator iter = fastPathList.begin();
+		std::list<NODE*>::iterator nextIter = fastPathList.begin();
+		nextIter++;
+
+		for (; nextIter != fastPathList.end(); )
+		{
+			HPEN Pen, oPen;
+			Pen = CreatePen(PS_SOLID, 3, RGB(0, 0, 255));
+			oPen = (HPEN)SelectObject(hdc, Pen);
+			MoveToEx(hdc, (*iter)->ix * 20 + 11, (*iter)->iy * 20 + 11, NULL);
+			LineTo(hdc, (*nextIter)->ix * 20 + 11, (*nextIter)->iy * 20 + 11);
+			SelectObject(hdc, oPen);
+			DeleteObject(Pen);
+
+			iter++;
+			nextIter++;
+		}
+	
+		ReleaseDC(hWnd, hdc);
+	}
+
 }

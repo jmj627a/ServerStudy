@@ -23,6 +23,10 @@ public:
 
 	int addNum;
 	int error;
+	int errorMax;
+
+	int deltaX;
+	int deltaY;
 
 public:
 	CBresenham();
@@ -30,10 +34,12 @@ public:
 
 	std::list<POS> dotList;
 
-	void checkDot();
+	bool checkDot();
 	
 	bool compareLength(); //0-°¡·Î±è/1-¼¼·Î±è
 
 	void LineDraw(HWND hWnd);
+
+	void setPos(int _startPosX, int _startPosY, int _endPosX, int _endPosY);
 };
 

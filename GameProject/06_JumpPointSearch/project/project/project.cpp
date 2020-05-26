@@ -15,6 +15,10 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
+HDC			g_hMemDC;
+HBITMAP		g_hMemDC_Bitmap;
+HBITMAP		g_hMemDC_OldBitmap;
+
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -97,7 +101,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static bool lineFlag = false;
 
     static CJumpPointSearch JPS;
-	static CBresenham line;
 
     switch (message)
     {
@@ -194,16 +197,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             InvalidateRect(hWnd, NULL, false);
         }
 
-		line.startPos.m_ix = LOWORD(lParam) / 20;
-		line.startPos.m_iy = HIWORD(lParam) / 20;
-		if (lineFlag)
-		{
-			line.endPos.m_ix = LOWORD(lParam) / 20;
-			line.endPos.m_iy = HIWORD(lParam) / 20;
-
-			line.checkDot();
-			InvalidateRect(hWnd, NULL, true);
-		}
+		//line.startPos.m_ix = LOWORD(lParam) / 20;
+		//line.startPos.m_iy = HIWORD(lParam) / 20;
+		//if (lineFlag)
+		//{
+		//	line.endPos.m_ix = LOWORD(lParam) / 20;
+		//	line.endPos.m_iy = HIWORD(lParam) / 20;
+		//
+		//	line.checkDot();
+		//	InvalidateRect(hWnd, NULL, true);
+		//}
         break;
 	case WM_KEYDOWN:
         //리셋
@@ -221,6 +224,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				iter = JPS.closeList.begin();
 				delete[](*iter);
 				JPS.closeList.erase(iter);
+			}
+			while (JPS.fastPathList.empty() == false)
+			{
+				iter = JPS.fastPathList.begin();
+				JPS.fastPathList.erase(iter);
 			}
 			
 			for (int i = 0; i < 50; ++i)
@@ -260,10 +268,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
 
-		if(JPS.m_pEndNode != nullptr)
+		if (JPS.m_pEndNode != nullptr)
+		{
 			JPS.pathDraw(hWnd);
-
-		line.LineDraw(hWnd);
+			JPS.fastPathDraw(hWnd);
+		}
 
         EndPaint(hWnd, &ps);
     }
