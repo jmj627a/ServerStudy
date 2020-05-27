@@ -101,7 +101,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static bool lineFlag = false;
 
     static CJumpPointSearch JPS;
-
+    static CBresenham line;
     switch (message)
     {
     case WM_CREATE:
@@ -197,16 +197,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             InvalidateRect(hWnd, NULL, false);
         }
 
-		//line.startPos.m_ix = LOWORD(lParam) / 20;
-		//line.startPos.m_iy = HIWORD(lParam) / 20;
-		//if (lineFlag)
-		//{
-		//	line.endPos.m_ix = LOWORD(lParam) / 20;
-		//	line.endPos.m_iy = HIWORD(lParam) / 20;
-		//
-		//	line.checkDot();
-		//	InvalidateRect(hWnd, NULL, true);
-		//}
+		if (lineFlag)
+		{
+			line.endPos.m_ix = LOWORD(lParam) / 20;
+			line.endPos.m_iy = HIWORD(lParam) / 20;
+		
+            std::list<POS>::iterator iter;
+            while (line.dotList.empty() == false)
+            {
+                iter = line.dotList.begin();
+                line.dotList.erase(iter);
+            }
+            for (int i = 0; i < 50; ++i)
+            {
+                for (int j = 0; j < 30; ++j)
+                {
+                    g_Grid[j][i].grid_type = eBLANK;
+                }
+            }
+
+			line.checkDot();
+			InvalidateRect(hWnd, NULL, true);
+		}
+        else
+        {
+            line.startPos.m_ix = LOWORD(lParam) / 20;
+            line.startPos.m_iy = HIWORD(lParam) / 20;
+        }
         break;
 	case WM_KEYDOWN:
         //리셋
@@ -245,6 +262,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
 
+        line.LineDraw(hWnd);
+
         for (int i = 0; i < 50; ++i)
         {
             for (int j = 0; j < 30; ++j)
@@ -258,6 +277,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 case eBLOCKED:		Brush = CreateSolidBrush(RGB(200, 200, 200)); break;    //회색
                 case eCLOSE:  Brush = CreateSolidBrush(RGB(255, 255, 0)); break;      //노랑
                 case eOPEN:    Brush = CreateSolidBrush(RGB(0, 0, 255)); break;        //파랑
+                case eLINE:    Brush = CreateSolidBrush(RGB(255, 100, 100)); break;        
                 default:        Brush = CreateSolidBrush(RGB(0, 0, 0)); break;
                 }
                 oBrush = (HBRUSH)SelectObject(hdc, Brush);
@@ -267,6 +287,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DeleteObject(Brush);
             }
         }
+
 
 		if (JPS.m_pEndNode != nullptr)
 		{

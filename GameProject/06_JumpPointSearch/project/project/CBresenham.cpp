@@ -96,20 +96,16 @@ void CBresenham::LineDraw(HWND hWnd)
 	HDC hdc = GetDC(hWnd);
 	
 	std::list<POS>::iterator iter = dotList.begin();
-	std::list<POS>::iterator nextiter = dotList.begin();
-	++nextiter;
 
-	for (nextiter; nextiter != dotList.end(); ++nextiter)
+	for (iter; iter != dotList.end(); ++iter)
 	{
-		HPEN Pen, oPen;
-		Pen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
-		oPen = (HPEN)SelectObject(hdc, Pen);
-		MoveToEx(hdc, (*iter).m_ix * 20 + 10, (*iter).m_iy * 20 + 10, NULL);
-		LineTo(hdc, (*nextiter).m_ix * 20 + 10, (*nextiter).m_iy * 20 + 10);
-		SelectObject(hdc, oPen);
-		DeleteObject(Pen);
-
-		++iter;
+		g_Grid[(*iter).m_iy][(*iter).m_ix].grid_type = eLINE;
+		//HBRUSH Brush, oBrush;
+		//Brush = CreateSolidBrush(RGB(255, 0, 0));
+		//oBrush = (HBRUSH)SelectObject(hdc, Brush);
+		//Rectangle(hdc, (*iter).m_ix, (*iter).m_iy, (*iter).m_ix + 20, (*iter).m_iy + 20);
+		//SelectObject(hdc, oBrush);
+		//DeleteObject(Brush);
 	}
 
 	InvalidateRect(hWnd, NULL, false);

@@ -8,7 +8,8 @@ enum GRID_TYPE
 	eEND,
 	eBLOCKED,
 	eOPEN,
-	eCLOSE
+	eCLOSE,
+	eLINE
 };
 
 struct TILE
