@@ -23,7 +23,7 @@ public:
 
 	int addNum;
 	int error;
-	int errorMax;
+	float errorMax;
 
 	int deltaX;
 	int deltaY;

@@ -28,6 +28,7 @@ bool CBresenham::checkDot()
 			return true;
 		}
 
+
 		//가로가 더 긴 경우, 가로를 1씩 증가시키면서 error += addNum;
 		if (longerSide == 0)
 		{
@@ -77,6 +78,11 @@ bool CBresenham::compareLength()
 	{
 		addNum = yLength; //상대방 값을 계속 누적해서 더할 때 쓸 것
 		errorMax = xLength;
+		error = 0;
+		
+		if (yLength == 1)
+			errorMax = xLength / 2 + 1;
+		
 		return false;
 	}
 	//세로 김
@@ -84,6 +90,11 @@ bool CBresenham::compareLength()
 	{
 		addNum = xLength;
 		errorMax = yLength;
+		error = 0;
+
+		if (xLength == 1)
+			errorMax = yLength / 2 + 1;
+
 		return true;
 	}
 }
@@ -100,12 +111,6 @@ void CBresenham::LineDraw(HWND hWnd)
 	for (iter; iter != dotList.end(); ++iter)
 	{
 		g_Grid[(*iter).m_iy][(*iter).m_ix].grid_type = eLINE;
-		//HBRUSH Brush, oBrush;
-		//Brush = CreateSolidBrush(RGB(255, 0, 0));
-		//oBrush = (HBRUSH)SelectObject(hdc, Brush);
-		//Rectangle(hdc, (*iter).m_ix, (*iter).m_iy, (*iter).m_ix + 20, (*iter).m_iy + 20);
-		//SelectObject(hdc, oBrush);
-		//DeleteObject(Brush);
 	}
 
 	InvalidateRect(hWnd, NULL, false);
