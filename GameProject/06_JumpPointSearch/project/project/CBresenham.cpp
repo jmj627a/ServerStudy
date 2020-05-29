@@ -76,28 +76,29 @@ bool CBresenham::compareLength()
 	//가로 김
 	if (xLength >= yLength)
 	{
-		addNum = yLength; //상대방 값을 계속 누적해서 더할 때 쓸 것
+		addNum =  yLength; //상대방 값을 계속 누적해서 더할 때 쓸 것
 		errorMax = xLength;
 		error = 0;
 		
-		if (yLength == 1 || yLength == 0)
-			int a = 0;
-		else
-			int b = 0;
-
-		errorMax = xLength / (yLength+1) + 1;
-		
+		if (yLength == 2 || yLength == 1)
+		{
+			addNum = 1;
+			errorMax = xLength / (yLength + 1) + 1;
+		}
 		return false;
 	}
 	//세로 김
 	else
 	{
-		addNum = xLength;
+		addNum =  xLength;
 		errorMax = yLength;
 		error = 0;
 
-		//if (xLength == 1)
+		if (xLength == 2 || xLength == 1)
+		{
+			addNum = 1;
 			errorMax = yLength / (xLength + 1) + 1;
+		}
 
 		return true;
 	}
