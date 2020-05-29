@@ -197,33 +197,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             InvalidateRect(hWnd, NULL, false);
         }
 
-		//if (lineFlag)
-		//{
-		//	line.endPos.m_ix = LOWORD(lParam) / 20;
-		//	line.endPos.m_iy = HIWORD(lParam) / 20;
-		//
-        //    std::list<POS>::iterator iter;
-        //    while (line.dotList.empty() == false)
-        //    {
-        //        iter = line.dotList.begin();
-        //        line.dotList.erase(iter);
-        //    }
-        //    for (int i = 0; i < 50; ++i)
-        //    {
-        //        for (int j = 0; j < 30; ++j)
-        //        {
-        //            g_Grid[j][i].grid_type = eBLANK;
-        //        }
-        //    }
-        //
-		//	line.checkDot();
-		//	InvalidateRect(hWnd, NULL, true);
-		//}
-        //else
-        //{
-        //    line.startPos.m_ix = LOWORD(lParam) / 20;
-        //    line.startPos.m_iy = HIWORD(lParam) / 20;
-        //}
+		if (lineFlag)
+		{
+			line.endPos.m_ix = LOWORD(lParam) / 20;
+			line.endPos.m_iy = HIWORD(lParam) / 20;
+		
+            std::list<POS>::iterator iter;
+            while (line.dotList.empty() == false)
+            {
+                iter = line.dotList.begin();
+                line.dotList.erase(iter);
+            }
+            for (int i = 0; i < 50; ++i)
+            {
+                for (int j = 0; j < 30; ++j)
+                {
+                    g_Grid[j][i].grid_type = eBLANK;
+                }
+            }
+        
+			line.checkDot();
+			InvalidateRect(hWnd, NULL, true);
+		}
+        else
+        {
+            line.startPos.m_ix = LOWORD(lParam) / 20;
+            line.startPos.m_iy = HIWORD(lParam) / 20;
+        }
         break;
 	case WM_KEYDOWN:
         //리셋
