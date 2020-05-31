@@ -39,6 +39,7 @@ struct st_PACKET_HEADER
 
 enum eUSER_STATE
 {
+		eREADY, //로그인 전 상태
 		eLOGIN, //로그인 상태
 		eLOBBY, //로비
 		eROOM	//방
