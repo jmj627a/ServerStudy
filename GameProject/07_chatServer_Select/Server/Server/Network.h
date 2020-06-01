@@ -27,42 +27,49 @@ struct SESSION
 struct ROOM
 {
 	int m_iRoom_No;					//방 번호
-	int m_iRoom_length;				//방 이름 길이
-	char* m_cpRoom_name;			//방 이름
-	int m_iEnter_player_num;		//방 접속중인 사람 수
+	WORD m_iRoom_length;				//방 이름 길이
+	WCHAR* m_cpRoom_name;			//방 이름
+	char m_iEnter_player_num;		//방 접속중인 사람 수
 };
 
-int networkInit();
-void networkAccept(SOCKET* listenSocket);
-void networkFunc();
+class CNetwork
+{
+public:
 
-bool recvCheck(SESSION *session);
-void sendCheck(SESSION *session);
+	int networkInit();
+	void networkAccept(SOCKET* listenSocket);
+	void networkFunc();
 
-char CheckSumCheck(WORD _type, char* _payLoad, int _payLoadSize);
+	bool recvCheck(SESSION *session);
+	void sendCheck(SESSION *session);
 
-//로그인 요청
-bool recvLoginRequire(SESSION* session, char byCheckSum, WORD wPayloadSize);
-void sendLoginResponse(SESSION* session, char result);
+	char CheckSumCheck(WORD _type, char* _payLoad, int _payLoadSize);
 
-//방 리스트 요청
-void recvRoomListRequire();
-void sendRoomList();
+	//로그인 요청
+	bool recvLoginRequire(SESSION* session, char byCheckSum, WORD wPayloadSize);
+	void sendLoginResponse(SESSION* session, char result);
 
-//방 생성 요청
-void recvRoomCreateRequire();
-void sendRoomCreateResonse();
+	//방 리스트 요청
+	bool recvRoomListRequire(SESSION* session, char byCheckSum, WORD wPayloadSize);
+	void sendRoomList(SESSION* session);
 
-//방 입장 요청
-void recvRoomEnterRequire();
-void sendRoomEnterResonse(); //본인에게
-void sendRoomEnterUser(); //다른 유저들에게
+	//방 생성 요청
+	bool recvRoomCreateRequire(SESSION* session, char byCheckSum, WORD wPayloadSize);
+	void sendRoomCreateResonse(SESSION* session, ROOM* room, char result);
 
-//채팅 요청
-void recvChatRequire();
-void sendChatResonse();
+	//방 입장 요청
+	bool recvRoomEnterRequire(SESSION* session, char byCheckSum, WORD wPayloadSize);
+	void sendRoomEnterResonse(SESSION* session, ROOM* room, char result); //본인에게
+	void sendRoomEnterUser(SESSION * session,ROOM* room); //다른 유저들에게
 
-//방 퇴장
-void recvRoomExit(); 
-void sendRoomExit(); //다른 유저들에게
-void sendRoomDelete(); //참가자가 없는 경우 방 삭제 소식 전체 유저들에게
+	//채팅 요청
+	bool recvChatRequire(SESSION* session, char byCheckSum, WORD wPayloadSize);
+	void sendChatResonse(SESSION* session, WCHAR* message, WORD messageSize);
+
+	//방 퇴장
+	bool recvRoomExit(SESSION* session, char byCheckSum, WORD wPayloadSize);
+	void sendRoomExit(SESSION* session); //다른 유저들에게
+	void sendRoomDelete(ROOM* room); //참가자가 없는 경우 방 삭제 소식 전체 유저들에게
+
+	void disconnect(SESSION *session);
+};

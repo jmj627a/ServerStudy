@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include "Network.h"
 
-
+CNetwork network;
 
 int main()
 {
-	networkInit();
-	networkFunc();
+	network.networkInit();
+	network.networkFunc();
 
 	//closesocket(g_listenSocket);
 

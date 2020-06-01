@@ -6,8 +6,9 @@ std::list<ROOM*> roomList;
 SOCKET g_listenSocket;
 
 int userNoCount = 0;
+int roomNoCount = 0;
 
-int networkInit()
+int CNetwork::networkInit()
 {
 	WSADATA wsaData;
 	SOCKADDR_IN servAddr;
@@ -45,7 +46,7 @@ int networkInit()
 	ioctlsocket(g_listenSocket, FIONBIO, &on);
 }
 
-void networkAccept(SOCKET* listenSocket)
+void CNetwork::networkAccept(SOCKET* listenSocket)
 {
 	SOCKADDR_IN addr;
 	int addrLen = sizeof(addr);
@@ -67,7 +68,7 @@ void networkAccept(SOCKET* listenSocket)
 
 }
 
-void networkFunc()
+void CNetwork::networkFunc()
 {
 	FD_SET ReadSet;
 	FD_SET WriteSet;
@@ -95,6 +96,7 @@ void networkFunc()
 				break;
 
 			FD_SET((*iter)->socket, &ReadSet);
+
 			FD_SET((*iter)->socket, &WriteSet);
 
 			iter++;
@@ -120,24 +122,29 @@ void networkFunc()
 			if (startIter == sessionList.end())
 				break;
 
+			SESSION *session = *startIter;
+
 			//recv 체크
-			if (FD_ISSET((*startIter)->socket, &ReadSet))
+			if (FD_ISSET(session->socket, &ReadSet))
 			{
-				recvCheck((*startIter));
+				recvCheck(session);
 			}
 
 			//send 체크
-			if (FD_ISSET((*startIter)->socket, &WriteSet))
+			if (FD_ISSET(session->socket, &WriteSet))
 			{
-				sendCheck((*startIter));
+				sendCheck(session);
 			}
+
+			if (sessionList.size() == 0)
+				break;
 
 			++startIter;
 		}
 	}
 }
 
-bool recvCheck(SESSION *session)
+bool CNetwork::recvCheck(SESSION *session)
 {
 	//클라에 들어있는 큐 확인
 	CPacket* packet = &session->recvPacket;
@@ -148,8 +155,7 @@ bool recvCheck(SESSION *session)
 
 	if (recvSize <=0)
 	{
-		//iter = Disconnect((*iter));
-		//continue;
+		disconnect(session);
 		return false;
 	}
 
@@ -169,7 +175,7 @@ bool recvCheck(SESSION *session)
 			*packet >> byCode >> byCheckSum >> wMsgType >> wPayloadSize;
 
 			if (byCode != dfPACKET_CODE)
-				return false;
+				return true;
 
 			switch (wMsgType)
 			{
@@ -178,24 +184,32 @@ bool recvCheck(SESSION *session)
 				break;
 			case df_REQ_ROOM_LIST:
 				//대화방 리스트
+				recvRoomListRequire(session, byCheckSum, wPayloadSize);
 				break;
 			case df_REQ_ROOM_CREATE:
 				//대화방 생성
+				recvRoomCreateRequire(session, byCheckSum, wPayloadSize);
 				break;
 			case df_REQ_ROOM_ENTER:
 				//대화방 입장
+				recvRoomEnterRequire(session, byCheckSum, wPayloadSize);
 				break;
 			case df_REQ_CHAT:
 				//채팅송신
+				recvChatRequire(session, byCheckSum, wPayloadSize);
 				break;
 			case df_REQ_ROOM_LEAVE:
+				recvRoomExit(session, byCheckSum, wPayloadSize);
+				return true;
 				break;
 			}
 		}
 	}
+
+	//session->recvPacket.Clear();
 }
 
-void sendCheck(SESSION *session)
+void CNetwork::sendCheck(SESSION *session)
 {
 	//클라에 들어있는 큐 확인
 	CPacket* packet = &session->sendPacket;
@@ -213,13 +227,15 @@ void sendCheck(SESSION *session)
 		return;
 }
 
-bool recvLoginRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
+bool CNetwork::recvLoginRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
 {
 	CPacket *packet = &session->recvPacket;
 	
 	//로그인 할 수 있는 상태가 아니면 리턴
 	if (session->state != eREADY)
+	{
 		return false;
+	}
 
 	//체크썸이 같지 않으면 리턴
 	if (CheckSumCheck(df_REQ_LOGIN, (char*)packet->GetReadPtr(), wPayloadSize) != byCheckSum)
@@ -267,7 +283,7 @@ bool recvLoginRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
 	return true;
 }
 
-void sendLoginResponse(SESSION * session, char result)
+void CNetwork::sendLoginResponse(SESSION * session, char result)
 {
 	CPacket* packet = &session->sendPacket;
 
@@ -278,21 +294,544 @@ void sendLoginResponse(SESSION * session, char result)
 	BYTE	byCode = dfPACKET_CODE;
 	WORD	wMsgType = df_RES_LOGIN;
 	WORD	wPayloadSize = temp.GetDataSize();
-	BYTE	byCheckSum = CheckSumCheck(df_RES_LOGIN, temp.GetReadPtr(), wPayloadSize);
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
 
 	*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
 	packet->PutData(temp.GetReadPtr(), wPayloadSize);
 }
 
+bool CNetwork::recvRoomListRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	//로그인 할 수 있는 상태가 아니면 리턴
+	if (session->state != eLOGIN)
+	{
+		return false;
+	}
+	//체크썸이 같지 않으면 리턴
+	if (CheckSumCheck(df_REQ_ROOM_LIST, (char*)packet->GetReadPtr(), wPayloadSize) != byCheckSum)
+	{
+		wprintf(L"[%d] RoomListRequire fail : df_REQ_ROOM_LIST \n", session->userNO);
+		return false;
+	}
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	session->state = eLOBBY;
+
+	sendRoomList(session);
+	wprintf(L"[%d] RoomListRequire succ : df_REQ_ROOM_LIST \n", session->userNO);
+
+	return true;
+
+}
+
+void CNetwork::sendRoomList(SESSION * session)
+{
+	CPacket* packet = &session->sendPacket;
+
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+	WORD roomNum = roomList.size();
+	temp << roomNum;
+
+	std::list<ROOM*>::iterator iter = roomList.begin();
+
+	for (int i = 0; i < roomNum; ++i)
+	{
+		temp << (*iter)->m_iRoom_No << (*iter)->m_iRoom_length;
+		temp.PutData((char*)(*iter)->m_cpRoom_name, (*iter)->m_iRoom_length);
+		temp << (*iter)->m_iEnter_player_num;
+
+		std::list<SESSION*>::iterator Useriter = sessionList.begin();
+		for (int j = 0; j < sessionList.size(); ++j)
+		{
+			if ((*Useriter)->state == eROOM)
+				if ((*Useriter)->roomNO == (*iter)->m_iRoom_No)
+					temp.PutData((char*)(*Useriter)->nickName, 30);
+			
+			Useriter++;
+		}
+
+		iter++;
+	}
+
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_ROOM_LIST;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+	packet->PutData(temp.GetReadPtr(), wPayloadSize);
+}
+
+bool CNetwork::recvRoomCreateRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	//방 생성 할 수 있는 상태가 아니면 리턴
+	if (session->state != eLOBBY)
+	{
+		return false;
+	}
+
+	//체크썸이 같지 않으면 리턴
+	if (CheckSumCheck(df_REQ_ROOM_CREATE, (char*)packet->GetReadPtr(), wPayloadSize) != byCheckSum)
+	{
+		sendRoomCreateResonse(session, nullptr, df_RESULT_ROOM_CREATE_ETC);
+		wprintf(L"[%d] RoomCreateRequire fail : df_REQ_ROOM_CREATE \n", session->userNO);
+		return false;
+	}
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	session->state = eLOBBY;
+
+	WORD roomLength = 0;
+	*packet >> roomLength;
+	WCHAR* roomName = new WCHAR[roomLength/2];
+	packet->GetData((char *)roomName, roomLength);
+	roomName[roomLength / 2] = '\0';
+
+	//중복체크
+	std::list<ROOM*>::iterator iter = roomList.begin();
+	std::list<ROOM*>::iterator end = roomList.end();
+
+	for (iter; iter != end; ++iter)
+	{
+		//중복 방 이름
+		if (wcscmp((*iter)->m_cpRoom_name, roomName) == 0)
+		{
+			//실패 send
+			sendRoomCreateResonse(session,nullptr, df_RESULT_ROOM_CREATE_DNICK);
+			wprintf(L"[%d] RoomCreate fail : df_RESULT_ROOM_CREATE_DNICK \n", session->userNO);
+			return false;
+		}
+	}
+
+	ROOM* newRoom = new ROOM();
+	newRoom->m_iEnter_player_num =0;
+	newRoom->m_iRoom_length = roomLength;
+	newRoom->m_iRoom_No = roomNoCount++;
+	newRoom->m_cpRoom_name = new WCHAR[roomLength / 2];
+	wcscpy(newRoom->m_cpRoom_name, roomName);
+
+	roomList.push_back(newRoom);
+
+	sendRoomCreateResonse(session, newRoom, df_RESULT_ROOM_CREATE_OK);
+	wprintf(L"[%d] RoomCreate succ : df_RESULT_ROOM_CREATE_OK \n", session->userNO);
+
+	return true;
+
+}
+
+void CNetwork::sendRoomCreateResonse(SESSION * session, ROOM* room, char result)
+{
+
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+	if (room != nullptr)
+	{
+		temp << result << room->m_iRoom_No << room->m_iRoom_length;
+		temp.PutData((char*)room->m_cpRoom_name, room->m_iRoom_length);
+	}
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_ROOM_CREATE;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	switch (result)
+	{
+	case df_RESULT_ROOM_CREATE_OK:
+	{
+		std::list<SESSION*>::iterator iter = sessionList.begin();
+
+		for (iter; iter != sessionList.end(); iter++)
+		{
+			if ((*iter)->state == eREADY)
+				continue;
+
+			CPacket* packet = &(*iter)->sendPacket;
+			*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+			packet->PutData(temp.GetReadPtr(), wPayloadSize);
+
+		}
+	}
+		break;
+
+	default:
+	{
+		CPacket* packet = &session->sendPacket;
+		*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+		packet->PutData(temp.GetReadPtr(), wPayloadSize);
+	}
+	break;
+	}
+
+
+}
+
+bool CNetwork::recvRoomEnterRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	//입장 할 수 있는 상태가 아니면 리턴
+	if (session->state != eLOBBY)
+	{
+		return false;
+	}
+	//체크썸이 같지 않으면 리턴
+	if (CheckSumCheck(df_REQ_ROOM_ENTER, (char*)packet->GetReadPtr(), wPayloadSize) != byCheckSum)
+	{
+		//실패 send
+		sendRoomEnterResonse(session, nullptr, df_RESULT_ROOM_ENTER_ETC);
+		wprintf(L"[%d] Room Enter fail : df_RESULT_ROOM_ENTER_ETC \n", session->userNO);
+		return false;
+	}
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	int roomNo;
+	*packet >> roomNo;
+	
+	std::list<ROOM*>::iterator iter = roomList.begin();
+	std::list<ROOM*>::iterator end = roomList.end();
+
+	for (iter; iter != end;)
+	{
+		if ((*iter)->m_iRoom_No == roomNo)
+		{
+			session->roomNO = roomNo;
+			session->state = eROOM;
+			(*iter)->m_iEnter_player_num++;
+			break;
+		}
+		iter++;
+	}
+
+	if (iter != end)
+	{
+		sendRoomEnterResonse(session, *iter, df_RESULT_ROOM_ENTER_OK);
+		sendRoomEnterUser(session, *iter);
+		wprintf(L"[%d] Room Enter succ : df_RESULT_ROOM_ENTER_OK \n", session->userNO);
+	}
+	else
+	{
+		sendRoomEnterResonse(session, nullptr, df_RESULT_ROOM_ENTER_ETC);
+		wprintf(L"[%d] Room Enter fail : df_RESULT_ROOM_ENTER_ETC \n", session->userNO);
+	}
+
+	return true;
+}
+
+void CNetwork::sendRoomEnterResonse(SESSION * session, ROOM* room, char result)
+{
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+
+	if (result != df_RESULT_ROOM_ENTER_OK)
+		return;
+
+	temp << result;
+	if (room != nullptr)
+	{
+		temp << room->m_iRoom_No << room->m_iRoom_length;
+		temp.PutData((char*)room->m_cpRoom_name, room->m_iRoom_length);
+	}
+
+	std::list<SESSION*>::iterator iter = sessionList.begin();
+	std::list<SESSION*>::iterator end = sessionList.end();
+
+	temp << room->m_iEnter_player_num;
+
+	for (iter; iter != end; ++iter)
+	{
+		if ((*iter)->state == eROOM)
+		{
+			if ((*iter)->roomNO == room->m_iRoom_No)
+			{
+				temp.PutData((char*)(*iter)->nickName, 30);
+				temp << (*iter)->userNO;
+			}
+		}
+	}
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_ROOM_ENTER;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	CPacket* packet = &session->sendPacket;
+	*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+	packet->PutData(temp.GetReadPtr(), wPayloadSize);
+}
+
+void CNetwork::sendRoomEnterUser(SESSION * session, ROOM * room)
+{
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+	temp.PutData((char*)session->nickName, 30);
+	temp << session->userNO;
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_USER_ENTER;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	std::list<SESSION*>::iterator iter = sessionList.begin();
+	std::list<SESSION*>::iterator end = sessionList.end();
+
+	for (iter; iter != end; ++iter)
+	{
+		//본인 빼고 보내기
+		if ((*iter)->userNO == session->userNO)
+			continue;
+
+		if ((*iter)->state == eROOM)
+		{
+			if ((*iter)->roomNO == room->m_iRoom_No)
+			{
+				CPacket* packet = &(*iter)->sendPacket;
+				*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+				packet->PutData(temp.GetReadPtr(), wPayloadSize);
+			}
+		}
+	}
+}
+
+bool CNetwork::recvChatRequire(SESSION * session, char byCheckSum, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	//입장 할 수 있는 상태가 아니면 리턴
+	if (session->state != eROOM)
+	{
+		return false;
+	}
+	//체크썸이 같지 않으면 리턴
+	if (CheckSumCheck(df_REQ_CHAT, (char*)packet->GetReadPtr(), wPayloadSize) != byCheckSum)
+	{
+		//실패 send
+		wprintf(L"[%d] chat send fail : df_REQ_CHAT \n", session->userNO);
+		return false;
+	}
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	WORD messageSize;
+	*packet >> messageSize;
+
+	WCHAR* chatMessage = new WCHAR[messageSize / 2];
+	packet->GetData((char *)chatMessage, messageSize);
+	chatMessage[messageSize / 2] = '\0';
+
+	sendChatResonse(session, chatMessage, messageSize);
+	wprintf(L"[%d] chat send fail : df_REQ_CHAT \n", session->userNO);
+
+	return true;
+}
+
+void CNetwork::sendChatResonse(SESSION * session, WCHAR* message, WORD messageSize)
+{
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+	temp << session->userNO << messageSize;
+	temp.PutData((char*)message, messageSize);
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_CHAT;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	std::list<SESSION*>::iterator iter = sessionList.begin();
+	std::list<SESSION*>::iterator end = sessionList.end();
+
+	for (iter; iter != end; ++iter)
+	{
+		//본인 빼고 보내기
+		if ((*iter)->userNO == session->userNO)
+			continue;
+
+		if ((*iter)->state == eROOM)
+		{
+			if ((*iter)->roomNO == session->roomNO)
+			{
+				CPacket* packet = &(*iter)->sendPacket;
+				*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+				packet->PutData(temp.GetReadPtr(), wPayloadSize);
+			}
+		}
+	}
+}
+
+bool CNetwork::recvRoomExit(SESSION * session, char byCheckSum, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (session->state != eROOM)
+	{
+		return false;
+	}
+	//체크썸이 같지 않으면 리턴
+	if (CheckSumCheck(df_REQ_ROOM_LEAVE, (char*)packet->GetReadPtr(), wPayloadSize) != byCheckSum)
+	{
+		wprintf(L"[%d] Room Exit fail : df_REQ_ROOM_LEAVE \n", session->userNO);
+		return false;
+	}
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	
+	std::list<SESSION*>::iterator iter = sessionList.begin();
+	std::list<SESSION*>::iterator end = sessionList.end();
+
+	for (iter; iter != end; ++iter)
+	{
+		//if ((*iter)->userNO == session->userNO)
+		//{
+		//	session->state = eLOBBY;
+		//	//continue;
+		//}
+		if ((*iter)->roomNO == session->roomNO)
+		{
+			sendRoomExit(session);
+		}
+	}
+	std::list<ROOM*>::iterator rIter = roomList.begin();
+	std::list<ROOM*>::iterator rEnd = roomList.end();
+
+	ROOM* temp = *rIter;
+
+	for (rIter; rIter != rEnd; ++rIter)
+	{
+		if ((*rIter)->m_iRoom_No == session->roomNO)
+		{
+			(*rIter)->m_iEnter_player_num--;
+			temp = (*rIter);
+			break;
+		}
+	}
+
+
+	if (temp->m_iEnter_player_num == 0)
+	{
+		sendRoomDelete(temp);
+		roomList.remove(temp);
+		//delete temp;
+	}
+
+	session->state = eLOBBY;
+
+	wprintf(L"[%d] Room Exit succ : df_REQ_ROOM_LEAVE \n", session->userNO);
+
+	//sessionList.remove(session);
+	//session->recvPacket.Clear();
+	//delete session;
+	//memset(session, 0, sizeof(session));
+
+	return true;
+}
+
+void CNetwork::sendRoomExit(SESSION* session)
+{
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+	temp << session->userNO ;
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_ROOM_LEAVE;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	std::list<SESSION*>::iterator iter = sessionList.begin();
+	std::list<SESSION*>::iterator end = sessionList.end();
+
+	for (iter; iter != end; ++iter)
+	{
+		if ((*iter)->roomNO == session->roomNO)
+		{
+			CPacket* packet = &(*iter)->sendPacket;
+			*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+			packet->PutData(temp.GetReadPtr(), wPayloadSize);
+		}
+	}
+}
+
+void CNetwork::sendRoomDelete(ROOM* room)
+{
+	//헤더 다음에 넣어야 하는데 먼저 넣으니까 페이로드가 없어서 체크썸을 못함
+	CPacket temp;
+	temp << room->m_iRoom_No;
+
+	BYTE	byCode = dfPACKET_CODE;
+	WORD	wMsgType = df_RES_ROOM_DELETE;
+	WORD	wPayloadSize = temp.GetDataSize();
+	BYTE	byCheckSum = CheckSumCheck(wMsgType, temp.GetReadPtr(), wPayloadSize);
+
+	std::list<SESSION*>::iterator iter = sessionList.begin();
+	std::list<SESSION*>::iterator end = sessionList.end();
+
+	for (iter; iter != end; ++iter)
+	{
+		//모두에게
+		//if ((*iter)->roomNO == room->m_iRoom_No)
+		{
+			CPacket* packet = &(*iter)->sendPacket;
+			*packet << byCode << byCheckSum << wMsgType << wPayloadSize;
+			packet->PutData(temp.GetReadPtr(), wPayloadSize);
+		}
+	}
+}
+
+void  CNetwork::disconnect(SESSION *session)
+{
+	// 방에 들어가 있다면 퇴장처리
+	if (session->state == eROOM)
+	{
+		std::list<ROOM*>::iterator iter = roomList.begin();
+
+		// 방을 찾는다.
+		for (; iter != roomList.end(); ++iter)
+		{
+			ROOM *room = (*iter);
+
+			if (room->m_iRoom_No == session->roomNO)
+			{
+				sendRoomExit(session);
+				room->m_iEnter_player_num--;
+
+				if (room->m_iEnter_player_num == 0)
+				{
+					// 방 삭제
+					sendRoomDelete(room);
+					roomList.remove(room);
+					//delete room;
+					break;
+				}
+			}
+		}
+	}
+
+	sessionList.remove(session);
+	closesocket(session->socket);
+	delete session;
+
+}
 
 //각 MsgType, Payload 의 각 바이트 더하기 % 256
-char CheckSumCheck(WORD _type, char* _bufPtr, int _payLoadSize)
+char CNetwork::CheckSumCheck(WORD _type, char* _bufPtr, int _payLoadSize)
 {
 	char checkSum;
 
 	checkSum = char(((_type) >> 8) & 0xff) + char((_type) & 0xff);
-
-	//_bufPtr += sizeof(st_PACKET_HEADER);
 
 	for (int i = 0; i < _payLoadSize; i++)
 		checkSum += _bufPtr[i];
