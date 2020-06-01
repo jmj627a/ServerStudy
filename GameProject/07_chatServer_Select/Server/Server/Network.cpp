@@ -102,10 +102,11 @@ void CNetwork::networkFunc()
 			iter++;
 		}
 
-		//timeval time;
-		//time.tv_usec = 50000;
+		timeval time;
+		time.tv_usec = 0;
+		time.tv_sec = 0;
 
-		int ret = select(0, &ReadSet, &WriteSet, NULL, NULL); //timeval을 무한으로 하는 이유 -> 서버는 새로운 일이 없으면 아무것도 할 일이 없다.
+		int ret = select(0, &ReadSet, &WriteSet, 0, &time); //지금은 timeout을 0으로 넣어야한다. 지금 여기서 잠들면 저 뒤에있는 select는 계속 기다리게됨. 대신 루프가 엄청 돌게된다.
 		
 		if (ret == SOCKET_ERROR)
 			return;
@@ -123,6 +124,7 @@ void CNetwork::networkFunc()
 				break;
 
 			SESSION *session = *startIter;
+			++startIter;
 
 			//recv 체크
 			if (FD_ISSET(session->socket, &ReadSet))
@@ -130,16 +132,18 @@ void CNetwork::networkFunc()
 				recvCheck(session);
 			}
 
-			//send 체크
-			if (FD_ISSET(session->socket, &WriteSet))
+			if (session != nullptr)
 			{
-				sendCheck(session);
-			}
+				//send 체크
+				if (FD_ISSET(session->socket, &WriteSet))
+				{
+					sendCheck(session);
+				}
 
 			if (sessionList.size() == 0)
 				break;
-
-			++startIter;
+			}
+			
 		}
 	}
 }
@@ -725,17 +729,12 @@ bool CNetwork::recvRoomExit(SESSION * session, char byCheckSum, WORD wPayloadSiz
 	{
 		sendRoomDelete(temp);
 		roomList.remove(temp);
-		//delete temp;
+		delete temp;
 	}
 
 	session->state = eLOBBY;
 
 	wprintf(L"[%d] Room Exit succ : df_REQ_ROOM_LEAVE \n", session->userNO);
-
-	//sessionList.remove(session);
-	//session->recvPacket.Clear();
-	//delete session;
-	//memset(session, 0, sizeof(session));
 
 	return true;
 }
@@ -793,13 +792,12 @@ void CNetwork::sendRoomDelete(ROOM* room)
 
 void  CNetwork::disconnect(SESSION *session)
 {
-	// 방에 들어가 있다면 퇴장처리
+	// 방에 들어가 있다면
 	if (session->state == eROOM)
 	{
 		std::list<ROOM*>::iterator iter = roomList.begin();
 
-		// 방을 찾는다.
-		for (; iter != roomList.end(); ++iter)
+		for (iter; iter != roomList.end(); ++iter)
 		{
 			ROOM *room = (*iter);
 
@@ -813,7 +811,7 @@ void  CNetwork::disconnect(SESSION *session)
 					// 방 삭제
 					sendRoomDelete(room);
 					roomList.remove(room);
-					//delete room;
+					delete room;
 					break;
 				}
 			}
@@ -823,6 +821,7 @@ void  CNetwork::disconnect(SESSION *session)
 	sessionList.remove(session);
 	closesocket(session->socket);
 	delete session;
+	session = nullptr;
 
 }
 
