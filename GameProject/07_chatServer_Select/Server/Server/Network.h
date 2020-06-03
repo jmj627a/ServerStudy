@@ -31,7 +31,7 @@ struct ROOM
 	WCHAR* m_cpRoom_name;			//방 이름
 	char m_iEnter_player_num;		//방 접속중인 사람 수
 
-	std::list
+	//std::list<int> enterPlayerNO;
 };
 
 class CNetwork

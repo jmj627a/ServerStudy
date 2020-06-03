@@ -443,6 +443,8 @@ void CNetwork::sendRoomCreateResonse(SESSION * session, ROOM* room, char result)
 		temp << result << room->m_iRoom_No << room->m_iRoom_length;
 		temp.PutData((char*)room->m_cpRoom_name, room->m_iRoom_length);
 	}
+	else
+		temp << result;
 
 	BYTE	byCode = dfPACKET_CODE;
 	WORD	wMsgType = df_RES_ROOM_CREATE;
@@ -694,21 +696,22 @@ bool CNetwork::recvRoomExit(SESSION * session, char byCheckSum, WORD wPayloadSiz
 		return false;
 
 	
-	std::list<SESSION*>::iterator iter = sessionList.begin();
-	std::list<SESSION*>::iterator end = sessionList.end();
-
-	for (iter; iter != end; ++iter)
-	{
+	//std::list<SESSION*>::iterator iter = sessionList.begin();
+	//std::list<SESSION*>::iterator end = sessionList.end();
+	//
+	//for (iter; iter != end; ++iter)
+	//{
 		//if ((*iter)->userNO == session->userNO)
 		//{
 		//	session->state = eLOBBY;
 		//	//continue;
 		//}
-		if ((*iter)->roomNO == session->roomNO)
-		{
+		//if ((*iter)->roomNO == session->roomNO)
+		//{
+	//broadCast
 			sendRoomExit(session);
-		}
-	}
+		//}
+	//}
 	std::list<ROOM*>::iterator rIter = roomList.begin();
 	std::list<ROOM*>::iterator rEnd = roomList.end();
 
@@ -755,6 +758,8 @@ void CNetwork::sendRoomExit(SESSION* session)
 
 	for (iter; iter != end; ++iter)
 	{
+		if ((*iter)->state != eROOM)
+			continue;
 		if ((*iter)->roomNO == session->roomNO)
 		{
 			CPacket* packet = &(*iter)->sendPacket;
@@ -762,6 +767,8 @@ void CNetwork::sendRoomExit(SESSION* session)
 			packet->PutData(temp.GetReadPtr(), wPayloadSize);
 		}
 	}
+
+	wprintf(L" %d leave room \n", session->userNO);
 }
 
 void CNetwork::sendRoomDelete(ROOM* room)
