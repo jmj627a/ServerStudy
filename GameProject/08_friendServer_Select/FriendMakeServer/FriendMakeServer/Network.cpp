@@ -1,11 +1,28 @@
 #include "Network.h"
 
-std::list<SESSION*> sessionList;
-std::unordered_map<UINT64, WCHAR*> clientInfoMap; //accountNo , NickName
+//전체 연결된 sessionList
+list<SESSION*> sessionList;
+
+//계정 생성된 목록 <accountNo , NickName >
+unordered_map<UINT64, WCHAR*> clientInfoMap;
+
+// 이미 만들어진 친구목록 <From, 친구 구조체>
+unordered_multimap<UINT64, FRIEND *> friendMap;
+
+// 친구요청 <From, 친구 요청 구조체>
+unordered_multimap<UINT64, FRIEND *> requestFriendMap;
+
+// From 친구요청 한사람(Key), To 친구요청 받은사람(Data)
+unordered_multimap<UINT64, UINT64> requestFrom;
+
+// To 친구요청 받은사람 (Key), From 친구요청 한사람(Data)
+unordered_multimap<UINT64, UINT64> requestTo;
+
 
 SOCKET g_listenSocket;
 
 UINT64 g_userNoCount = 1;
+//UINT64 g_totalFriendNum = 0;
 
 int CNetwork::networkInit()
 {
@@ -59,7 +76,7 @@ void CNetwork::networkAccept(SOCKET* listenSocket)
 
 	SESSION* newSession = new SESSION;
 	newSession->socket = clientSocket;
-
+	newSession->userNo = 0;
 	//memcpy(&newSession->ip, &addr.sin_addr, sizeof(addr.sin_addr));
 	//newSession->port = addr.sin_port;
 
@@ -194,18 +211,22 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//회원 리스트 요청
 			case df_REQ_ACCOUNT_LIST:
+				recv_AccountList_Require(session, wPayloadSize);
 				break;
 
 				//친구 목록 요청
 			case df_REQ_FRIEND_LIST:
+				recv_FriendList_Require(session, wPayloadSize);
 				break;
 
 				//친구요청 보낸 목록 요청
 			case df_REQ_FRIEND_REQUEST_LIST:
+				recv_FriendRequestList_Require(session, wPayloadSize);
 				break;
 
 				//친구 요청 받은거 목록 요청
 			case df_REQ_FRIEND_REPLY_LIST:
+				recv_FriendReplyList_Require(session, wPayloadSize);
 				break;
 
 				//친구 관계 끊기 
@@ -214,6 +235,7 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//친구 요청
 			case df_REQ_FRIEND_REQUEST:
+				recv_FriendRequset_Require(session, wPayloadSize);
 				break;
 
 				//친구 요청 취소
@@ -226,6 +248,7 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//친구 요청 수락
 			case df_REQ_FRIEND_AGREE:
+				recv_FriendRequestAgree_Require(session, wPayloadSize);
 				break;
 
 				//스트레스 테스트용 에코
@@ -249,48 +272,160 @@ void CNetwork::sendCheck(SESSION *session)
 	if (sendSize > 0)
 	{
 		session->sendPacket.Clear();
-		wprintf(L"[%d] send : %d byte \n", session->userNO, sendSize);
+		wprintf(L"[%d] send : %d byte \n", session->userNo, sendSize);
 	}
 
 	if (sendSize <=0)
 		return;
 }
 
-void CNetwork::make_packet(SESSION* session, CPacket* temp, int packet_type)
+void CNetwork::make_packet(SESSION* session, CPacket* temp, int packet_type, int multimapCount)
 {
 	CPacket* packet = &session->sendPacket;
 
 	BYTE	byCode = dfPACKET_CODE;
 	WORD	wMsgType = packet_type;
-	WORD	wPayloadSize = temp->GetDataSize();
+	WORD	wPayloadSize;
+	if (packet_type == df_RES_FRIEND_LIST ||
+		packet_type == df_RES_FRIEND_REQUEST_LIST ||
+		packet_type == df_RES_FRIEND_REPLY_LIST)
+		wPayloadSize = temp->GetDataSize() + sizeof(UINT);
+	else
+		wPayloadSize = temp->GetDataSize();
 
 	*packet << byCode << wMsgType << wPayloadSize;
-	packet->PutData(temp->GetReadPtr(), wPayloadSize);
+	if (packet_type == df_RES_FRIEND_LIST ||
+		packet_type == df_RES_FRIEND_REQUEST_LIST ||
+		packet_type == df_RES_FRIEND_REPLY_LIST)
+	{
+		*packet << (UINT)multimapCount;
+		packet->PutData(temp->GetReadPtr(), wPayloadSize - sizeof(UINT));
+	}
+	else
+		packet->PutData(temp->GetReadPtr(), wPayloadSize);
 }
 
-SESSION* CNetwork::findAccountNo(UINT64 accountNo)
+SESSION* CNetwork::findAccountNo(UINT64 accountNo, int type)
 {
 	std::list<SESSION*>::iterator startIter = sessionList.begin();
 	std::list<SESSION*>::iterator endIter = sessionList.end();
 
 	for (startIter; startIter != endIter; ++startIter)
 	{
-		if ((*startIter)->userNO == accountNo)
+		if ((*startIter)->userNo == accountNo)
 			return (*startIter);
 	}
 
 	return nullptr;
 }
 
-WCHAR* CNetwork::findNickname(UINT64 accountNo)
+WCHAR* CNetwork::findNickname(UINT64 accountNo, int type)
 {
-	auto findIter = clientInfoMap.find(accountNo);
-	if (findIter == clientInfoMap.end())
-		return nullptr;
-	else
-		return findIter->second;
+	switch (type)
+	{
+	case MAP:
+		{
+			auto findIter = clientInfoMap.find(accountNo);
+			if (findIter == clientInfoMap.end())
+				return nullptr;
+			else
+				return findIter->second;
+		}
+		break;
+	}
 }
 
+bool CNetwork::findRelation(UINT64 from, UINT64 to, int type)
+{
+	switch (type)
+	{
+		//둘이 이미 친구인가?
+		case dfFRIEND:
+		{
+			auto iter = friendMap.find(from);
+			if (iter != friendMap.end())
+				return true;
+			else
+				return false;
+		}
+		break;
+
+		//이미 친구신청을 했는가?
+		case dfFRIEND_REQUEST:
+		{
+			auto iter = requestFrom.find(from);
+			if (iter != requestFrom.end())
+				return true;
+			else
+				return false;
+		}
+		break;
+		//이미 친구신청을	 받았는가?
+		case dfFRIEND_REPLY:
+		{
+			auto iter = requestTo.find(from);
+			if (iter != requestTo.end())
+				return true;
+			else
+				return false;
+		}
+		break;
+	}
+
+	return false;
+}
+
+bool CNetwork::deleteRelation(UINT64 from, UINT64 to, int type)
+{
+	if (!findRelation(from, to, type))
+		return false;
+
+	switch (type)
+	{
+		//둘이 이미 친구인가?
+	case dfFRIEND:
+	{
+
+	}
+	break;
+
+	//이미 친구신청을 했는가?
+	case dfFRIEND_REQUEST:
+	{
+		auto iter = requestFrom.begin();
+		pair<unordered_multimap<UINT64, UINT64>::iterator,
+			unordered_multimap<UINT64, UINT64>::iterator> range;
+
+		range = requestFrom.equal_range(from);
+
+		for (iter = range.first; iter != range.second;)
+		{
+			if ((iter->first == from && iter->second == to))
+			{
+				iter = requestFrom.erase(iter);
+				break;
+			}
+			else
+				iter++;
+		}
+
+		iter = requestTo.begin();
+		range = requestTo.equal_range(to);
+
+		for (iter = range.first; iter != range.second;)
+		{
+			if ((iter->first == to && iter->second == from))
+			{
+				iter = requestTo.erase(iter);
+				return true;
+			}
+			else
+				iter++;
+		}
+	}
+	return false;
+	}
+}
 bool CNetwork::recv_AccountAdd_Require(SESSION* session, WORD wPayloadSize)
 {
 	CPacket* packet = &session->recvPacket;
@@ -298,15 +433,10 @@ bool CNetwork::recv_AccountAdd_Require(SESSION* session, WORD wPayloadSize)
 	if (packet->GetDataSize() < wPayloadSize)
 		return false;
 
-	WCHAR* nickname = new WCHAR[wPayloadSize * 2];
-	packet->GetData((char*)nickname, wPayloadSize);
+	WCHAR* nickname = new WCHAR[dfNICK_MAX_LEN];
+	packet->GetData((char*)nickname, dfNICK_MAX_LEN * 2);
 	
-	//여기서 이렇게 하면 로그인 하고 나서 그 정보가 바뀔거라 여기다 하면 안됨
-	session->userNO = g_userNoCount++;
-	wcscpy(session->nickName, nickname);
-
-	//map에 account no랑 nickname 추가
-	clientInfoMap.insert({ session->userNO, nickname });
+	clientInfoMap.insert({ g_userNoCount++ , nickname });
 
 	send_AccountAdd_Response(session);
 	
@@ -317,10 +447,9 @@ bool CNetwork::recv_AccountAdd_Require(SESSION* session, WORD wPayloadSize)
 bool CNetwork::send_AccountAdd_Response(SESSION* session)
 {
 	CPacket temp;
-	temp << session->userNO;
+	temp << g_userNoCount - 1;
 
 	make_packet(session, &temp, df_RES_ACCOUNT_ADD);
-
 	return false;
 }
 
@@ -332,15 +461,15 @@ bool CNetwork::recv_Login_Require(SESSION * session, WORD wPayloadSize)
 	if (packet->GetDataSize() < wPayloadSize)
 		return false;
 
-	UINT64 accountNo = 1234;
+	UINT64 accountNo = 0;
 	*packet >> accountNo;
 
-	WCHAR* findname = findNickname(accountNo);
+	WCHAR* findname = findNickname(accountNo , MAP);
 
 	if (findname != nullptr)
 	{
 		//있는 계정번호면 이 session에 계정번호와 닉네임을 주기
-		session->userNO = accountNo;
+		session->userNo = accountNo;
 		wcscpy(session->nickName, findname);
 	}
 
@@ -355,16 +484,284 @@ bool CNetwork::send_Login_Response(SESSION * session, WCHAR* findName)
 	CPacket temp;
 	if (findName != nullptr)
 	{
-		temp << session->userNO;
-		temp.PutData((char*)findName, dfNICK_MAX_LEN);
+		temp << (UINT64)session->userNo;
+		temp.PutData((char*)findName, dfNICK_MAX_LEN * 2);
 	}
 	else
-		temp << 0;
-
+	{
+		temp << (UINT64)0;
+	}
 	make_packet(session, &temp, df_RES_LOGIN);
 
 	return true;
 }
+
+bool CNetwork::recv_AccountList_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	send_AccoiuntList_Response(session);
+	wprintf(L"[%d] ACCOUNT_LIST succ : df_REQ_ACCOUNT_LIST \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_AccoiuntList_Response(SESSION * session)
+{
+	CPacket temp;
+	
+	temp << (UINT)clientInfoMap.size();
+
+	unordered_map<UINT64, WCHAR*>::iterator iter; 
+	for (iter = clientInfoMap.begin(); iter != clientInfoMap.end(); ++iter) {
+		temp << (UINT64)iter->first;
+		temp.PutData((char*)iter->second, dfNICK_MAX_LEN * 2);
+	}
+
+	make_packet(session, &temp, df_RES_ACCOUNT_LIST);
+
+	return true;
+}
+
+bool CNetwork::recv_FriendList_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	send_FriendList_Response(session);
+	wprintf(L"[%d] FRIEND_LIST succ : df_REQ_FRIEND_LIST \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_FriendList_Response(SESSION * session)
+{
+	CPacket temp;
+
+	UINT friendNum = 0;
+	
+	if (session->userNo != 0)
+	{
+		pair<unordered_multimap<UINT64, FRIEND*>::iterator,
+			unordered_multimap<UINT64, FRIEND*>::iterator> range;
+
+		range = friendMap.equal_range(session->userNo);
+
+		//session->userNo를 from으로 가지는 친구 목록, 범위 순회
+		for (auto iter = range.first; iter != range.second; ++iter)
+		{
+			friendNum++;
+
+			//친구 계정 번호
+			temp << iter->second->ToAccountNo;
+
+			//친구 닉네임
+			WCHAR *nickname = findNickname(iter->second->ToAccountNo, MAP);
+			temp.PutData((char*)nickname, dfNICK_MAX_LEN * 2);
+			
+		}
+	}
+
+	make_packet(session, &temp, df_RES_FRIEND_LIST, friendNum);
+	return true;
+}
+
+bool CNetwork::recv_FriendRequestList_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	send_FriendRequestList_Response(session);
+	wprintf(L"[%d] FRIEND_REQUEST_LIST succ : df_REQ_FRIEND_REQUEST_LIST \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_FriendRequestList_Response(SESSION * session)
+{
+	CPacket temp;
+
+	UINT friendNum = 0;
+
+	if (session->userNo != 0)
+	{
+		pair<unordered_multimap<UINT64, UINT64>::iterator,
+			unordered_multimap<UINT64, UINT64>::iterator> range;
+
+		range = requestFrom.equal_range(session->userNo);
+
+		//session->userNo를 from으로 가지는 친구 목록, 범위 순회
+		for (auto iter = range.first; iter != range.second; ++iter)
+		{
+			friendNum++;
+
+			//친구 계정 번호
+			temp << iter->second;
+
+			//친구 닉네임
+			WCHAR *nickname = findNickname(iter->second, MAP);
+			temp.PutData((char*)nickname, dfNICK_MAX_LEN * 2);
+			
+		}
+	}
+
+	make_packet(session, &temp, df_RES_FRIEND_REQUEST_LIST, friendNum);
+	return true;
+}
+
+bool CNetwork::recv_FriendReplyList_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	send_FriendReplyList_Response(session);
+	wprintf(L"[%d] FRIEND_REPLY_LIST succ : df_REQ_FRIEND_REPLY_LIST \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_FriendReplyList_Response(SESSION * session)
+{
+	CPacket temp;
+
+	UINT friendNum = 0;
+
+	if (session->userNo != 0)
+	{
+		pair<unordered_multimap<UINT64, UINT64>::iterator,
+			unordered_multimap<UINT64, UINT64>::iterator> range;
+
+		range = requestTo.equal_range(session->userNo);
+
+		//session->userNo를 from으로 가지는 친구 목록, 범위 순회
+		for (auto iter = range.first; iter != range.second; ++iter)
+		{
+			friendNum++;
+
+			//친구 계정 번호
+			temp << iter->second;
+
+			//친구 닉네임
+			WCHAR *nickname = findNickname(iter->second, MAP);
+			temp.PutData((char*)nickname, dfNICK_MAX_LEN * 2);
+		}
+	}
+
+	make_packet(session, &temp, df_RES_FRIEND_REPLY_LIST, friendNum);
+	return true;
+}
+
+bool CNetwork::recv_FriendRemove_Require(SESSION * session, WORD wPayloadSize)
+{
+	return false;
+}
+
+bool CNetwork::send_FriendRemove_Response(SESSION * session)
+{
+	return false;
+}
+
+bool CNetwork::recv_FriendRequset_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	UINT64 requestAccountNo;
+
+	*packet >> requestAccountNo;
+
+	send_FriendRequset_Response(session , requestAccountNo);
+	wprintf(L"[%d] FRIEND_REQUEST succ : df_REQ_FRIEND_REQUEST \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_FriendRequset_Response(SESSION * session, UINT64 requestAccountNo)
+{
+	CPacket temp;
+
+	if (session->userNo != 0)
+	{
+		//이미 친구 목록에 있는가?
+		if (findRelation(session->userNo, requestAccountNo, dfFRIEND))
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_AREADY;
+		else if (findRelation(session->userNo, requestAccountNo, dfFRIEND_REQUEST))
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_AREADY;
+		else
+		{
+			if (findNickname(requestAccountNo, MAP) == nullptr)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_NOTFOUND;
+			else if (requestAccountNo == session->userNo)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_NOTFOUND;
+			else
+			{
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_OK;
+				requestFrom.insert({ session->userNo, requestAccountNo });
+				requestTo.insert({ requestAccountNo, session->userNo });
+			}
+		}
+	}
+	else
+		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_NOTFOUND;
+
+	make_packet(session, &temp, df_RES_FRIEND_REQUEST);
+	return true;
+}
+
+bool CNetwork::recv_FriendRequestAgree_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	UINT64 requestAccountNo;
+
+	*packet >> requestAccountNo;
+
+	send_FriendRequestAgree_Response(session, requestAccountNo);
+	wprintf(L"[%d] FRIEND_AGREE succ : df_REQ_FRIEND_AGREE \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_FriendRequestAgree_Response(SESSION * session, UINT64 requestAccountNo)
+{
+	CPacket temp;
+
+	if (session->userNo != 0)
+	{
+		//이미 친구 목록에 있는가?
+		if(findRelation(session->userNo, requestAccountNo, dfFRIEND_REPLY))
+		{
+			deleteRelation(requestAccountNo, session->userNo, dfFRIEND_REQUEST);
+			FRIEND* newFriend = new FRIEND(requestAccountNo, session->userNo);
+			friendMap.insert({ requestAccountNo, newFriend });
+			newFriend = new FRIEND(session->userNo, requestAccountNo);
+			friendMap.insert({ session->userNo, newFriend});
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_AGREE_OK;
+		}
+		else
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_AGREE_NOTFRIEND;
+	}
+	else
+		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_AGREE_FAIL;
+
+	make_packet(session, &temp, df_RES_FRIEND_AGREE);
+	return true;
+}
+
 
 /*
 void  CNetwork::disconnect(SESSION *session)

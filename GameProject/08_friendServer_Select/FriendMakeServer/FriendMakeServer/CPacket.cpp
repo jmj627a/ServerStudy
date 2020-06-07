@@ -128,6 +128,12 @@ CPacket& CPacket::operator<<(UINT64 iValue)
 	return *this;
 }
 
+CPacket& CPacket::operator<<(UINT iValue)
+{
+	PutData((char*)(&iValue), sizeof(UINT));
+	return *this;
+}
+
 CPacket & CPacket::operator<<(char chValue)
 {
 	PutData((char*)(&chValue), sizeof(char));
@@ -194,6 +200,12 @@ CPacket & CPacket::operator>>(double & dValue)
 CPacket& CPacket::operator>>(UINT64 & iValue)
 {
 	GetData((char*)(&iValue), sizeof(UINT64));
+	return *this;
+}
+
+CPacket& CPacket::operator>>(UINT & iValue)
+{
+	GetData((char*)(&iValue), sizeof(UINT));
 	return *this;
 }
 

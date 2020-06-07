@@ -12,17 +12,37 @@
 
 using namespace std;
 
+#define LIST 0
+#define MAP 1
+
+#define dfFRIEND 0
+#define dfFRIEND_REQUEST 1
+#define dfFRIEND_REPLY 2
+
 struct SESSION
 {
 	SOCKET socket;
 
-	UINT64 userNO;
+	UINT64 userNo;
 	WCHAR nickName[dfNICK_MAX_LEN];
 
 	//streaming queue
 	CPacket sendPacket;
 	CPacket recvPacket;
 };
+
+struct FRIEND
+{
+	UINT64 FromAccountNo;
+	UINT64 ToAccountNo;
+
+	FRIEND(UINT64 from, UINT64 to)
+	{
+		FromAccountNo = from;
+		ToAccountNo = to;
+	}
+};
+
 
 class CNetwork
 {
@@ -38,13 +58,16 @@ public:
 	//char CheckSumCheck(WORD _type, char* _payLoad, int _payLoadSize);
 
 	//패킷 타입 넣고 패킷 만들어주는 함수
-	void make_packet(SESSION* session, CPacket* temp, int packet_type);
+	void make_packet(SESSION* session, CPacket* temp, int packet_type, int multimapCount = 0);
 
-	//accountNo 넣으면 SESSION 찾아서 리턴 (List)
-	SESSION* findAccountNo(UINT64 accountNo);
+	SESSION* findAccountNo(UINT64 accountNo, int type);
 
-	//accoiuntNo 넣으면 Nickname 찾아서 리턴 (unordered map)
-	WCHAR* findNickname(UINT64 accountNo);
+	//accountNo 넣으면 Nickname 찾아서 리턴 (unordered map)
+	WCHAR* findNickname(UINT64 accountNo, int type);
+
+	//이미 둘이 연결이 되어있는가?
+	bool findRelation(UINT64 from, UINT64 to, int type);
+	bool deleteRelation(UINT64 from, UINT64 to, int type);
 
 	//회원 가입 요청
 	bool recv_AccountAdd_Require(SESSION* session, WORD wPayloadSize);
@@ -76,7 +99,7 @@ public:
 
 	//친구 요청
 	bool recv_FriendRequset_Require(SESSION* session, WORD wPayloadSize);
-	bool send_FriendRequset_Response(SESSION* session);
+	bool send_FriendRequset_Response(SESSION* session, UINT64 requestAccountNo);
 
 	//친구 요청 취소
 	bool recv_FriendCancel_Require(SESSION* session, WORD wPayloadSize);
@@ -88,7 +111,7 @@ public:
 
 	//친구 요청 수락
 	bool recv_FriendRequestAgree_Require(SESSION* session, WORD wPayloadSize);
-	bool send_FriendRequestAgree_Response(SESSION* session);
+	bool send_FriendRequestAgree_Response(SESSION* session, UINT64 requestAccountNos);
 
 	//스트레스 테스트용 에코
 	bool recv_StressTest_Require(SESSION* session, WORD wPayloadSize);

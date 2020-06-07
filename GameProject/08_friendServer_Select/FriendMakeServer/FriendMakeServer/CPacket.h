@@ -66,6 +66,7 @@ public:
 	CPacket	&operator << (double dValue);
 
 	CPacket& operator << (UINT64 iValue);
+	CPacket& operator << (UINT iValue);
 
 
 
@@ -84,6 +85,7 @@ public:
 	CPacket	&operator>>(double &dValue);
 
 	CPacket& operator >> (UINT64 & iValue);
+	CPacket& operator >> (UINT & iValue);
 
 
 
