@@ -83,6 +83,8 @@ void CNetwork::networkAccept(SOCKET* listenSocket)
 	//list에 삽입
 	sessionList.push_back(newSession);
 
+	wprintf(L"[%d] accpet / total : %d \n", newSession->socket, sessionList.size());
+
 }
 
 void CNetwork::networkFunc()
@@ -114,7 +116,8 @@ void CNetwork::networkFunc()
 
 			FD_SET((*iter)->socket, &ReadSet);
 
-			FD_SET((*iter)->socket, &WriteSet);
+			if((*iter)->sendPacket.GetDataSize() > 0 )
+				FD_SET((*iter)->socket, &WriteSet);
 
 			iter++;
 		}
@@ -256,6 +259,7 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//스트레스 테스트용 에코
 			case df_REQ_STRESS_ECHO:
+				recv_StressTest_Require(session, wPayloadSize);
 				break;
 			}
 		}
@@ -942,6 +946,35 @@ bool CNetwork::send_FriendRequestAgree_Response(SESSION * session, UINT64 reques
 		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_AGREE_FAIL;
 
 	make_packet(session, &temp, df_RES_FRIEND_AGREE);
+	return true;
+}
+
+bool CNetwork::recv_StressTest_Require(SESSION* session, WORD wPayloadSize)
+{
+	CPacket* packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	WORD size;
+	*packet >> size;
+	WCHAR* str = new WCHAR[size];
+	packet->GetData((char*)str, size);
+
+	send_StressTest_Response(session, size, str);
+	wprintf(L"[%d] STRESS_ECHO succ : df_REQ_STRESS_ECHO \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_StressTest_Response(SESSION* session, WORD size, WCHAR* &str)
+{
+	CPacket temp;
+	
+	temp << (WORD)size;
+	temp.PutData((char*)str, size);
+
+	make_packet(session, &temp, df_RES_STRESS_ECHO);
 	return true;
 }
 

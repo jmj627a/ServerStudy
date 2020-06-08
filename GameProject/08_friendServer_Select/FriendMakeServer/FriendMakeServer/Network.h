@@ -115,7 +115,7 @@ public:
 
 	//스트레스 테스트용 에코
 	bool recv_StressTest_Require(SESSION* session, WORD wPayloadSize);
-	bool send_StressTest_Response(SESSION* session);
+	bool send_StressTest_Response(SESSION* session, WORD size, WCHAR* &str);
 
 
 	//연결 끊김
