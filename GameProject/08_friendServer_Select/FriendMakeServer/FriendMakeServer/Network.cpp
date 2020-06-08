@@ -246,6 +246,7 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//친구 요청 거부
 			case df_REQ_FRIEND_DENY:
+				recv_FriendRequestDeny_Require(session, wPayloadSize);
 				break;
 
 				//친구 요청 수락
@@ -858,6 +859,49 @@ bool CNetwork::send_FriendCancel_Response(SESSION * session, UINT64 requestAccou
 	return true;
 }
 
+bool CNetwork::recv_FriendRequestDeny_Require(SESSION* session, WORD wPayloadSize)
+{
+	CPacket* packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	UINT64 requestAccountNo;
+	*packet >> requestAccountNo;
+	send_FriendRequestDeny_Response(session, requestAccountNo);
+	wprintf(L"[%d] FRIEND_DENY succ : df_RES_FRIEND_DENY \n", session->socket);
+	return true;
+}
+
+bool CNetwork::send_FriendRequestDeny_Response(SESSION* session, UINT64 requestAccountNo)
+{
+	CPacket temp;
+
+	if (session->userNo != 0)
+	{
+		//이미 친구 신청 목록에 있는가?
+		if (findRelation(requestAccountNo, session->userNo, dfFRIEND_REQUEST))
+		{
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_DENY_OK;
+			deleteRelation(requestAccountNo, session->userNo, dfFRIEND_REQUEST);
+		}
+		else
+		{
+			if (findNickname(requestAccountNo, MAP) == nullptr)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_DENY_FAIL;
+			else if (requestAccountNo == session->userNo)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_DENY_FAIL;
+			else
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_DENY_NOTFRIEND;
+		}
+	}
+	else
+		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_DENY_FAIL;
+
+	make_packet(session, &temp, df_RES_FRIEND_DENY);
+	return true;
+}
+
 bool CNetwork::recv_FriendRequestAgree_Require(SESSION * session, WORD wPayloadSize)
 {
 	CPacket *packet = &session->recvPacket;
@@ -882,7 +926,7 @@ bool CNetwork::send_FriendRequestAgree_Response(SESSION * session, UINT64 reques
 	if (session->userNo != 0)
 	{
 		//이미 친구 목록에 있는가?
-		if(findRelation(session->userNo, requestAccountNo, dfFRIEND_REPLY))
+		if(findRelation(requestAccountNo, session->userNo, dfFRIEND_REPLY))
 		{
 			deleteRelation(requestAccountNo, session->userNo, dfFRIEND_REQUEST);
 			FRIEND* newFriend = new FRIEND(requestAccountNo, session->userNo);

@@ -107,7 +107,7 @@ public:
 
 	//模备 夸没 芭何
 	bool recv_FriendRequestDeny_Require(SESSION* session, WORD wPayloadSize);
-	bool send_FriendRequestDeny_Response(SESSION* session);
+	bool send_FriendRequestDeny_Response(SESSION* session, UINT64 requestAccountNo);
 
 	//模备 夸没 荐遏
 	bool recv_FriendRequestAgree_Require(SESSION* session, WORD wPayloadSize);
