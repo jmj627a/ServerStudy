@@ -152,18 +152,11 @@ void CNetwork::networkFunc()
 				recvCheck(session);
 			}
 
-			if (session != nullptr)
+			//send üũ
+			if (FD_ISSET(session->socket, &WriteSet))
 			{
-				//send üũ
-				if (FD_ISSET(session->socket, &WriteSet))
-				{
-					sendCheck(session);
-				}
-
-			if (sessionList.size() == 0)
-				break;
+				sendCheck(session);
 			}
-			
 		}
 	}
 }
@@ -278,7 +271,7 @@ void CNetwork::sendCheck(SESSION *session)
 
 	if (sendSize > 0)
 	{
-		session->sendPacket.Clear();
+		//session->sendPacket.Clear();
 		wprintf(L"[%d] send : %d byte \n", session->userNo, sendSize);
 	}
 
@@ -960,6 +953,7 @@ bool CNetwork::recv_StressTest_Require(SESSION* session, WORD wPayloadSize)
 	*packet >> size;
 	WCHAR* str = new WCHAR[size];
 	packet->GetData((char*)str, size);
+	str[size - 1] = '\0';
 
 	send_StressTest_Response(session, size, str);
 	wprintf(L"[%d] STRESS_ECHO succ : df_REQ_STRESS_ECHO \n", session->socket);
