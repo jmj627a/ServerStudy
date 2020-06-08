@@ -95,7 +95,7 @@ public:
 
 	//模备 包拌 谗扁 
 	bool recv_FriendRemove_Require(SESSION* session, WORD wPayloadSize);
-	bool send_FriendRemove_Response(SESSION* session);
+	bool send_FriendRemove_Response(SESSION* session, UINT64 requestAccountNos);
 
 	//模备 夸没
 	bool recv_FriendRequset_Require(SESSION* session, WORD wPayloadSize);
@@ -103,7 +103,7 @@ public:
 
 	//模备 夸没 秒家
 	bool recv_FriendCancel_Require(SESSION* session, WORD wPayloadSize);
-	bool send_FriendCancel_Response(SESSION* session);
+	bool send_FriendCancel_Response(SESSION* session, UINT64 requestAccountNo);
 
 	//模备 夸没 芭何
 	bool recv_FriendRequestDeny_Require(SESSION* session, WORD wPayloadSize);

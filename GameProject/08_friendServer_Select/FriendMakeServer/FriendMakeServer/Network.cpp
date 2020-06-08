@@ -231,6 +231,7 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//친구 관계 끊기 
 			case df_REQ_FRIEND_REMOVE:
+				recv_FriendRemove_Require(session, wPayloadSize);
 				break;
 
 				//친구 요청
@@ -240,6 +241,7 @@ bool CNetwork::recvCheck(SESSION *session)
 
 				//친구 요청 취소
 			case df_REQ_FRIEND_CANCEL:
+				recv_FriendCancel_Require(session, wPayloadSize);
 				break;
 
 				//친구 요청 거부
@@ -353,21 +355,44 @@ bool CNetwork::findRelation(UINT64 from, UINT64 to, int type)
 		//이미 친구신청을 했는가?
 		case dfFRIEND_REQUEST:
 		{
-			auto iter = requestFrom.find(from);
-			if (iter != requestFrom.end())
-				return true;
-			else
-				return false;
+			auto iter = requestFrom.begin();
+			pair<unordered_multimap<UINT64, UINT64>::iterator,
+				unordered_multimap<UINT64, UINT64>::iterator> range;
+
+			range = requestFrom.equal_range(from);
+
+			for (iter = range.first; iter != range.second;)
+			{
+				if ((iter->first == from && iter->second == to))
+				{
+					return true;
+				}
+				else
+					iter++;
+			}
+			
+			return false;
 		}
 		break;
 		//이미 친구신청을	 받았는가?
 		case dfFRIEND_REPLY:
 		{
-			auto iter = requestTo.find(from);
-			if (iter != requestTo.end())
-				return true;
-			else
-				return false;
+			auto iter = requestTo.begin();
+			pair<unordered_multimap<UINT64, UINT64>::iterator,
+				unordered_multimap<UINT64, UINT64>::iterator> range;
+			range = requestTo.equal_range(to);
+
+			for (iter = range.first; iter != range.second;)
+			{
+				if ((iter->first == to && iter->second == from))
+				{
+					return true;
+				}
+				else
+					iter++;
+			}
+
+			return false;
 		}
 		break;
 	}
@@ -385,7 +410,36 @@ bool CNetwork::deleteRelation(UINT64 from, UINT64 to, int type)
 		//둘이 이미 친구인가?
 	case dfFRIEND:
 	{
+		auto iter = friendMap.begin();
+		pair<unordered_multimap<UINT64, FRIEND*>::iterator,
+			unordered_multimap<UINT64, FRIEND*>::iterator> range;
 
+		range = friendMap.equal_range(from);
+
+		for (iter = range.first; iter != range.second;)
+		{
+			if ((iter->second->FromAccountNo == from && iter->second->ToAccountNo == to))
+			{
+				iter = friendMap.erase(iter);
+				break;
+			}
+			else
+				iter++;
+		}
+
+		iter = friendMap.begin();
+		range = friendMap.equal_range(to);
+
+		for (iter = range.first; iter != range.second;)
+		{
+			if ((iter->second->FromAccountNo == to && iter->second->ToAccountNo == from))
+			{
+				iter = friendMap.erase(iter);
+				return true;
+			}
+			else
+				iter++;
+		}
 	}
 	break;
 
@@ -662,12 +716,51 @@ bool CNetwork::send_FriendReplyList_Response(SESSION * session)
 
 bool CNetwork::recv_FriendRemove_Require(SESSION * session, WORD wPayloadSize)
 {
-	return false;
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	UINT64 requestAccountNo;
+
+	*packet >> requestAccountNo;
+
+	send_FriendRemove_Response(session, requestAccountNo);
+	wprintf(L"[%d] FRIEND_CANCEL succ : df_REQ_FRIEND_CANCEL \n", session->socket);
+
+	return true;
 }
 
-bool CNetwork::send_FriendRemove_Response(SESSION * session)
+bool CNetwork::send_FriendRemove_Response(SESSION * session, UINT64 requestAccountNo)
 {
-	return false;
+	CPacket temp;
+
+	if (session->userNo != 0)
+	{
+		//이미 친구 목록에 있는가?
+		if (findRelation(session->userNo, requestAccountNo, dfFRIEND))
+		{
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REMOVE_OK;
+			deleteRelation(requestAccountNo, session->userNo, dfFRIEND);
+		}
+		else
+		{
+			//상대 계정이 없는 계정
+			if (findNickname(requestAccountNo, MAP) == nullptr)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REMOVE_FAIL;
+			//내 계정을 목록에서 삭제하려고 함
+			else if (requestAccountNo == session->userNo)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REMOVE_FAIL;
+			//친구가 아님
+			else
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REMOVE_NOTFRIEND;
+		}
+	}
+	else
+		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_CANCEL_FAIL;
+
+	make_packet(session, &temp, df_RES_FRIEND_REMOVE);
+	return true;
 }
 
 bool CNetwork::recv_FriendRequset_Require(SESSION * session, WORD wPayloadSize)
@@ -716,6 +809,52 @@ bool CNetwork::send_FriendRequset_Response(SESSION * session, UINT64 requestAcco
 		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_REQUEST_NOTFOUND;
 
 	make_packet(session, &temp, df_RES_FRIEND_REQUEST);
+	return true;
+}
+
+bool CNetwork::recv_FriendCancel_Require(SESSION * session, WORD wPayloadSize)
+{
+	CPacket *packet = &session->recvPacket;
+
+	if (packet->GetDataSize() < wPayloadSize)
+		return false;
+
+	UINT64 requestAccountNo;
+
+	*packet >> requestAccountNo;
+
+	send_FriendCancel_Response(session, requestAccountNo);
+	wprintf(L"[%d] FRIEND_CANCEL succ : df_REQ_FRIEND_CANCEL \n", session->socket);
+
+	return true;
+}
+
+bool CNetwork::send_FriendCancel_Response(SESSION * session, UINT64 requestAccountNo)
+{
+	CPacket temp;
+
+	if (session->userNo != 0)
+	{
+		//이미 친구 신청 목록에 있는가?
+		if (findRelation(session->userNo, requestAccountNo, dfFRIEND_REQUEST))
+		{
+			temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_CANCEL_OK;
+			deleteRelation(session->userNo, requestAccountNo, dfFRIEND_REQUEST);
+		}
+		else
+		{
+			if (findNickname(requestAccountNo, MAP) == nullptr)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_CANCEL_NOTFRIEND;
+			else if (requestAccountNo == session->userNo)
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_CANCEL_NOTFRIEND;
+			else
+				temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_CANCEL_FAIL;
+		}
+	}
+	else
+		temp << requestAccountNo << (BYTE)df_RESULT_FRIEND_CANCEL_FAIL;
+
+	make_packet(session, &temp, df_RES_FRIEND_CANCEL);
 	return true;
 }
 
