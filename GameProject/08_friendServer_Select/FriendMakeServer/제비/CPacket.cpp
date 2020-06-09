@@ -216,23 +216,6 @@ CPacket& CPacket::operator>>(UINT & iValue)
 	return *this;
 }
 
-int CPacket::PickData(char* chpDest, int iSize)
-{
-	//iSize만큼 데이터가 없다면
-	if (iSize > m_iDataSize)
-		return 0;
-
-	//int Usage = m_chpWritePos - m_chpReadPos;
-	//if (Usage == 0)
-	//	return 0;
-	//
-	//iSize = min(iSize, Usage);
-
-	memcpy(chpDest, m_chpReadPos, iSize);
-
-	return iSize;
-}
-
 int CPacket::GetData(char * chpDest, int iSize)
 {
 	//iSize만큼 데이터가 없다면
@@ -272,4 +255,21 @@ int CPacket::PutData(char * chpSrc, int iSrcSize)
 	m_iDataSize += iSrcSize;
 
 	return iSrcSize;
+}
+
+int CPacket::PeekData(char *chpDest, int iSize)
+{
+	//iSize만큼 데이터가 없다면
+	if (iSize > m_iDataSize)
+		return 0;
+
+	//int Usage = m_chpWritePos - m_chpReadPos;
+	//if (Usage == 0)
+	//	return 0;
+	//
+	//iSize = min(iSize, Usage);
+
+	memcpy(chpDest, m_chpReadPos, iSize);
+
+	return iSize;
 }

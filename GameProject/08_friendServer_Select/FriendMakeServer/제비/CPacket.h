@@ -10,7 +10,7 @@ public:
 	//Packet Enum.
 	enum en_PACKET
 	{
-		eBUFFER_DEFAULT = 1400		// 패킷의 기본 버퍼 사이즈.
+		eBUFFER_DEFAULT = 2000		// 패킷의 기본 버퍼 사이즈.
 	};
 
 	// 생성자, 파괴자.
@@ -92,7 +92,6 @@ public:
 	// 데이터 얻기.
 	// <return	: (int)복사한 사이즈>
 	// (parameters : (char *)Dest 포인터, (int)Size >
-	int		PickData(char* chpDest, int iSize);
 	int		GetData(char *chpDest, int iSize);
 
 	// 데이터 삽입.
@@ -101,6 +100,7 @@ public:
 	int		PutData(char *chpSrc, int iSrcSize);
 
 
+	int		PeekData(char *chpDest, int iSize);
 
 
 protected:

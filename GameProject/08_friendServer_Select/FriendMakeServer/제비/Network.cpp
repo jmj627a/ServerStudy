@@ -86,7 +86,7 @@ void CNetwork::networkAccept(SOCKET* listenSocket)
 	//list에 삽입
 	sessionList.insert({ newSession->socket,newSession });
 
-//	wprintf(L"[%d] accpet / total : %d \n", newSession->socket, sessionList.size());
+	wprintf(L"[%d] accpet / total : %d \n", newSession->socket, sessionList.size());
 
 }
 
@@ -181,13 +181,13 @@ void CNetwork::SocketSelect(DWORD* pTableNo, SOCKET* pTableSocket, FD_SET * read
 		
 		if (session == nullptr)
 			continue;
-		//if (session->recvFlag < 5)
+		if (session->recvFlag == false)
 		{
 			//recv 체크
 			if (FD_ISSET(pTableSocket[i], readSet))
 			{
 				recvCheck(session);
-//				session->recvFlag = true;
+				session->recvFlag = true;
 				g_recvCount++;
 
 				if (session->recvPacket.GetDataSize() > 0)
@@ -196,7 +196,7 @@ void CNetwork::SocketSelect(DWORD* pTableNo, SOCKET* pTableSocket, FD_SET * read
 		}
 
 		//send 체크
-//		if (session->sendFlag < 5)
+		if (session->sendFlag == false)
 		{
 			if (FD_ISSET(pTableSocket[i], writeSet))
 			{
@@ -204,7 +204,7 @@ void CNetwork::SocketSelect(DWORD* pTableNo, SOCKET* pTableSocket, FD_SET * read
 					continue;
 
 				sendCheck(session);
-//				session->sendFlag = true;
+				session->sendFlag = true;
 				g_sendCount++;
 			}
 		}
@@ -215,12 +215,15 @@ void CNetwork::SocketSelect(DWORD* pTableNo, SOCKET* pTableSocket, FD_SET * read
 bool CNetwork::recvCheck(SESSION *session)
 {
 	//클라에 들어있는 큐 확인
+	session->recvPacket.Clear();
 	CPacket* packet = &session->recvPacket;
 
 	//recv 
+	//char recvData[1400];
+	//int recvSize = recv(session->socket, recvData, 1400, 0);
 	int recvSize = recv(session->socket, packet->GetWritePtr(), packet->GetBufferSize() - packet->GetDataSize(), 0);
+	//packet->PutData(recvData, recvSize);
 	packet->MoveWritePos(recvSize);
-	wprintf(L"[%d] rcvd : %d byte \n", session->socket, recvSize);
 
 	if (recvSize <=0)
 	{
@@ -235,6 +238,26 @@ bool CNetwork::recvCheck(SESSION *session)
 		//버퍼에서 받은거 꺼내서 버퍼 다 비워질때까지 처리.
 		while (true)
 		{
+
+			if (sizeof(st_PACKET_HEADER) > recvSize)
+				return 1;
+
+			BYTE byCode;
+			WORD wMsgType;
+			WORD wPayloadSize;
+
+			st_PACKET_HEADER Header;
+			packet->PeekData((char*)&Header, sizeof(st_PACKET_HEADER));
+
+
+			if (Header.byCode != (BYTE)dfPACKET_CODE)
+				return -1;
+
+			if (Header.wPayloadSize + sizeof(st_PACKET_HEADER) > (WORD)recvSize)
+				return 1;
+
+			*packet >> byCode  >> wMsgType >> wPayloadSize;
+			
 			if (packet->GetDataSize() < sizeof(st_PACKET_HEADER))
 			{
 				if (packet->GetDataSize() > 0)
@@ -242,29 +265,6 @@ bool CNetwork::recvCheck(SESSION *session)
 				return true;
 			}
 
-			st_PACKET_HEADER Header;
-			if (packet->PickData((char*)&Header, sizeof(st_PACKET_HEADER)) < sizeof(st_PACKET_HEADER))
-			{
-				return true;
-			}
-
-			if (packet->GetDataSize() < (Header.wPayloadSize + 5))
-			{
-				return true;
-			}
-
-			BYTE byCode;
-			WORD wMsgType;
-			WORD wPayloadSize;
-
-			*packet >> byCode  >> wMsgType >> wPayloadSize;
-
-			if (byCode != dfPACKET_CODE)
-			{
-				if (packet->GetDataSize() > 0)
-					int a = 0;
-				return true;
-			}
 			switch (wMsgType)
 			{
 				//회원가입 요청
@@ -325,10 +325,20 @@ bool CNetwork::recvCheck(SESSION *session)
 				//스트레스 테스트용 에코
 			case df_REQ_STRESS_ECHO:
 				recv_StressTest_Require(session, wPayloadSize);
+				if (packet->GetDataSize() > 0)
+					int a = 0;
+				break;
+
+			default:
+				wprintf(L"wrong message type!!!\n");
 				break;
 			}
 
-			return true;
+
+			if (packet->GetDataSize() > 0)
+			{
+				int a = 0;
+			}
 		}
 	}
 
@@ -349,7 +359,8 @@ void CNetwork::sendCheck(SESSION *session)
 
 	if (sendSize > 0)
 	{
-//		wprintf(L"[%d] send : %d byte \n", session->socket, sendSize);
+		wprintf(L"[%d] send : %d byte \n", session->socket, sendSize);
+		//session->sendPacket.Clear();
 	}
 
 	if (sendSize <=0)
@@ -364,10 +375,13 @@ void CNetwork::testFunc_flagFalse()
 	{
 		iter->second->recvFlag = false;
 
-		if(iter->second->sendFlag == true)
-			iter->second->sendFlag = false;
-		else
-			iter->second->sendFlag = 100;
+		if (iter->second->sendFlag == false)
+			wprintf(L"error socket : %d ", iter->second->socket);
+		
+		iter->second->sendFlag = false;
+
+		g_recvCount = 0;
+		g_sendCount = 0;
 	}
 }
 
@@ -1040,25 +1054,19 @@ bool CNetwork::recv_StressTest_Require(SESSION* session, WORD wPayloadSize)
 	CPacket* packet = &session->recvPacket;
 
 	if (packet->GetDataSize() < wPayloadSize)
-	{
 		return false;
-		wprintf(L"Payload Size Error : %d != $d\n", packet->GetDataSize(), wPayloadSize);
-	}
 
 	WORD size;
-	*packet >> size;
-	char* str = new char[size + 1];
-	packet->GetData(str, size);
-	packet->Clear();
+	packet->GetData((char*)&size, sizeof(WORD));
+	WCHAR *str = new WCHAR[size + 1 ];
+	packet->GetData((char*)str, size);
 	str[size] = '\0';
 
 	if (packet->GetDataSize() > 0)
 		int a = 0;
 
-	session->recvFlag += 1;
-
-	send_StressTest_Response(session, size, str);
-//	wprintf(L"[%d] STRESS_ECHO succ : df_REQ_STRESS_ECHO \n", session->socket);
+	send_StressTest_Response(session, size, (char*)str);
+	//wprintf(L"[%d] STRESS_ECHO succ : df_REQ_STRESS_ECHO \n", session->socket);
 
 	return true;
 }
@@ -1072,9 +1080,6 @@ bool CNetwork::send_StressTest_Response(SESSION* session, WORD size, char* str)
 	temp.PutData(str, size);
 
 	make_packet(session, &temp, df_RES_STRESS_ECHO);
-
-	session->sendFlag += 1;
-
 	return true;
 }
 
