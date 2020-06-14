@@ -3,24 +3,38 @@
 #include "CPlayerObject.h"
 #include "CSpriteDib.h"
 #include "CNetwork.h"
-
+#include "CMap.h"
 extern CSpriteDib g_cSprite;
 extern CPlayerObject* g_pPlayerObject;
 extern CNetwork *network;
-
+extern CMap map;
 void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch)
 {
+	int startX = (m_iCurX - map.m_DrawX);
+	int startY = (m_iCurY - map.m_DrawY);
+
+	if (map.m_DrawX == dfRANGE_MOVE_RIGHT - dfSCREEN_WIDTH / 2)
+		startX += dfSCREEN_WIDTH / 2;
+	if (map.m_DrawY == dfRANGE_MOVE_BOTTOM - dfSCREEN_HEIGHT / 2)
+		startY += dfSCREEN_HEIGHT / 2;
+
+	if (startX < 0 || startX > dfSCREEN_WIDTH)
+		return;
+
+	if (startY < 0 || startY > dfSCREEN_HEIGHT)
+		return;
+
 	//그림자 출력 
-	g_cSprite.DrawSprite50(eSHADOW, m_iCurX, m_iCurY + 3, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	g_cSprite.DrawSprite50(eSHADOW, startX, startY + 3, bypDest, iDestWidth, iDestHeight, iDestPitch);
 	
 	//플레이어 객체 출력
 	if(m_iObjectID == g_pPlayerObject->GetObjectID())
-		g_cSprite.DrawMySprite(GetSprite(), m_iCurX, m_iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
+		g_cSprite.DrawMySprite(GetSprite(), startX, startY, bypDest, iDestWidth, iDestHeight, iDestPitch);
 	else
-		g_cSprite.DrawSprite(GetSprite(), m_iCurX, m_iCurY, bypDest, iDestWidth, iDestHeight, iDestPitch);
+		g_cSprite.DrawSprite(GetSprite(), startX, startY, bypDest, iDestWidth, iDestHeight, iDestPitch);
 	
 	//hp 게이지 바 출력 
-	g_cSprite.DrawSprite(eGUAGE_HP, m_iCurX - 30, m_iCurY + 10, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
+	g_cSprite.DrawSprite(eGUAGE_HP, startX - 30, startY + 10, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
 }
 
 //action
@@ -49,7 +63,7 @@ void CPlayerObject::SetActionAttack1()
 	//멈추고 공격
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_MOVE_STOP Packet;
 		CPacket Packet;
 
@@ -61,7 +75,7 @@ void CPlayerObject::SetActionAttack1()
 	//이전과 행동이 바뀌었으면 패킷 보내기
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_ATTACK1 Packet;
 		CPacket Packet;
 
@@ -86,7 +100,7 @@ void CPlayerObject::SetActionAttack2()
 	//멈추고 공격
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_MOVE_STOP Packet;
 		CPacket Packet;
 
@@ -98,7 +112,7 @@ void CPlayerObject::SetActionAttack2()
 	//이전과 행동이 바뀌었으면 패킷 보내기
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_ATTACK2 Packet;
 		CPacket Packet;
 
@@ -123,7 +137,7 @@ void CPlayerObject::SetActionAttack3()
 	//멈추고 공격
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionOld != dfACTION_STAND)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_MOVE_STOP Packet;
 		CPacket Packet;
 
@@ -135,7 +149,7 @@ void CPlayerObject::SetActionAttack3()
 	//이전과 행동이 바뀌었으면 패킷 보내기
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_ATTACK3 Packet;
 		CPacket Packet;
 
@@ -404,7 +418,7 @@ void CPlayerObject::SetActionMove(int action)
 	//이전과 행동이 바뀌었으면 패킷 보내기
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur && m_dwActionCur != dfACTION_STAND)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_MOVE_START Packet;
 		CPacket Packet;
 
@@ -431,7 +445,7 @@ void CPlayerObject::SetActionStand()
 	if (IsPlayer() && m_dwActionOld != m_dwActionCur &&
 		m_dwActionOld != dfACTION_ATTACK1 && m_dwActionOld != dfACTION_ATTACK2 && m_dwActionOld != dfACTION_ATTACK3)
 	{
-		stNETWORK_PACKET_HEADER Header;
+		st_PACKET_HEADER Header;
 		//stPACKET_CS_MOVE_STOP Packet;
 		CPacket Packet;
 

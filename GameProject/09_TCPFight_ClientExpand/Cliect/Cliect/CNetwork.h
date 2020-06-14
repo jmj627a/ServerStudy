@@ -28,15 +28,15 @@ public:
 
 	BOOL netPacketProc_Damage(CPacket* pPacketBuffer);
 
-	BOOL SendPacket(stNETWORK_PACKET_HEADER *pHeader, CPacket *pPacket);
+	BOOL SendPacket(st_PACKET_HEADER *pHeader, CPacket *pPacket);
 
 
-	void mpMoveStart(stNETWORK_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y);
-	void mpMoveStop(stNETWORK_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y);
+	void mpMoveStart(st_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y);
+	void mpMoveStop(st_PACKET_HEADER *pHeader, CPacket *pPacket, int _dir, short _x, short _y);
 
-	void mpAttack1(stNETWORK_PACKET_HEADER *pHeader, CPacket  *pPacket, int _dir, short _x, short _y);
-	void mpAttack2(stNETWORK_PACKET_HEADER *pHeader, CPacket  *pPacket, int _dir, short _x, short _y);
-	void mpAttack3(stNETWORK_PACKET_HEADER *pHeader, CPacket  *pPacket, int _dir, short _x, short _y);
+	void mpAttack1(st_PACKET_HEADER *pHeader, CPacket  *pPacket, int _dir, short _x, short _y);
+	void mpAttack2(st_PACKET_HEADER *pHeader, CPacket  *pPacket, int _dir, short _x, short _y);
+	void mpAttack3(st_PACKET_HEADER *pHeader, CPacket  *pPacket, int _dir, short _x, short _y);
 
 };
 

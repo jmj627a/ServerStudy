@@ -14,6 +14,7 @@
 #include "CRingBuffer.h"
 
 #include "CNetwork.h"
+#include "CMap.h"
 
 #define MAX_LOADSTRING 100
 
@@ -32,7 +33,8 @@ SOCKET Socket;
 CNetwork *network = new CNetwork();
 
 list<CBaseObject*> g_objectList;
-CPlayerObject* g_pPlayerObject;
+CPlayerObject* g_pPlayerObject = nullptr;
+CMap map;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -69,7 +71,11 @@ void Update()
 	if (g_bActiveApp == true)
 		KeyProcess();
 
+	//wprintf(L"Action Try \n");
+
 	Action();
+
+	//wprintf(L"Action Success \n");
 
 	static int cur = timeGetTime();
 	static int old = timeGetTime();
@@ -102,7 +108,9 @@ void Update()
 
 		old = cur - (deltaTime - 20);
 
+		//wprintf(L"Draw Try \n");
 		Draw();
+		//wprintf(L"Draw Success \n");
 	}
 	else
 	{
@@ -140,6 +148,13 @@ void Action()
 		}
 
 	}
+
+	//wprintf(L"g_pPlayerObject is null? \n");
+
+	if (g_pPlayerObject != nullptr)
+		map.setDrawPos(g_pPlayerObject->GetCurX(), g_pPlayerObject->GetCurY());
+
+	//wprintf(L"g_pPlayerObject is not null \n");
 }
 
 void Draw()
@@ -152,7 +167,20 @@ void Draw()
 	objectSort();
 
 	//1. 맵 화면 출력
-	g_cSprite.DrawImage(0, 0, 0, bypDest, iDestWidth, iDestHeight, iDestPitch);
+	int startX = -(map.m_DrawX % 64);
+	int startY = -(map.m_DrawY % 64);
+
+	for (int i = 0; i < 11; i++)
+	{
+		for (int j = 0; j < 13; j++)
+		{
+			g_cSprite.DrawImage(0, startX, startY, bypDest, iDestWidth, iDestHeight, iDestPitch);
+			startX += 64;
+		}
+
+		startX = -(map.m_DrawX % 64);
+		startY += 64;
+	}
 
 	static wchar_t szFrame[15];
 	static int iFrame = 0;
@@ -177,6 +205,11 @@ void Draw()
 	HDC hDC = GetDC(hWnd);
 	TextOut(hDC, 700, 500, szFrame, wcslen(szFrame));
 
+	if (g_pPlayerObject != nullptr)
+	{
+		wsprintf(szFrame, L"(%d , %d )		", g_pPlayerObject->GetCurX(), g_pPlayerObject->GetCurY());
+		TextOut(hDC, 670, 700, szFrame, wcslen(szFrame));
+	}
 	//버퍼 포인터에 그림을 그린다
 	//스트라이프 출력부
 
@@ -239,6 +272,7 @@ void KeyProcess()
 void InitialGame()
 {
 	g_cSprite.LoadDibSprite(eMap, _T("Sprite_Data\\_Map.bmp"), 0, 0);
+	//g_cSprite.LoadDibSprite(eMap, _T("Sprite_Data\\Tile_01.bmp"), 0, 0);
 
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L01, _T("Sprite_Data\\Stand_L_01.bmp"), 71, 90);
 	g_cSprite.LoadDibSprite(ePLAYER_STAND_L02, _T("Sprite_Data\\Stand_L_02.bmp"), 71, 90);
@@ -320,6 +354,7 @@ void InitialGame()
 	g_cSprite.LoadDibSprite(eGUAGE_HP, _T("Sprite_Data\\HPGuage.bmp"), 0, 0);
 	g_cSprite.LoadDibSprite(eSHADOW, _T("Sprite_Data\\Shadow.bmp"), 32, 4);
 
+	wprintf(L"image Load success \n");
 }
 
 void objectSort()
@@ -362,6 +397,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
+	wprintf(L"Create Window success \n");
 
 	//4. 윈속 초기화 및 소켓 생성
 	WSADATA wsa;
@@ -380,7 +416,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	serveraddr.sin_family = AF_INET;
 	inet_pton(AF_INET, serverIP, &serveraddr.sin_addr);
-	serveraddr.sin_port = htons(SERVER_PORT);
+	serveraddr.sin_port = htons(dfNETWORK_PORT);
 
 
 	//5. WSAAsyncSelect 등록, 비동기 상태로 변경
@@ -393,8 +429,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		//진짜 에러
 		int err = WSAGetLastError();
 		if (err != WSAEWOULDBLOCK)
+		{
+			wprintf(L"Connect Error \n");
 			return -1;
+		}
 	}
+
+	wprintf(L"Connect success \n");
 
 	MSG msg;
 
@@ -411,7 +452,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		else
 		{
 			if (g_connect)
+			{
 				Update();
+				//wprintf(L"Update Success \n");
+			}
 		}
 	}
 
@@ -462,6 +506,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case FD_CONNECT:
 			g_connect = true;
+			wprintf(L"g_connect flag true \n");
 			return true;
 		case FD_READ:
 			if (!network->RecvEvent())

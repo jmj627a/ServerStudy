@@ -78,6 +78,9 @@
     <ClInclude Include="CPacket.h">
       <Filter>소스 파일\Packet</Filter>
     </ClInclude>
+    <ClInclude Include="CMap.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -109,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="CPacket.cpp">
       <Filter>소스 파일\Packet</Filter>
+    </ClCompile>
+    <ClCompile Include="CMap.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

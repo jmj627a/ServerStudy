@@ -23,32 +23,32 @@
     <ProjectGuid>{1FF11411-5B26-4C32-9A8B-CC0CDF3B1D9C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Cliect</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -150,6 +150,7 @@
     <ClInclude Include="CBaseObject.h" />
     <ClInclude Include="CEffectObject.h" />
     <ClInclude Include="Cliect.h" />
+    <ClInclude Include="CMap.h" />
     <ClInclude Include="CNetwork.h" />
     <ClInclude Include="CPacket.h" />
     <ClInclude Include="CPlayerObject.h" />
@@ -166,6 +167,7 @@
     <ClCompile Include="CBaseObject.cpp" />
     <ClCompile Include="CEffectObject.cpp" />
     <ClCompile Include="Cliect.cpp" />
+    <ClCompile Include="CMap.cpp" />
     <ClCompile Include="CNetwork.cpp" />
     <ClCompile Include="CPacket.cpp" />
     <ClCompile Include="CPlayerObject.cpp" />

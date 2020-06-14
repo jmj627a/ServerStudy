@@ -1,11 +1,15 @@
 #pragma once
 
 
-#define SERVER_PORT 5000
 #define WM_NETWORK WM_USER+1
 #define GET_X_LPARAM(lp)  ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp)  ((int)(short)HIWORD(lp))
 
+//화면 이동 영역
+#define dfRANGE_MOVE_TOP	0
+#define dfRANGE_MOVE_LEFT	0
+#define dfRANGE_MOVE_RIGHT	6400
+#define dfRANGE_MOVE_BOTTOM	6400
 
 // 캐릭터 이동 속도
 #define dfSPEED_PLAYER_X	3
@@ -131,11 +135,6 @@ enum e_SPRITE
 	eSPRITE_MAX
 };
 
-//화면 이동 영역
-#define dfRANGE_MOVE_TOP		50
-#define dfRANGE_MOVE_LEFT		10
-#define dfRANGE_MOVE_RIGHT		630
-#define dfRANGE_MOVE_BOTTOM		470
 
 //애니메이션 프레임 딜레이
 #define dfDELAY_STAND	5
