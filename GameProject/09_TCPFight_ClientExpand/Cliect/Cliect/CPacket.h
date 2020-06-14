@@ -35,6 +35,8 @@ public:
 	// 버퍼 포인터 얻기. 
 	// <return : 버퍼 포인터>
 	char *GetBufferPtr(void) { return m_chpBuffer; }
+	char *GetReadPtr(void) { return m_chpReadPos; }
+	char *GetWritePtr(void) { return m_chpWritePos; }
 
 	// 버퍼 Pos 이동. (음수이동은 안됨)
 	// GetBufferPtr 함수를 이용하여 외부에서 강제로 버퍼 내용을 수정할 경우 사용. 
@@ -63,27 +65,33 @@ public:
 	CPacket	&operator << (__int64 iValue);
 	CPacket	&operator << (double dValue);
 
+	CPacket& operator << (UINT64 iValue);
+	CPacket& operator << (UINT iValue);
+
 
 	// 빼기.	각 변수 타입마다 모두 만듦.
-	CPacket	&operator >> (BYTE &byValue);
-	CPacket	&operator >> (char &chValue);
+	CPacket	&operator>>(BYTE &byValue);
+	CPacket	&operator>>(char &chValue);
 
-	CPacket	&operator >> (short &shValue);
-	CPacket	&operator >> (WORD &wValue);
+	CPacket	&operator>>(short &shValue);
+	CPacket	&operator>>(WORD &wValue);
 
-	CPacket	&operator >> (int &iValue);
-	CPacket	&operator >> (DWORD &dwValue);
-	CPacket	&operator >> (float &fValue);
+	CPacket	&operator>>(int &iValue);
+	CPacket	&operator>>(DWORD &dwValue);
+	CPacket	&operator>>(float &fValue);
 
-	CPacket	&operator >> (__int64 &iValue);
-	CPacket	&operator >> (double &dValue);
+	CPacket	&operator>>(__int64 &iValue);
+	CPacket	&operator>>(double &dValue);
 
+	CPacket& operator >> (UINT64 & iValue);
+	CPacket& operator >> (UINT & iValue);
 
 
 
 	// 데이터 얻기.
 	// <return	: (int)복사한 사이즈>
 	// (parameters : (char *)Dest 포인터, (int)Size >
+	int		PickData(char* chpDest, int iSize);
 	int		GetData(char *chpDest, int iSize);
 
 	// 데이터 삽입.

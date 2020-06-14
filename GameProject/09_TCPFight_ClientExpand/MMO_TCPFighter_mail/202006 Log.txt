@@ -90,3 +90,12 @@
 [06/15/20 04:33:46] Connect Session # IP:127.0.0.1 / SessionID:42 
 [06/15/20 04:33:54] Connect Session # IP:127.0.0.1 / SessionID:43 
 [06/15/20 04:34:03] Connect Session # IP:127.0.0.1 / SessionID:44 
+[06/15/20 04:40:42] Frame : 26  Loop : 23869
+[06/15/20 04:41:40] Connect Session # IP:127.0.0.1 / SessionID:45 
+[06/15/20 04:41:54] Frame : 26  Loop : 25058
+[06/15/20 04:44:26] Frame : 26  Loop : 24713
+[06/15/20 04:44:48] Connect Session # IP:127.0.0.1 / SessionID:46 
+[06/15/20 04:45:05] Frame : 26  Loop : 24357
+[06/15/20 04:46:32] Frame : 26  Loop : 24333
+[06/15/20 04:48:03] Connect Session # IP:127.0.0.1 / SessionID:47 
+[06/15/20 04:50:55] Frame : 26  Loop : 20904

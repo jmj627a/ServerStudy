@@ -60,9 +60,6 @@
     <ClInclude Include="CPlayerObject.h">
       <Filter>소스 파일\BaseObject\Player</Filter>
     </ClInclude>
-    <ClInclude Include="CRingBuffer.h">
-      <Filter>소스 파일\RingBuffer</Filter>
-    </ClInclude>
     <ClInclude Include="CNetwork.h">
       <Filter>소스 파일\Network</Filter>
     </ClInclude>
@@ -81,6 +78,9 @@
     <ClInclude Include="CMap.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="CRingBuffer.h">
+      <Filter>소스 파일\RingBuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -94,9 +94,6 @@
     </ClCompile>
     <ClCompile Include="CPlayerObject.cpp">
       <Filter>소스 파일\BaseObject\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="CRingBuffer.cpp">
-      <Filter>소스 파일\RingBuffer</Filter>
     </ClCompile>
     <ClCompile Include="CNetwork.cpp">
       <Filter>소스 파일\Network</Filter>
@@ -115,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="CMap.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CRingBuffer.cpp">
+      <Filter>소스 파일\RingBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

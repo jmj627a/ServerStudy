@@ -45,7 +45,9 @@ void CPacket::Clear(void)
 
 int CPacket::MoveWritePos(int iSize)
 {
-	m_chpWritePos = m_chpWritePos + iSize;
+	int Usage = m_iBufferSize - (m_chpWritePos - m_chpReadPos);
+	iSize = min(iSize, Usage);
+	m_chpWritePos += iSize;
 	m_iDataSize += iSize;
 
 	return iSize;
@@ -53,8 +55,13 @@ int CPacket::MoveWritePos(int iSize)
 
 int CPacket::MoveReadPos(int iSize)
 {
-	m_chpReadPos = m_chpReadPos + iSize;
-	m_iDataSize += iSize;
+	int Usage = m_chpWritePos - m_chpReadPos;
+	iSize = min(iSize, Usage);
+	m_chpReadPos += iSize;
+	m_iDataSize -= iSize;
+
+	if (m_chpReadPos == m_chpWritePos)
+		Clear();
 
 	return iSize;
 }
@@ -128,7 +135,17 @@ CPacket & CPacket::operator<<(char chValue)
 	return *this;
 }
 
+CPacket& CPacket::operator<<(UINT iValue)
+{
+	PutData((char*)(&iValue), sizeof(UINT));
+	return *this;
+}
 
+CPacket& CPacket::operator<<(UINT64 iValue)
+{
+	PutData((char*)(&iValue), sizeof(UINT64));
+	return *this;
+}
 
 //빼기
 CPacket & CPacket::operator>>(BYTE & byValue)
@@ -185,6 +202,18 @@ CPacket & CPacket::operator>>(double & dValue)
 	return *this;
 }
 
+CPacket& CPacket::operator>>(UINT64 & iValue)
+{
+	GetData((char*)(&iValue), sizeof(UINT64));
+	return *this;
+}
+
+CPacket& CPacket::operator>>(UINT & iValue)
+{
+	GetData((char*)(&iValue), sizeof(UINT));
+	return *this;
+}
+
 int CPacket::GetData(char * chpDest, int iSize)
 {
 	int count;
@@ -197,6 +226,23 @@ int CPacket::GetData(char * chpDest, int iSize)
 	}
 
 	return count;
+}
+
+int CPacket::PickData(char* chpDest, int iSize)
+{
+	//iSize만큼 데이터가 없다면
+	if (iSize > m_iDataSize)
+		return 0;
+
+	//int Usage = m_chpWritePos - m_chpReadPos;
+	//if (Usage == 0)
+	//	return 0;
+	//
+	//iSize = min(iSize, Usage);
+
+	memcpy(chpDest, m_chpReadPos, iSize);
+
+	return iSize;
 }
 
 int CPacket::PutData(char * chpSrc, int iSrcSize)
