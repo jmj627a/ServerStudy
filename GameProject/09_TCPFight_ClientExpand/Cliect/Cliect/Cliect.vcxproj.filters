@@ -34,6 +34,9 @@
     <Filter Include="소스 파일\Packet">
       <UniqueIdentifier>{e247b42a-cbbf-4293-b430-be32413ae9da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Map">
+      <UniqueIdentifier>{f8f8d8b4-360a-416c-be3a-39ebfd4ceb9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -110,11 +113,11 @@
     <ClCompile Include="CPacket.cpp">
       <Filter>소스 파일\Packet</Filter>
     </ClCompile>
-    <ClCompile Include="CMap.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="CRingBuffer.cpp">
       <Filter>소스 파일\RingBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="CMap.cpp">
+      <Filter>소스 파일\Map</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
