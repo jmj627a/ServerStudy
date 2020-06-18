@@ -38,129 +38,168 @@ int CRingBuffer::GetFreeSize(void)
 
 int CRingBuffer::Enqueue(char* chpData, int iSize)
 {
-	int count = 0;
+	int inputSize = 0;
 
-	while (iSize != 0)
+	if (readPos <= writePos)
 	{
-		//배열에 데이터 꽉 참
-		if ((writePos + 1) % BUFFER_SIZE == readPos)
+		int pSize = DirectEnqueueSize();
+
+		if (pSize < iSize)
 		{
-			//printf("배열이 꽉 찼습니다 \n");
-			return count;
+			memcpy(arr + writePos, chpData, pSize);
+			chpData += pSize;
+			inputSize += pSize;
+
+			if (iSize - pSize > readPos)
+			{
+				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
+				memcpy(arr, chpData, readPos);
+				inputSize += readPos;
+				writePos = readPos;
+			}
+			else
+			{
+				memcpy(arr, chpData, iSize - pSize);
+				inputSize += iSize - pSize;
+				writePos = iSize - pSize;
+			}
+			return inputSize;
+		}
+		else
+		{
+			// 넣을수 있는 공간 >= 넣어야 하는 공간
+			memcpy(arr + writePos, chpData, iSize);
+			writePos += iSize;
+			return iSize;
+		}
+	}
+	else
+	{
+		// rear보다 front가 큰 경우
+		int pSize = readPos - writePos;
+
+		if (pSize < iSize)
+		{
+			// pSize만큼만 넣고 리턴한다.
+			memcpy(arr + writePos, chpData, pSize);
+			writePos += pSize;
+			return pSize;
+		}
+		else
+		{
+			// iSize 만큼 다 넣는다.
+			memcpy(arr + writePos, chpData, iSize);
+			writePos += iSize;
+			return iSize;
 		}
 
-		arr[writePos] = *chpData;
-		writePos = (writePos + 1) % BUFFER_SIZE;
-
-		count++;
-		chpData++;
-		iSize--;
-
 	}
-
-	return count;
 }
 
 int CRingBuffer::Dequeue(char* chpData, int iSize)
 {
-	int count = 0;
-	int pos = readPos;
+	int getSize = 0;
 
-	bool isOneCircle = false;
-	int afterCount = 0;
-
-	//끝까지 다 읽을때까지
-	while (iSize != 0)
+	if (readPos <= writePos)
 	{
-		//읽으려 보니 배열이 비어있음
-		if (pos == writePos)
+		int pSize = writePos - readPos;
+
+		if (pSize < iSize)
 		{
-			//여기서 반으로 쪼개지는 상황이 있음. (readPos가 배열 끝에서 시작으로 넘어갔을때)
-			if (isOneCircle == true)
-			{
-				memcpy(chpData, arr + readPos, count - afterCount);
-				memcpy(chpData + (count - afterCount), arr, afterCount);
-			}
-			else
-				memcpy(chpData, arr + readPos, count);
-
-
-			readPos = pos;
-			return count;
-			
+			memcpy(chpData, arr + readPos, pSize);
+			readPos += pSize;
+			return pSize;
 		}
-
-		pos = (pos + 1) % BUFFER_SIZE;
-
-		if (isOneCircle == true)
-			afterCount++;
-
-		if (pos == 0)
-			isOneCircle = true;
-
-		count++;
-		iSize--;
-	}
-
-	if (isOneCircle == true)
-	{
-		memcpy(chpData, arr + readPos, count - afterCount);
-		memcpy(chpData + (count - afterCount), arr, afterCount);
+		else
+		{
+			memcpy(chpData, arr + readPos, iSize);
+			readPos += iSize;
+			return iSize;
+		}
 	}
 	else
-		memcpy(chpData, arr + readPos, count);
+	{
+		int pSize = DirectDequeueSize();
+		int frontIndex = readPos;
+		if (pSize < iSize)
+		{
+			memcpy(chpData, arr + readPos, pSize);
+			frontIndex += pSize;
+			getSize += pSize;
 
-	readPos = pos;
-	return count;
+			if (iSize - pSize > writePos)
+			{
+				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
+				memcpy(chpData + pSize, arr, writePos);
+				getSize += writePos;
+				readPos = writePos;
+			}
+			else
+			{
+				memcpy(chpData + pSize, arr, iSize - pSize);
+				getSize += iSize - pSize;
+				readPos = iSize - pSize;
+			}
+			return getSize;
+		}
+		else
+		{
+			memcpy(chpData, arr + readPos, iSize);
+			readPos += iSize;
+			return iSize;
+		}
+	}
 }
 
 int CRingBuffer::Peek(char* chpData, int iSize)
 {
-	int count = 0;
-	int pos = readPos;
+	int getSize = 0;
 
-	bool isOneCircle = false;
-	int afterCount = 0;
-
-	//끝까지 다 읽을때까지
-	while (iSize != 0)
+	if (readPos <= writePos)
 	{
-		//읽으려 보니 배열이 비어있음
-		if (pos == writePos)
+		int pSize = writePos - readPos;
+
+		if (pSize < iSize)
 		{
-			//여기서 반으로 쪼개지는 상황이 있음. (readPos가 배열 끝에서 시작으로 넘어갔을때)
-			if (isOneCircle == true)
-			{
-				memcpy(chpData, arr + readPos, count - afterCount);
-				memcpy(chpData + (count - afterCount), arr, afterCount);
-			}
-			else
-				memcpy(chpData, arr + readPos, count);
-
-			return count;
+			memcpy(chpData, arr + readPos, pSize);
+			return pSize;
 		}
-
-		pos = (pos + 1) % BUFFER_SIZE;
-
-		if (isOneCircle == true)
-			afterCount++;
-
-		if (pos == 0)
-			isOneCircle = true;
-
-		count++;
-		iSize--;
-	}
-
-	if (isOneCircle == true)
-	{
-		memcpy(chpData, arr + readPos, count - afterCount);
-		memcpy(chpData + (count - afterCount), arr, afterCount);
+		else
+		{
+			memcpy(chpData, arr + readPos, iSize);
+			return iSize;
+		}
 	}
 	else
-		memcpy(chpData, arr + readPos, count);
+	{
+		int pSize = DirectDequeueSize();
+		int frontIndex = readPos;
+		if (pSize < iSize)
+		{
+			memcpy(chpData, arr + readPos, pSize);
+			frontIndex += pSize;
+			getSize += pSize;
+			chpData += pSize;
 
-	return count;
+			if (iSize - pSize > writePos)
+			{
+				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
+				memcpy(chpData + pSize, arr, writePos);
+				getSize += writePos;
+			}
+			else
+			{
+				memcpy(chpData + pSize, arr, iSize - pSize);
+				getSize += iSize - pSize;
+			}
+			return getSize;
+		}
+		else
+		{
+			memcpy(chpData, arr + readPos, iSize);
+			return iSize;
+		}
+	}
 }
 
 int CRingBuffer::MoveRear(int iSize)
@@ -194,20 +233,24 @@ char * CRingBuffer::GetRearBufferPtr(void)
 
 int CRingBuffer::DirectEnqueueSize(void)
 {
-	if (readPos < writePos)
-		return BUFFER_SIZE - writePos;
-	else if (readPos > writePos)
-		return readPos - writePos;
+	if (readPos <= writePos)
+	{
+		int endPointIndex = BUFFER_SIZE;// -2;
+
+		return endPointIndex - writePos;
+	}
 	else
-		return BUFFER_SIZE - writePos;
+		return readPos - writePos;
 }
 
 int CRingBuffer::DirectDequeueSize(void)
 {
-	if (readPos < writePos)
-		return writePos - readPos;
-	else if (readPos > writePos)
-		return BUFFER_SIZE - readPos;
+	if (readPos >= writePos)
+	{
+		int endPointIndex = BUFFER_SIZE;// -2;
+
+		return endPointIndex - readPos;
+	}
 	else
-		return BUFFER_SIZE - readPos;
+		return writePos - readPos;
 }

@@ -10,6 +10,7 @@ extern CNetwork *network;
 extern CMap map;
 void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int iDestPitch)
 {
+	
 	int startX = (m_iCurX - map.m_DrawX);
 	int startY = (m_iCurY - map.m_DrawY);
 
@@ -26,15 +27,17 @@ void CPlayerObject::Render(BYTE* bypDest, int iDestWidth, int iDestHeight, int i
 
 	//그림자 출력 
 	g_cSprite.DrawSprite50(eSHADOW, startX, startY + 3, bypDest, iDestWidth, iDestHeight, iDestPitch);
-	
+
 	//플레이어 객체 출력
-	if(m_iObjectID == g_pPlayerObject->GetObjectID())
+	if (m_iObjectID == g_pPlayerObject->GetObjectID())
 		g_cSprite.DrawMySprite(GetSprite(), startX, startY, bypDest, iDestWidth, iDestHeight, iDestPitch);
 	else
 		g_cSprite.DrawSprite(GetSprite(), startX, startY, bypDest, iDestWidth, iDestHeight, iDestPitch);
-	
+
 	//hp 게이지 바 출력 
 	g_cSprite.DrawSprite(eGUAGE_HP, startX - 30, startY + 10, bypDest, iDestWidth, iDestHeight, iDestPitch, GetHP());
+	
+	
 }
 
 //action

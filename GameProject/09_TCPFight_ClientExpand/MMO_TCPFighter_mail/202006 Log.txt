@@ -99,3 +99,5 @@
 [06/15/20 04:46:32] Frame : 26  Loop : 24333
 [06/15/20 04:48:03] Connect Session # IP:127.0.0.1 / SessionID:47 
 [06/15/20 04:50:55] Frame : 26  Loop : 20904
+[06/18/20 04:20:49] Server Open OK # Port:20000
+[06/18/20 04:20:55] Connect Session # IP:127.0.0.1 / SessionID:1 
