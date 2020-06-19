@@ -38,7 +38,7 @@ int RingBuf::GetFreeSize(void)
 
 void RingBuf::RemoveData(int iSize)
 {
-	if (GetUseSize() < iSize)
+	if (BUFFER_SIZE < iSize)
 		return;
 	else
 	{
@@ -47,29 +47,6 @@ void RingBuf::RemoveData(int iSize)
 		else
 			readPos += iSize;
 	}
-	//if (readPos <= writePos)
-	//{
-	//	int pSize = writePos - readPos;
-	//
-	//	if (pSize < iSize)
-	//		readPos += pSize;
-	//	else
-	//		readPos += iSize;
-	//}
-	//else
-	//{
-	//	int pSize = DirectDequeueSize();
-	//	int frontIndex = readPos;
-	//	if (pSize < iSize)
-	//	{
-	//		//frontIndex += pSize;
-	//
-	//		if (iSize - pSize > writePos)
-	//			readPos = writePos;
-	//		else
-	//			readPos = iSize - pSize;
-	//	}
-	//}
 }
 
 int RingBuf::Enqueue(char* chpData, int iSize)
@@ -156,11 +133,9 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 	else
 	{
 		int pSize = DirectDequeueSize();
-		int frontIndex = readPos;
 		if (pSize < iSize)
 		{
 			memcpy(chpData, arr + readPos, pSize);
-			frontIndex += pSize;
 			getSize += pSize;
 
 			if (iSize - pSize > writePos)
@@ -277,7 +252,7 @@ int RingBuf::DirectEnqueueSize(void)
 {
 	if (readPos <= writePos)
 	{
-		int endPointIndex = BUFFER_SIZE;// -2;
+		int endPointIndex = BUFFER_SIZE - 1;
 
 		return endPointIndex - writePos;
 	}
@@ -289,7 +264,7 @@ int RingBuf::DirectDequeueSize(void)
 {
 	if (readPos >= writePos)
 	{
-		int endPointIndex = BUFFER_SIZE;// -2;
+		int endPointIndex = BUFFER_SIZE - 1;
 
 		return endPointIndex - readPos;
 	}
