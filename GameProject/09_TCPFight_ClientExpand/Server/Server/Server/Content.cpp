@@ -112,8 +112,8 @@ void CreateCharacter(st_SESSION * pSession)
 	character->byDirection = dfACTION_MOVE_LL;
 	character->byMoveDirection = dfACTION_MOVE_LL;
 
-	character->shX = rand() % dfRANGE_MOVE_RIGHT;
-	character->shY = rand() % dfRANGE_MOVE_BOTTOM;
+	character->shX = 100;// rand() % dfRANGE_MOVE_RIGHT;
+	character->shY = 100;// rand() % dfRANGE_MOVE_BOTTOM;
 	character->shActionX = character->shX;
 	character->shActionY = character->shY;
 	

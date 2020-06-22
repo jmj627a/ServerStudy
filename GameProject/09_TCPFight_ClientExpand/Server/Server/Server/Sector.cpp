@@ -19,7 +19,7 @@ void Sector_AddCharacter(st_CHARACTER * pCharacter)
 		return;
 
 
-	g_Sector[iSectorY][iSectorX].push_back(pCharacter);
+ 	g_Sector[iSectorY][iSectorX].push_back(pCharacter);
 	
 	pCharacter->OldSector.iX = pCharacter->CurSector.iX;
 	pCharacter->OldSector.iY = pCharacter->CurSector.iY;
