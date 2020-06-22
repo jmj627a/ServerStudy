@@ -27,8 +27,8 @@ void Sector_AddCharacter(st_CHARACTER * pCharacter)
 	pCharacter->CurSector.iX = iSectorX;
 	pCharacter->CurSector.iY = iSectorY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# Player %d insert in [%d][%d] +",
-		pCharacter->dwSessionID, pCharacter->CurSector.iY, pCharacter->CurSector.iX);
+	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# Player %d (%d,%d) insert in [%d][%d] +",
+		pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, pCharacter->CurSector.iY, pCharacter->CurSector.iX);
 }
 
 void Sector_RemoveCharacter(st_CHARACTER * pCharacter)

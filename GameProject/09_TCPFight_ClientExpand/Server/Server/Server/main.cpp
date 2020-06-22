@@ -28,6 +28,7 @@ int main()
 	timeTickCount = timeGetTime();
 	dwTick = timeTickCount;
 
+
 	//서버 메인 루프, 전역의 g_Shutdown 값에 의해 종료 결정
 	while (!g_Shutdown)
 	{
@@ -47,6 +48,7 @@ int main()
 
 		//키보드 입력을 통해서 서버를 제어할 경우 사용
 		ServerControl();
+
 
 		//모니터링 정보를 표시, 저장, 전송하는 경우 사용
 		//ServerMornitor();
