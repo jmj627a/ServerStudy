@@ -205,7 +205,7 @@ void netRecvProc(SOCKET socket)
 	iBufferSize = pSession->RecvQ.DirectEnqueueSize();
 	iRet = recv(pSession->socket, pSession->RecvQ.GetRearBufferPtr(), iBufferSize, 0);
 
-	if (SOCKET_ERROR == iRet || 0 == iRet)
+	if (SOCKET_ERROR == iRet)// || 0 == iRet)
 	{
 		wprintf(L"[%d] ", pSession->socket);
 		Log(L"socket disconnect \n", dfLOG_LEVEL_DEBUG);
@@ -247,8 +247,17 @@ bool netSendProc(SOCKET socket)
 	if (NULL == session)
 		return false;
 
+	char tempbuf[1000] = { 0, };
+	printf("buffer");
+	session->SendQ.Peek(tempbuf, session->SendQ.GetUseSize());
+	for (int i = 0; i < session->SendQ.GetUseSize(); i++)
+	{
+		printf(" : %02X", (unsigned char)tempbuf[i]);
+	}
+	printf("\n");
+
 	//send
-	iBufferSize = session->SendQ.GetUseSize();
+	iBufferSize = session->SendQ.DirectDequeueSize();
 	iRet = send(session->socket, session->SendQ.GetFrontBufferPtr(), iBufferSize, 0);
 	session->SendQ.MoveFront(iRet);
 

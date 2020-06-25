@@ -11,7 +11,7 @@
 #include "CSpriteDib.h"
 #include "CBaseObject.h"
 #include "CPlayerObject.h"
-#include "CRingBuffer.h"
+#include "RingBuf.h"
 
 #include "CNetwork.h"
 #include "CMap.h"
@@ -24,8 +24,8 @@ WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
 bool g_connect = false;							//서버에 접속 되었는지(논블록 소켓이라 연결이 안됐을수도)
-CRingBuffer g_RecvBuffer;						//수신용 버퍼 
-CRingBuffer g_SendBuffer;						//송신용 버퍼
+RingBuf g_RecvBuffer;						//수신용 버퍼 
+RingBuf g_SendBuffer;						//송신용 버퍼
 
 bool g_SendPossible;					//없어도 wouldblock에 걸리지만, 애초에 보내지 말자는 의미에서
 SOCKET Socket;

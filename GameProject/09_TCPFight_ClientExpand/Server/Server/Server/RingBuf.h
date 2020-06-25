@@ -1,7 +1,7 @@
 #pragma once
 #include <stdio.h>
 
-constexpr int BUFFER_SIZE = 5000;
+constexpr int BUFFER_SIZE = 100;
 constexpr int DATA_SIZE = 121;
 
 class RingBuf

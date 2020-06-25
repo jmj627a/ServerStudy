@@ -131,7 +131,7 @@ void CAStar::setEndPos(int x, int y)
 void CAStar::searchLoad(HWND hWnd)
 {
 	//단계별 출력때문에 timer에서 매번 호출
-	//while (true)
+	while (true)
 	{
 		if (openList.size() == 0)
 			return;

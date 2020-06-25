@@ -278,14 +278,14 @@ bool netPacketProc_MoveStart(st_SESSION * pSession, CPacket * pPacket)
 	}
 
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
-	//if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
-	//{
-	//	makePacket_Sync(pCharacter, pPacket);
-	//	SendPacket_Around(pCharacter->pSession, pPacket);
-	//
-	//	shX = pCharacter->shX;
-	//	shY = pCharacter->shY;
-	//}
+	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
+	{
+		makePacket_Sync(pCharacter, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket);
+	
+		shX = pCharacter->shX;
+		shY = pCharacter->shY;
+	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 
 	pCharacter->dwAction = byDirection;
@@ -348,14 +348,14 @@ bool netPacketProc_MoveStop(st_SESSION * pSession, CPacket * pPacket)
 	}
 
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
-	//if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
-	//{
-	//	makePacket_Sync(pCharacter, pPacket);
-	//	SendPacket_Around(pCharacter->pSession, pPacket);
-	//
-	//	shX = pCharacter->shX;
-	//	shY = pCharacter->shY;
-	//}
+	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
+	{
+		makePacket_Sync(pCharacter, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket);
+	
+		shX = pCharacter->shX;
+		shY = pCharacter->shY;
+	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 
 	pCharacter->dwAction = dfACTION_STAND;

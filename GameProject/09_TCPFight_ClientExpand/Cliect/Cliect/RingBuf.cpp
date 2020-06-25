@@ -1,42 +1,56 @@
 #include "stdafx.h"
-#include "CRingBuffer.h"
+#include "RingBuf.h"
+#include <string>
+#include <Windows.h>
 
-
-void CRingBuffer::Initial(int iBufferSize)
+void RingBuf::Initial(int iBufferSize)
 {
 }
 
-CRingBuffer::CRingBuffer(void)
-{
-	readPos = 0;
-	writePos = 0;
-}
-
-CRingBuffer::CRingBuffer(int iBufferSize)
+RingBuf::RingBuf(void)
 {
 	readPos = 0;
 	writePos = 0;
 }
 
+RingBuf::RingBuf(int iBufferSize)
+{
+	readPos = 0;
+	writePos = 0;
+}
 
-int CRingBuffer::GetBufferSize(void)
+
+int RingBuf::GetBufferSize(void)
 {
 	return BUFFER_SIZE;
 }
 
-int CRingBuffer::GetUseSize(void)
+int RingBuf::GetUseSize(void)
 {
 	int num = (writePos - readPos + BUFFER_SIZE) % BUFFER_SIZE;
 	return num;
 }
 
-int CRingBuffer::GetFreeSize(void)
+int RingBuf::GetFreeSize(void)
 {
 	int num = (writePos - readPos + BUFFER_SIZE) % BUFFER_SIZE;
 	return BUFFER_SIZE - num;
 }
 
-int CRingBuffer::Enqueue(char* chpData, int iSize)
+void RingBuf::RemoveData(int iSize)
+{
+	if (BUFFER_SIZE < iSize)
+		return;
+	else
+	{
+		if (readPos + iSize >= BUFFER_SIZE)
+			readPos = (readPos + iSize) % BUFFER_SIZE;
+		else
+			readPos += iSize;
+	}
+}
+
+int RingBuf::Enqueue(char* chpData, int iSize)
 {
 	int inputSize = 0;
 
@@ -52,7 +66,7 @@ int CRingBuffer::Enqueue(char* chpData, int iSize)
 
 			if (iSize - pSize > readPos)
 			{
-				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
+				//뒷통수 짤림
 				memcpy(arr, chpData, readPos);
 				inputSize += readPos;
 				writePos = readPos;
@@ -69,7 +83,7 @@ int CRingBuffer::Enqueue(char* chpData, int iSize)
 		{
 			// 넣을수 있는 공간 >= 넣어야 하는 공간
 			memcpy(arr + writePos, chpData, iSize);
-			writePos += iSize;
+			writePos = (writePos + iSize) % BUFFER_SIZE;
 			return iSize;
 		}
 	}
@@ -96,7 +110,7 @@ int CRingBuffer::Enqueue(char* chpData, int iSize)
 	}
 }
 
-int CRingBuffer::Dequeue(char* chpData, int iSize)
+int RingBuf::Dequeue(char* chpData, int iSize)
 {
 	int getSize = 0;
 
@@ -120,11 +134,9 @@ int CRingBuffer::Dequeue(char* chpData, int iSize)
 	else
 	{
 		int pSize = DirectDequeueSize();
-		int frontIndex = readPos;
 		if (pSize < iSize)
 		{
 			memcpy(chpData, arr + readPos, pSize);
-			frontIndex += pSize;
 			getSize += pSize;
 
 			if (iSize - pSize > writePos)
@@ -151,7 +163,7 @@ int CRingBuffer::Dequeue(char* chpData, int iSize)
 	}
 }
 
-int CRingBuffer::Peek(char* chpData, int iSize)
+int RingBuf::Peek(char* chpData, int iSize)
 {
 	int getSize = 0;
 
@@ -173,23 +185,21 @@ int CRingBuffer::Peek(char* chpData, int iSize)
 	else
 	{
 		int pSize = DirectDequeueSize();
-		int frontIndex = readPos;
 		if (pSize < iSize)
 		{
 			memcpy(chpData, arr + readPos, pSize);
-			frontIndex += pSize;
 			getSize += pSize;
 			chpData += pSize;
 
 			if (iSize - pSize > writePos)
 			{
 				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
-				memcpy(chpData + pSize, arr, writePos);
+				memcpy(chpData, arr, writePos);
 				getSize += writePos;
 			}
 			else
 			{
-				memcpy(chpData + pSize, arr, iSize - pSize);
+				memcpy(chpData, arr, iSize - pSize);
 				getSize += iSize - pSize;
 			}
 			return getSize;
@@ -202,40 +212,46 @@ int CRingBuffer::Peek(char* chpData, int iSize)
 	}
 }
 
-int CRingBuffer::MoveRear(int iSize)
+int RingBuf::MoveRear(int iSize)
 {
-	writePos = (writePos + iSize + BUFFER_SIZE) % BUFFER_SIZE;
+	writePos = (writePos + iSize) % BUFFER_SIZE;
 	return writePos;
 }
 
-int CRingBuffer::MoveFront(int iSize)
+int RingBuf::MoveFront(int iSize)
 {
-	readPos = (readPos + iSize + BUFFER_SIZE) % BUFFER_SIZE;
+	readPos = (readPos + iSize) % BUFFER_SIZE;
 	return readPos;
 }
 
-void CRingBuffer::ClearBuffer(void)
+void RingBuf::ClearBuffer(void)
 {
+	//사실 0으로 지울 필요 없고, pos를 같게 위치시키면 데이터가 없다는 의미와 같음.
 	memset(arr, 0, sizeof(arr));
 	readPos = 0;
 	writePos = 0;
 }
 
-char * CRingBuffer::GetFrontBufferPtr(void)
+char * RingBuf::GetFrontBufferPtr(void)
 {
 	return arr + readPos;
 }
 
-char * CRingBuffer::GetRearBufferPtr(void)
+char * RingBuf::GetRearBufferPtr(void)
 {
 	return arr + writePos;
 }
 
-int CRingBuffer::DirectEnqueueSize(void)
+char * RingBuf::GetBufferPtr(void)
+{
+	return arr;
+}
+
+int RingBuf::DirectEnqueueSize(void)
 {
 	if (readPos <= writePos)
 	{
-		int endPointIndex = BUFFER_SIZE;// -2;
+		int endPointIndex = BUFFER_SIZE;
 
 		return endPointIndex - writePos;
 	}
@@ -243,11 +259,11 @@ int CRingBuffer::DirectEnqueueSize(void)
 		return readPos - writePos;
 }
 
-int CRingBuffer::DirectDequeueSize(void)
+int RingBuf::DirectDequeueSize(void)
 {
 	if (readPos >= writePos)
 	{
-		int endPointIndex = BUFFER_SIZE;// -2;
+		int endPointIndex = BUFFER_SIZE;
 
 		return endPointIndex - readPos;
 	}

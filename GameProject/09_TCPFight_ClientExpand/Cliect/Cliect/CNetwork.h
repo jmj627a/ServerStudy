@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "CRingBuffer.h"
+#include "RingBuf.h"
 #include "CPlayerObject.h"
 
 class CNetwork

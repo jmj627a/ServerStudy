@@ -533,3 +533,249 @@
 [06/15/20 18:28:22] Frame : 26  Loop : 23967
 [06/18/20 04:20:49] Server Open OK # Port:20000
 [06/18/20 04:20:55] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 00:40:49] Server Open OK # Port:20000
+[06/26/20 00:41:06] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 00:41:13] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 00:43:19] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:26] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:26] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:26] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:27] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:27] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:27] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:27] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:27] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:28] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:32] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:32] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:32] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:32] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:32] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:32] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:43:33] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:08] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:08] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:08] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:08] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:08] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:09] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:09] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:10] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:10] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:10] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:10] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:10] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:10] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:11] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:11] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:13] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:13] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:13] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:13] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:15] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:19] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:19] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:19] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:24] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:44:25] ////////// PacketProc Error   SessionID:2 
+[06/26/20 00:54:48] Server Open OK # Port:20000
+[06/26/20 00:54:55] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 00:55:01] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 00:56:32] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:33] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:33] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:34] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:34] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:36] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:36] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:37] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:37] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:37] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:37] ////////// PacketProc Error   SessionID:1 
+[06/26/20 00:56:49] Server Open OK # Port:20000
+[06/26/20 00:57:00] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 00:58:59] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 00:59:33] Frame : 26  Loop : 17288
+[06/26/20 01:11:41] Server Open OK # Port:20000
+[06/26/20 01:11:57] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 01:12:09] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 01:16:28] Server Open OK # Port:20000
+[06/26/20 01:16:33] Frame : 26  Loop : 23133
+[06/26/20 01:16:39] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 01:16:46] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 01:18:08] Frame : 26  Loop : 20677
+[06/26/20 01:18:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:19] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:19] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:20] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:21] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:22] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:23] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:42] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:42] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:47] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:48] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:54] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:18:54] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:01] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:03] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:04] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:06] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:06] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:15] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:19:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:20:21] Frame : 26  Loop : 19124
+[06/26/20 01:28:00] Frame : 26  Loop : 21858
+[06/26/20 01:31:48] Frame : 26  Loop : 20238
+[06/26/20 01:34:32] Frame : 26  Loop : 18384
+[06/26/20 01:35:30] Server Open OK # Port:20000
+[06/26/20 01:36:02] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 01:36:11] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 01:38:11] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:38:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:38:12] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:38:14] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:38:15] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:38:16] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:45:47] Server Open OK # Port:20000
+[06/26/20 01:45:58] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 01:46:42] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 01:47:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:47:17] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:47:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:47:18] ////////// PacketProc Error   SessionID:2 
+[06/26/20 01:47:31] Frame : 26  Loop : 23107
+[06/26/20 01:50:09] Server Open OK # Port:20000
+[06/26/20 01:50:30] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 01:53:40] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 01:57:49] Connect Session # IP:127.0.0.1 / SessionID:3 
+[06/26/20 02:03:42] Connect Session # IP:127.0.0.1 / SessionID:4 
+[06/26/20 02:05:06] Server Open OK # Port:20000
+[06/26/20 02:05:12] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 02:05:20] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 02:05:52] Frame : 26  Loop : 21239
+[06/26/20 02:06:20] Frame : 26  Loop : 21076
+[06/26/20 02:06:44] Frame : 26  Loop : 20847
+[06/26/20 02:06:49] Frame : 26  Loop : 21128
+[06/26/20 02:07:06] Connect Session # IP:127.0.0.1 / SessionID:3 
+[06/26/20 02:08:58] Connect Session # IP:127.0.0.1 / SessionID:4 
+[06/26/20 02:13:20] Frame : 26  Loop : 18021
+[06/26/20 02:24:44] Frame : 26  Loop : 19563
+[06/26/20 02:27:28] Server Open OK # Port:20000
+[06/26/20 02:27:46] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 02:27:51] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 02:29:22] Connect Session # IP:127.0.0.1 / SessionID:3 
+[06/26/20 02:30:33] Connect Session # IP:127.0.0.1 / SessionID:4 
+[06/26/20 02:37:10] Server Open OK # Port:20000
+[06/26/20 02:37:19] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 02:37:27] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 02:37:38] Connect Session # IP:127.0.0.1 / SessionID:3 
+[06/26/20 02:37:51] Connect Session # IP:127.0.0.1 / SessionID:4 
+[06/26/20 02:41:22] Frame : 26  Loop : 14088
+[06/26/20 02:53:31] Connect Session # IP:127.0.0.1 / SessionID:5 
+[06/26/20 02:53:44] Connect Session # IP:127.0.0.1 / SessionID:6 
+[06/26/20 03:05:32] Server Open OK # Port:20000
+[06/26/20 03:05:42] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 03:06:10] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 03:11:32] Frame : 26  Loop : 23281
+[06/26/20 03:15:17] Frame : 26  Loop : 24178
+[06/26/20 03:16:12] Frame : 26  Loop : 24230
+[06/26/20 03:16:42] Frame : 26  Loop : 24221
+[06/26/20 03:19:07] Server Open OK # Port:20000
+[06/26/20 03:19:23] Connect Session # IP:127.0.0.1 / SessionID:1 
+[06/26/20 03:19:30] Connect Session # IP:127.0.0.1 / SessionID:2 
+[06/26/20 03:21:40] Connect Session # IP:127.0.0.1 / SessionID:3 
+[06/26/20 03:22:54] Connect Session # IP:127.0.0.1 / SessionID:4 

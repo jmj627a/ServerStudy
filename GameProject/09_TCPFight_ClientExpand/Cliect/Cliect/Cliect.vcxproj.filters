@@ -81,7 +81,7 @@
     <ClInclude Include="CMap.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="CRingBuffer.h">
+    <ClInclude Include="RingBuf.h">
       <Filter>소스 파일\RingBuffer</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,11 +113,11 @@
     <ClCompile Include="CPacket.cpp">
       <Filter>소스 파일\Packet</Filter>
     </ClCompile>
-    <ClCompile Include="CRingBuffer.cpp">
-      <Filter>소스 파일\RingBuffer</Filter>
-    </ClCompile>
     <ClCompile Include="CMap.cpp">
       <Filter>소스 파일\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="RingBuf.cpp">
+      <Filter>소스 파일\RingBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

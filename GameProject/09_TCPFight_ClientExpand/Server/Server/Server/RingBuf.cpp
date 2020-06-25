@@ -65,7 +65,7 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 
 			if (iSize - pSize > readPos)
 			{
-				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
+				//뒷통수 짤림
 				memcpy(arr, chpData, readPos);
 				inputSize += readPos;
 				writePos = readPos;
@@ -82,7 +82,7 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 		{
 			// 넣을수 있는 공간 >= 넣어야 하는 공간
 			memcpy(arr + writePos, chpData, iSize);
-			writePos += iSize;
+			writePos = (writePos + iSize) % BUFFER_SIZE;
 			return iSize;
 		}
 	}
@@ -184,23 +184,21 @@ int RingBuf::Peek(char* chpData, int iSize)
 	else
 	{
 		int pSize = DirectDequeueSize();
-		int frontIndex = readPos;
 		if (pSize < iSize)
 		{
 			memcpy(chpData, arr + readPos, pSize);
-			frontIndex += pSize;
 			getSize += pSize;
 			chpData += pSize;
 
 			if (iSize - pSize > writePos)
 			{
 				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
-				memcpy(chpData + pSize, arr, writePos);
+				memcpy(chpData, arr, writePos);
 				getSize += writePos;
 			}
 			else
 			{
-				memcpy(chpData + pSize, arr, iSize - pSize);
+				memcpy(chpData, arr, iSize - pSize);
 				getSize += iSize - pSize;
 			}
 			return getSize;
@@ -230,7 +228,7 @@ void RingBuf::ClearBuffer(void)
 	//사실 0으로 지울 필요 없고, pos를 같게 위치시키면 데이터가 없다는 의미와 같음.
 	memset(arr, 0, sizeof(arr));
 	readPos = 0;
-	writePos= 0;
+	writePos = 0;
 }
 
 char * RingBuf::GetFrontBufferPtr(void)
@@ -252,7 +250,7 @@ int RingBuf::DirectEnqueueSize(void)
 {
 	if (readPos <= writePos)
 	{
-		int endPointIndex = BUFFER_SIZE - 1;
+		int endPointIndex = BUFFER_SIZE;
 
 		return endPointIndex - writePos;
 	}
@@ -264,7 +262,7 @@ int RingBuf::DirectDequeueSize(void)
 {
 	if (readPos >= writePos)
 	{
-		int endPointIndex = BUFFER_SIZE - 1;
+		int endPointIndex = BUFFER_SIZE;
 
 		return endPointIndex - readPos;
 	}

@@ -40,10 +40,10 @@ int main()
 
 		//게임 로직 업데이트
 		dwTick = timeGetTime();
-		if (dwTick - timeTickCount >= 40)
+		while ((dwTick - timeTickCount) >= 40)
 		{
 			Update();
-			timeTickCount = dwTick - (timeTickCount - 40);
+			timeTickCount += 40;
 		}
 
 		//키보드 입력을 통해서 서버를 제어할 경우 사용

@@ -1,21 +1,23 @@
 #pragma once
-#include "stdafx.h"
+#include <stdio.h>
 
-#define BUFFER_SIZE 1000
+constexpr int BUFFER_SIZE = 40;
+constexpr int DATA_SIZE = 121;
 
-class CRingBuffer
+class RingBuf
 {
-private:
+public:
 	char arr[BUFFER_SIZE]{ 0, };
 	int readPos = 0;	//front
 	int writePos = 0;	//rear
 
+	int count = 0;
 private: void Initial(int iBufferSize);
 
 public:
 	//생성자
-	CRingBuffer(void);
-	CRingBuffer(int iBufferSize);
+	RingBuf(void);
+	RingBuf(int iBufferSize);
 
 	//사이즈 재설정, 거의 안 씀
 	void Resize(int size);
@@ -29,15 +31,15 @@ public:
 	// 현재 버퍼에 남은 용량 얻기. / 버퍼에 남은 용량 리턴
 	int GetFreeSize(void);
 
+	void RemoveData(int iSize);
 
-
-	// WritePos 에 데이타 넣음. / 넣은 크기 리턴 ((char *)데이타 포인터. (int)크기.) //넣은 크기
+	// WritePos 에 데이터 넣음. / 넣은 크기 리턴 ((char *)데이터 포인터. (int)크기.) //넣은 크기
 	int Enqueue(char* chpData, int iSize);
 
-	// ReadPos 에서 데이타 가져옴. ReadPos 이동. ((char *)데이타 포인터. (int)크기.) //가져온 크기
+	// ReadPos 에서 데이터 가져옴. ReadPos 이동. ((char *)데이터 포인터. (int)크기.) //가져온 크기
 	int Dequeue(char* chpDest, int iSize);
 
-	// ReadPos 에서 데이타 읽어옴. ReadPos 고정. ((char *)데이타 포인터. (int)크기.) //가져온 크기
+	// ReadPos 에서 데이터 읽어옴. ReadPos 고정. ((char *)데이터 포인터. (int)크기.) //가져온 크기
 	int Peek(char* chpDest, int iSize);
 
 
@@ -45,7 +47,7 @@ public:
 	int MoveRear(int iSize);
 	int MoveFront(int iSize);
 
-	// 버퍼의 모든 데이타 삭제.
+	// 버퍼의 모든 데이터 삭제.
 	void ClearBuffer(void);
 
 
@@ -56,6 +58,8 @@ public:
 	// 버퍼의 RearPos 포인터 얻음. / 버퍼 포인터 리턴
 	char* GetRearBufferPtr(void);
 
+
+	char* GetBufferPtr(void);
 
 	/////////////////////////////////////////////////////////////////////////
 	// 버퍼 포인터로 외부에서 한방에 읽고, 쓸 수 있는 길이.
@@ -71,3 +75,4 @@ public:
 	int DirectDequeueSize(void);
 
 };
+
