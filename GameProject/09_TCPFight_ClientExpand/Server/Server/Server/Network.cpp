@@ -382,6 +382,9 @@ bool PacketProc(st_SESSION * pSession, BYTE byPacketType, CPacket * pPacket)
 	case dfPACKET_CS_ATTACK3:
 		return netPacketProc_Attack3(pSession, pPacket);
 		break;
+	case dfPACKET_SC_ECHO:
+		return netPacketProc_ECHO(pSession, pPacket);
+		break;
 	}
 
 	return true;
@@ -401,7 +404,6 @@ void SendPacket_Around(st_SESSION * pSession, CPacket * pPacket, bool includePla
 
 	if (includePlayer)
 	{
-		printf("send include me! \n");
 		pSession->SendQ.Enqueue(pPacket->GetReadPtr(), pPacket->GetDataSize());
 	}
 }
@@ -441,6 +443,9 @@ void SendPacket_SectorOne(st_SESSION *pSession, CPacket *pPacket, st_SECTOR_POS 
 
 	list<st_CHARACTER *> *list = &g_Sector[pPos->iY][pPos->iX];
 
+	if (list->size() == 0)
+		return;
+
 	auto begin = list->begin();
 	auto end = list->end();
 
@@ -452,9 +457,4 @@ void SendPacket_SectorOne(st_SESSION *pSession, CPacket *pPacket, st_SECTOR_POS 
 			character->pSession->SendQ.Enqueue(pPacket->GetReadPtr(), pPacket->GetDataSize());
 	}
 
-	//if (includePlayer)
-	//{
-	//	printf("send include me! \n");
-	//	pSession->SendQ.Enqueue(pPacket->GetReadPtr(), pPacket->GetDataSize());
-	//}
 }

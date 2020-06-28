@@ -116,8 +116,8 @@ void CreateCharacter(st_SESSION * pSession)
 	character->byDirection = dfACTION_MOVE_LL;
 	character->byMoveDirection = dfACTION_MOVE_LL;
 
-	character->shX = 100;// rand() % dfRANGE_MOVE_RIGHT;
-	character->shY = 100;// rand() % dfRANGE_MOVE_BOTTOM;
+	character->shX = rand() % dfRANGE_MOVE_RIGHT;
+	character->shY = rand() % dfRANGE_MOVE_BOTTOM;
 	character->shActionX = character->shX;
 	character->shActionY = character->shY;
 	
@@ -460,7 +460,6 @@ bool netPacketProc_Attack1(st_SESSION * pSession, CPacket * pPacket)
 
 						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
 						SendPacket_Around(pCharacter->pSession, pPacket, true);
-						printf("LL %d , %d \n", pCharacter->shX - pOtherCharacter->shX, pCharacter->shY - pOtherCharacter->shY);
 					}
 				}
 				else if (pCharacter->byDirection == dfPACKET_MOVE_DIR_RR)
@@ -474,7 +473,6 @@ bool netPacketProc_Attack1(st_SESSION * pSession, CPacket * pPacket)
 
 						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
 						SendPacket_Around(pCharacter->pSession, pPacket, true);
-						printf("RR %d , %d \n", pOtherCharacter->shX - pCharacter->shX, pOtherCharacter->shY - pCharacter->shY);
 
 					}
 				}
@@ -684,6 +682,14 @@ bool netPacketProc_Attack3(st_SESSION * pSession, CPacket * pPacket)
 	return true;
 }
 
+bool netPacketProc_ECHO(st_SESSION * pSession, CPacket * pPacket)
+{
+	st_CHARACTER *pCharacter = FindCharacter(pSession->dwSessionID);
+	makePacket_ECHO(pCharacter, pPacket);
+	SendPacket_Unicast(pSession, pPacket);
+	return false;
+}
+
 void makePacket_CreateMyCharacter(st_CHARACTER * pCharacter, CPacket * pPacket)
 {
 	CPacket temp;
@@ -874,6 +880,25 @@ void makePacket_Sync(st_CHARACTER * pCharacter, CPacket * pPacket)
 	Header.byCode = dfPACKET_CODE;
 	Header.bySize = temp.GetDataSize();
 	Header.byType = dfPACKET_SC_SYNC;
+
+	pPacket->Clear();
+	pPacket->PutData((char*)(&Header), sizeof(st_PACKET_HEADER));
+	pPacket->PutData(temp.GetReadPtr(), Header.bySize);
+
+	*pPacket << (BYTE)dfNETWORK_PACKET_END;
+}
+
+void makePacket_ECHO(st_CHARACTER * pCharacter, CPacket * pPacket)
+{
+	st_PACKET_HEADER Header;
+
+	CPacket temp;
+	DWORD time = timeGetTime();
+	temp << (DWORD)time;
+
+	Header.byCode = dfPACKET_CODE;
+	Header.bySize = temp.GetDataSize();
+	Header.byType = dfPACKET_SC_ECHO;
 
 	pPacket->Clear();
 	pPacket->PutData((char*)(&Header), sizeof(st_PACKET_HEADER));

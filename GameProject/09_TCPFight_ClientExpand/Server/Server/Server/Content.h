@@ -63,6 +63,7 @@ bool netPacketProc_MoveStop(st_SESSION *pSession, CPacket *pPacket);
 bool netPacketProc_Attack1(st_SESSION *pSession, CPacket *pPacket);
 bool netPacketProc_Attack2(st_SESSION *pSession, CPacket *pPacket);
 bool netPacketProc_Attack3(st_SESSION *pSession, CPacket *pPacket);
+bool netPacketProc_ECHO(st_SESSION *pSession, CPacket *pPacket);
 
 void makePacket_CreateMyCharacter(st_CHARACTER* pCharacter, CPacket* pPacket);
 void makePacket_CreateOtherCharacter(st_CHARACTER* pCharacter, CPacket* pPacket);
@@ -74,6 +75,7 @@ void makePacket_Attack2(st_CHARACTER* pCharacter, CPacket* pPacket);
 void makePacket_Attack3(st_CHARACTER* pCharacter, CPacket* pPacket);
 void makePacket_Damage(st_CHARACTER * pAttackCharacter, st_CHARACTER * pDamageCharacter, CPacket* pPacket);
 void makePacket_Sync(st_CHARACTER* pCharacter, CPacket* pPacket);
+void makePacket_ECHO(st_CHARACTER* pCharacter, CPacket* pPacket);
 
 
 #endif

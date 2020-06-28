@@ -59,8 +59,8 @@ void Sector_RemoveCharacter(st_CHARACTER * pCharacter)
 		iter++;
 	}
 
-	//if (!isSuc)
-	//	_LOG(dfLOG_LEVEL_ERROR, L"Player %d isn't Exist in List", pCharacter->dwSessionID);
+	if (!isSuc)
+		_LOG(dfLOG_LEVEL_ERROR, L"Player %d isn't Exist in List", pCharacter->dwSessionID);
 
 	pCharacter->OldSector.iX = pCharacter->CurSector.iX;
 	pCharacter->OldSector.iY = pCharacter->CurSector.iY;
