@@ -2,7 +2,7 @@
 #define __PROTOCOL__
 
 
-#define dfNETWORK_PORT		20000
+#define dfNETWORK_PORT		10600
 
 
 

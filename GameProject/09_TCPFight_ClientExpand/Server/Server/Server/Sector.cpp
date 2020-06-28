@@ -27,8 +27,8 @@ void Sector_AddCharacter(st_CHARACTER * pCharacter)
 	pCharacter->CurSector.iX = iSectorX;
 	pCharacter->CurSector.iY = iSectorY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# Player %d (%d,%d) insert in [%d][%d] +",
-		pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, pCharacter->CurSector.iY, pCharacter->CurSector.iX);
+	//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# Player %d (%d,%d) insert in [%d][%d] +",
+	//	pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, pCharacter->CurSector.iY, pCharacter->CurSector.iX);
 }
 
 void Sector_RemoveCharacter(st_CHARACTER * pCharacter)
@@ -51,8 +51,8 @@ void Sector_RemoveCharacter(st_CHARACTER * pCharacter)
 		{
 			pList->erase(iter);
 			isSuc = true;
-			_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# Player %d remove in [%d][%d] - ", 
-				pCharacter->dwSessionID, pCharacter->CurSector.iY, pCharacter->CurSector.iX);
+			//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# Player %d remove in [%d][%d] - ", 
+			//	pCharacter->dwSessionID, pCharacter->CurSector.iY, pCharacter->CurSector.iX);
 
 			break;
 		}
@@ -111,7 +111,7 @@ void GetSectorAround(int iSectorX, int iSectorY, st_SECTOR_AROUND * pSectorAroun
 			continue;
 		for (iCntX = 0; iCntX < 3; iCntX++)
 		{
-			if (iSectorX + iCntX < 0 || iSectorX + iCntX >= dfSECTOR_MAX_Y)
+			if (iSectorX + iCntX < 0 || iSectorX + iCntX >= dfSECTOR_MAX_X)
 				continue;
 			pSectorAround->Around[pSectorAround->iCount].iX = iSectorX + iCntX;
 			pSectorAround->Around[pSectorAround->iCount].iY = iSectorY + iCntY;

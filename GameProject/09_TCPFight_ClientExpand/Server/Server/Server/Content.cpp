@@ -179,6 +179,9 @@ void CharacterSectorUpdatePacket(st_CHARACTER * pCharacter)
 	{
 		pSectorList = &g_Sector[RemoveSector.Around[iCnt].iY][RemoveSector.Around[iCnt].iX];
 
+		if (pSectorList->size() == 0)
+			continue;
+
 		for (listIter = pSectorList->begin(); listIter != pSectorList->end(); ++listIter)
 		{
 			if ((*listIter) != pCharacter)
@@ -207,6 +210,9 @@ void CharacterSectorUpdatePacket(st_CHARACTER * pCharacter)
 	{
 		//얻어진 섹터를 돌면서 섹터리스트 접근
 		pSectorList = &g_Sector[AddSector.Around[iCnt].iY][AddSector.Around[iCnt].iX];
+
+		if (pSectorList->size() == 0)
+			continue;
 
 		//해당 섹터마다 등록된 캐릭터들을 뽑아서 생성 패킷을 만들어 보냄
 		for (listIter = pSectorList->begin(); listIter != pSectorList->end(); ++listIter)
@@ -264,8 +270,8 @@ bool netPacketProc_MoveStart(st_SESSION * pSession, CPacket * pPacket)
 
 	*pPacket >> byDirection >> shX >> shY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# MOVE_START #\tsessionID : %d / Direction : %d / X : %d / Y : %d !!!",
-		pSession->dwSessionID, byDirection, shX, shY);
+	//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# MOVE_START #\tsessionID : %d / Direction : %d / X : %d / Y : %d !!!",
+	//	pSession->dwSessionID, byDirection, shX, shY);
 
 
 	//id로 캐릭터를 검색한다
@@ -335,8 +341,8 @@ bool netPacketProc_MoveStop(st_SESSION * pSession, CPacket * pPacket)
 
 	*pPacket >> byDirection >> shX >> shY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# MOVE_STOP #\tsessionID : %d / Direction : %d / X : %d / Y : %d !!!",
-		pSession->dwSessionID, byDirection, shX, shY);
+	//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# MOVE_STOP #\tsessionID : %d / Direction : %d / X : %d / Y : %d !!!",
+	//	pSession->dwSessionID, byDirection, shX, shY);
 
 	//id로 캐릭터를 검색한다
 	st_CHARACTER *pCharacter = FindCharacter(pSession->dwSessionID);
@@ -390,8 +396,8 @@ bool netPacketProc_Attack1(st_SESSION * pSession, CPacket * pPacket)
 
 	*pPacket >> byDirection >> shX >> shY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# ATTACK1 #\tsessionID : %d / Direction : %d / X : %d / Y : %d ",
-		pSession->dwSessionID, byDirection, shX, shY);
+	//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# ATTACK1 #\tsessionID : %d / Direction : %d / X : %d / Y : %d ",
+	//	pSession->dwSessionID, byDirection, shX, shY);
 
 	//id로 캐릭터를 검색한다
 	st_CHARACTER *pCharacter = FindCharacter(pSession->dwSessionID);
@@ -489,8 +495,8 @@ bool netPacketProc_Attack2(st_SESSION * pSession, CPacket * pPacket)
 
 	*pPacket >> byDirection >> shX >> shY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# ATTACK2 #\tsessionID : %d / Direction : %d / X : %d / Y : %d ",
-		pSession->dwSessionID, byDirection, shX, shY);
+	//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# ATTACK2 #\tsessionID : %d / Direction : %d / X : %d / Y : %d ",
+	//	pSession->dwSessionID, byDirection, shX, shY);
 
 	//id로 캐릭터를 검색한다
 	st_CHARACTER *pCharacter = FindCharacter(pSession->dwSessionID);
@@ -589,8 +595,8 @@ bool netPacketProc_Attack3(st_SESSION * pSession, CPacket * pPacket)
 
 	*pPacket >> byDirection >> shX >> shY;
 
-	_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# ATTACK3 #\tsessionID : %d / Direction : %d / X : %d / Y : %d ",
-		pSession->dwSessionID, byDirection, shX, shY);
+	//_LOG(dfLOG_LEVEL_DEBUG, L"DEBUG# ATTACK3 #\tsessionID : %d / Direction : %d / X : %d / Y : %d ",
+	//	pSession->dwSessionID, byDirection, shX, shY);
 
 	//id로 캐릭터를 검색한다
 	st_CHARACTER *pCharacter = FindCharacter(pSession->dwSessionID);

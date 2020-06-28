@@ -17,7 +17,7 @@
 
 using namespace std;
 
-#define dfNETWORK_PORT		20000
+#define dfNETWORK_PORT		10600
 
 struct st_PACKET_HEADER
 {
