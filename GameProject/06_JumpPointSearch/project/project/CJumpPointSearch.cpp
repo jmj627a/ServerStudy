@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "CJumpPointSearch.h"
-#include "CBresenham.h"
+
 
 extern TILE g_Grid[WORLD_HEIGHT][WORLD_WIDTH];
 
@@ -551,9 +551,6 @@ void CJumpPointSearch::checkPathCorrection()
 			break;
 	}
 
-	// 만든 길의 노드가 2개 이하면( 시작점, 목적지 외에 없다면 브레즌헴 알고리즘을 실행하지 않음)  
-	if (fastPathList.size() <= 2)
-		return;
 
 	NODE* pStart;	//시작 노드
 	NODE* pFirst;	//시작 노드의 다음
@@ -561,6 +558,14 @@ void CJumpPointSearch::checkPathCorrection()
 	std::list<NODE*>::iterator Iter = fastPathList.begin();
 	std::list<NODE*>::iterator IterSuce;	// 성공했을때 변경하기 위한 이터레이터 위치
 	std::list<NODE*>::iterator IterFail;	// 실패했을때 변경하기 위한 이터레이터 위치
+
+	// 만든 길의 노드가 2개 이하면( 시작점, 목적지 외에 없다면 브레즌헴 알고리즘을 실행하지 않음)  
+	if (fastPathList.size() <= 2)
+	{
+		return;
+	}
+
+	Iter = fastPathList.begin();
 	while (true)
 	{
 		// 1번 노드 & 성공 이터레이터
@@ -574,14 +579,17 @@ void CJumpPointSearch::checkPathCorrection()
 		Iter++;
 
 		if (Iter == fastPathList.end())
+		{
 			return;
+		}
 		pSecond = (*Iter);
 
-		CBresenham line;
-		line.setPos(pStart->ix, pStart->iy, pSecond->ix, pSecond->iy);
+		CBresenham temp;
+
+		temp.setPos(pStart->ix, pStart->iy, pSecond->ix, pSecond->iy);
 		
 		// 직선을 그을 수 있다면, 중간 노드를 제거
-		if(line.checkDot())
+		if(temp.checkDot())
 		{
 			fastPathList.remove(pFirst);
 			if (fastPathList.size() <= 2)
@@ -626,10 +634,10 @@ void CJumpPointSearch::pathDraw(HWND hWnd)
 
 void CJumpPointSearch::fastPathDraw(HWND hWnd)
 {
+		HDC hdc = GetDC(hWnd);
 	if (fastPathList.size() != 0)
 	{
-		HDC hdc = GetDC(hWnd);
-		
+
 		std::list<NODE*>::iterator iter = fastPathList.begin();
 		std::list<NODE*>::iterator nextIter = fastPathList.begin();
 		nextIter++;
@@ -647,8 +655,8 @@ void CJumpPointSearch::fastPathDraw(HWND hWnd)
 			iter++;
 			nextIter++;
 		}
-	
-		ReleaseDC(hWnd, hdc);
+
 	}
 
+	ReleaseDC(hWnd, hdc);
 }

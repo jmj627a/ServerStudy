@@ -247,14 +247,14 @@ bool netSendProc(SOCKET socket)
 	if (NULL == session)
 		return false;
 
-	char tempbuf[1000] = { 0, };
-	printf("buffer");
-	session->SendQ.Peek(tempbuf, session->SendQ.GetUseSize());
-	for (int i = 0; i < session->SendQ.GetUseSize(); i++)
-	{
-		printf(" : %02X", (unsigned char)tempbuf[i]);
-	}
-	printf("\n");
+	//char tempbuf[1000] = { 0, };
+	//printf("buffer");
+	//session->SendQ.Peek(tempbuf, session->SendQ.GetUseSize());
+	//for (int i = 0; i < session->SendQ.GetUseSize(); i++)
+	//{
+	//	printf(" : %02X", (unsigned char)tempbuf[i]);
+	//}
+	//printf("\n");
 
 	//send
 	iBufferSize = session->SendQ.DirectDequeueSize();
@@ -387,7 +387,7 @@ bool PacketProc(st_SESSION * pSession, BYTE byPacketType, CPacket * pPacket)
 	return true;
 }
 
-void SendPacket_Around(st_SESSION * pSession, CPacket * pPacket)
+void SendPacket_Around(st_SESSION * pSession, CPacket * pPacket, bool includePlayer)
 {
 	st_CHARACTER *character = FindCharacter(pSession->dwSessionID);
 
@@ -397,6 +397,12 @@ void SendPacket_Around(st_SESSION * pSession, CPacket * pPacket)
 	for (int iCnt = 0; iCnt < DestSector.iCount; iCnt++)
 	{
 		SendPacket_SectorOne(pSession, pPacket, &DestSector.Around[iCnt]);
+	}
+
+	if (includePlayer)
+	{
+		printf("send include me! \n");
+		pSession->SendQ.Enqueue(pPacket->GetReadPtr(), pPacket->GetDataSize());
 	}
 }
 
@@ -445,4 +451,10 @@ void SendPacket_SectorOne(st_SESSION *pSession, CPacket *pPacket, st_SECTOR_POS 
 		if (character->pSession != pSession)
 			character->pSession->SendQ.Enqueue(pPacket->GetReadPtr(), pPacket->GetDataSize());
 	}
+
+	//if (includePlayer)
+	//{
+	//	printf("send include me! \n");
+	//	pSession->SendQ.Enqueue(pPacket->GetReadPtr(), pPacket->GetDataSize());
+	//}
 }

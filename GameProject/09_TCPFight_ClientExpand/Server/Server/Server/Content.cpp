@@ -82,12 +82,12 @@ void Update(void)
 			if (dfPACKET_MOVE_DIR_LL <= pCharacter->dwAction &&
 				pCharacter->dwAction <= dfPACKET_MOVE_DIR_LD)
 			{
-				wprintf(L"before :::: player %d (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY);
+				//wprintf(L"before :::: player %d (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY);
 				if (Sector_UpdateCharacter(pCharacter))
 				{
 					//변경되었으면 클라들에 정보 쏘기
 					CharacterSectorUpdatePacket(pCharacter);
-					wprintf(L"after :::: player %d (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY);
+					//wprintf(L"after :::: player %d (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY);
 				}
 			}
 		}
@@ -433,8 +433,54 @@ bool netPacketProc_Attack1(st_SESSION * pSession, CPacket * pPacket)
 
 	//접속중인 사용자에게 모든 패킷을 뿌린다.
 	SendPacket_Around(pSession, pPacket);
-	//SendPacket_Broadcast(pSession, pPacket); //섹터 안만들었으니까 나한테만 
 
+
+	st_SECTOR_AROUND stAroundSector;
+	GetSectorAround(pCharacter->CurSector.iX, pCharacter->CurSector.iY, &stAroundSector);
+
+	for (int iCnt = 0; iCnt < stAroundSector.iCount; iCnt++)
+	{
+		auto iter = g_Sector[stAroundSector.Around[iCnt].iY][stAroundSector.Around[iCnt].iX].begin();
+		auto endIter = g_Sector[stAroundSector.Around[iCnt].iY][stAroundSector.Around[iCnt].iX].end();
+		
+		for (iter; iter != endIter; ++iter)
+		{
+			st_CHARACTER *pOtherCharacter = (*iter);
+
+			if (pCharacter != pOtherCharacter)
+			{
+				if (pCharacter->byDirection == dfPACKET_MOVE_DIR_LL)
+				{
+					if (pCharacter->shX < pOtherCharacter->shX)
+						continue;
+					if (abs(pCharacter->shX - pOtherCharacter->shX )< dfATTACK1_RANGE_X &&
+						abs(pCharacter->shY - pOtherCharacter->shY )< dfATTACK1_RANGE_Y)
+					{
+						pOtherCharacter->chHP -= dfATTACK1_DAMAGE;
+
+						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
+						SendPacket_Around(pCharacter->pSession, pPacket, true);
+						printf("LL %d , %d \n", pCharacter->shX - pOtherCharacter->shX, pCharacter->shY - pOtherCharacter->shY);
+					}
+				}
+				else if (pCharacter->byDirection == dfPACKET_MOVE_DIR_RR)
+				{
+					if (pOtherCharacter->shX < pCharacter->shX)
+						continue;
+					if (abs(pOtherCharacter->shX - pCharacter->shX ) < dfATTACK1_RANGE_X &&
+						abs(pOtherCharacter->shY - pCharacter->shY ) < dfATTACK1_RANGE_Y)
+					{
+						pOtherCharacter->chHP -= dfATTACK1_DAMAGE;
+
+						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
+						SendPacket_Around(pCharacter->pSession, pPacket, true);
+						printf("RR %d , %d \n", pOtherCharacter->shX - pCharacter->shX, pOtherCharacter->shY - pCharacter->shY);
+
+					}
+				}
+			}
+		}
+	}
 	return true;
 }
 
@@ -490,6 +536,51 @@ bool netPacketProc_Attack2(st_SESSION * pSession, CPacket * pPacket)
 	SendPacket_Around(pSession, pPacket);
 	//SendPacket_Broadcast(pSession, pPacket); //섹터 안만들었으니까 나한테만 
 	
+	st_SECTOR_AROUND stAroundSector;
+	GetSectorAround(pCharacter->CurSector.iX, pCharacter->CurSector.iY, &stAroundSector);
+
+	for (int iCnt = 0; iCnt < stAroundSector.iCount; iCnt++)
+	{
+		auto iter = g_Sector[stAroundSector.Around[iCnt].iY][stAroundSector.Around[iCnt].iX].begin();
+		auto endIter = g_Sector[stAroundSector.Around[iCnt].iY][stAroundSector.Around[iCnt].iX].end();
+
+		for (iter; iter != endIter; ++iter)
+		{
+			st_CHARACTER *pOtherCharacter = (*iter);
+
+			if (pCharacter != pOtherCharacter)
+			{
+				if (pCharacter->byDirection == dfPACKET_MOVE_DIR_LL)
+				{
+					if (pCharacter->shX < pOtherCharacter->shX)
+						continue;
+					if (abs(pCharacter->shX - pOtherCharacter->shX) < dfATTACK2_RANGE_X &&
+						abs(pCharacter->shY - pOtherCharacter->shY) < dfATTACK2_RANGE_Y)
+					{
+						pOtherCharacter->chHP -= dfATTACK2_DAMAGE;
+
+						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
+						SendPacket_Around(pCharacter->pSession, pPacket, true);
+					}
+				}
+				else if (pCharacter->byDirection == dfPACKET_MOVE_DIR_RR)
+				{
+					if (pOtherCharacter->shX < pCharacter->shX)
+						continue;
+					if (abs(pOtherCharacter->shX - pCharacter->shX) < dfATTACK2_RANGE_X &&
+						abs(pOtherCharacter->shY - pCharacter->shY) < dfATTACK2_RANGE_Y)
+					{
+						pOtherCharacter->chHP -= dfATTACK2_DAMAGE;
+
+						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
+						SendPacket_Around(pCharacter->pSession, pPacket, true);
+
+					}
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -544,6 +635,51 @@ bool netPacketProc_Attack3(st_SESSION * pSession, CPacket * pPacket)
 	//접속중인 사용자에게 모든 패킷을 뿌린다.
 	SendPacket_Around(pSession, pPacket);
 	//SendPacket_Broadcast(pSession, pPacket); //섹터 안만들었으니까 나한테만 
+
+	st_SECTOR_AROUND stAroundSector;
+	GetSectorAround(pCharacter->CurSector.iX, pCharacter->CurSector.iY, &stAroundSector);
+
+	for (int iCnt = 0; iCnt < stAroundSector.iCount; iCnt++)
+	{
+		auto iter = g_Sector[stAroundSector.Around[iCnt].iY][stAroundSector.Around[iCnt].iX].begin();
+		auto endIter = g_Sector[stAroundSector.Around[iCnt].iY][stAroundSector.Around[iCnt].iX].end();
+
+		for (iter; iter != endIter; ++iter)
+		{
+			st_CHARACTER *pOtherCharacter = (*iter);
+
+			if (pCharacter != pOtherCharacter)
+			{
+				if (pCharacter->byDirection == dfPACKET_MOVE_DIR_LL)
+				{
+					if (pCharacter->shX < pOtherCharacter->shX)
+						continue;
+					if (abs(pCharacter->shX - pOtherCharacter->shX) < dfATTACK3_RANGE_X &&
+						abs(pCharacter->shY - pOtherCharacter->shY) < dfATTACK3_RANGE_Y)
+					{
+						pOtherCharacter->chHP -= dfATTACK3_DAMAGE;
+
+						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
+						SendPacket_Around(pCharacter->pSession, pPacket, true);
+					}
+				}
+				else if (pCharacter->byDirection == dfPACKET_MOVE_DIR_RR)
+				{
+					if (pOtherCharacter->shX < pCharacter->shX)
+						continue;
+					if (abs(pOtherCharacter->shX - pCharacter->shX) < dfATTACK3_RANGE_X &&
+						abs(pOtherCharacter->shY - pCharacter->shY) < dfATTACK3_RANGE_Y)
+					{
+						pOtherCharacter->chHP -= dfATTACK3_DAMAGE;
+
+						makePacket_Damage(pCharacter, pOtherCharacter, pPacket);
+						SendPacket_Around(pCharacter->pSession, pPacket, true);
+
+					}
+				}
+			}
+		}
+	}
 
 	return true;
 }
@@ -699,6 +835,25 @@ void makePacket_Attack3(st_CHARACTER * pCharacter, CPacket * pPacket)
 	Header.byCode = dfPACKET_CODE;
 	Header.bySize = (BYTE)temp.GetDataSize();
 	Header.byType = dfPACKET_SC_ATTACK3;
+
+	pPacket->Clear();
+	pPacket->PutData((char*)(&Header), sizeof(st_PACKET_HEADER));
+	pPacket->PutData(temp.GetReadPtr(), Header.bySize);
+
+	*pPacket << (BYTE)dfNETWORK_PACKET_END;
+}
+
+void makePacket_Damage(st_CHARACTER * pAttackCharacter, st_CHARACTER * pDamageCharacter, CPacket * pPacket)
+{
+	CPacket temp;
+	temp << (DWORD)pAttackCharacter->dwSessionID;
+	temp << (DWORD)pDamageCharacter->dwSessionID;
+	temp << (BYTE)pDamageCharacter->chHP;
+
+	st_PACKET_HEADER Header;
+	Header.byCode = dfPACKET_CODE;
+	Header.bySize = (BYTE)temp.GetDataSize();
+	Header.byType = dfPACKET_SC_DAMAGE;
 
 	pPacket->Clear();
 	pPacket->PutData((char*)(&Header), sizeof(st_PACKET_HEADER));

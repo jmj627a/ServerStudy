@@ -57,9 +57,9 @@ int CompleteRecvPacket(st_SESSION *pSession);
 bool PacketProc(st_SESSION *pSession, BYTE byPacketType, CPacket *pPacket);
 
 //사용자에게 뿌리기
-void SendPacket_Around(st_SESSION *pSession, CPacket *pPacket);
+void SendPacket_Around(st_SESSION *pSession, CPacket *pPacket, bool includePlayer = false);
 void SendPacket_Unicast(st_SESSION *pSession, CPacket *pPacket);
 void SendPacket_Broadcast(st_SESSION *pSession, CPacket *pPacket);
-void SendPacket_SectorOne(st_SESSION *pSession,CPacket *pPacket, st_SECTOR_POS *pPos);
+void SendPacket_SectorOne(st_SESSION *pSession, CPacket *pPacket, st_SECTOR_POS *pPos);// , bool includePlayer = false);
 
 #endif

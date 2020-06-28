@@ -45,15 +45,15 @@ bool CNetwork::RecvEvent()
 			ret = g_RecvBuffer.Enqueue(pbuf, ret);
 			printf("recv enqueue size %d \n", ret);
 
-			unsigned char* ptr = (unsigned char*)g_RecvBuffer.arr;
-			printf("RAW");
-			for (int i = 0; i < BUFFER_SIZE; i++)
-			{
-				printf(" : %02X", ptr[i]);
-			}
-			printf("\n");
-			printf("R-POS : %d \n", g_RecvBuffer.readPos);
-			printf("W-POS : %d \n", g_RecvBuffer.writePos);
+			//unsigned char* ptr = (unsigned char*)g_RecvBuffer.arr;
+			//printf("RAW");
+			//for (int i = 0; i < BUFFER_SIZE; i++)
+			//{
+			//	printf(" : %02X", ptr[i]);
+			//}
+			//printf("\n");
+			//printf("R-POS : %d \n", g_RecvBuffer.readPos);
+			//printf("W-POS : %d \n", g_RecvBuffer.writePos);
 
 
 			st_PACKET_HEADER Header;
@@ -64,18 +64,18 @@ bool CNetwork::RecvEvent()
 				//1. RecvQ에 최소한의 사이즈가 있는지 확인. 헤더의 길이보다 작으면 아직 덜왔다 판단 후 나가기
 				if (g_RecvBuffer.GetUseSize() <= sizeof(st_PACKET_HEADER)) break;
 
-				printf("recv size ok \n");
+				//printf("recv size ok \n");
 
 				//2. RecvQ에서 헤더를 Peek
 				ret = g_RecvBuffer.Peek((char*)&Header, sizeof(st_PACKET_HEADER));
 
-				unsigned char* ptr = (unsigned char*)&Header;
-				printf("header");
-				for (int i = 0; i < sizeof(st_PACKET_HEADER); i++)
-				{
-					printf(" : %02X", ptr[i]);
-				}
-				printf("\n");
+				//unsigned char* ptr = (unsigned char*)&Header;
+				//printf("header");
+				//for (int i = 0; i < sizeof(st_PACKET_HEADER); i++)
+				//{
+				//	printf(" : %02X", ptr[i]);
+				//}
+				//printf("\n");
 
 				//3. 헤더의 code 확인
 				if (Header.byCode != dfPACKET_CODE) 
@@ -85,12 +85,12 @@ bool CNetwork::RecvEvent()
 					//return false;
 				}
 
-				printf("recv header ok \n");
+				//printf("recv header ok \n");
 
 				//4. 헤더의 len 값과 RecvQ의 데이터 사이즈 비교 (헤더 + len + 엔드코드)  패킷 하나가 완성이 안됐으면(헤더에 담긴 패킷 길이 + 헤더 크기) 할 게 없으니 나가기
 				if (g_RecvBuffer.GetUseSize() < sizeof(Header) + Header.bySize + sizeof(BYTE)) return false;
 
-				printf("recv len ok \n");
+				//printf("recv len ok \n");
 
 				//헤더 지나서 패킷만 읽음
 				g_RecvBuffer.MoveFront(sizeof(Header));
@@ -100,7 +100,7 @@ bool CNetwork::RecvEvent()
 
 				ret = g_RecvBuffer.Dequeue((char*)Packet.GetBufferPtr(), Header.bySize);
 
-				printf("recv dequeue size %d \n", ret);
+				//printf("recv dequeue size %d \n", ret);
 
 				BYTE endCode;
 				g_RecvBuffer.Peek((char*)&endCode, 1);
@@ -108,7 +108,7 @@ bool CNetwork::RecvEvent()
 
 				if (endCode != dfNETWORK_PACKET_END) return false;
 
-				printf("recv packet end ok \n");
+				//printf("recv packet end ok \n");
 
 
 				try {
@@ -418,22 +418,22 @@ BOOL CNetwork::netPacketProc_Attack2(CPacket * pPacketBuffer)
 
 	*pPacketBuffer >> ID;
 	*pPacketBuffer >> Direction;
-*pPacketBuffer >> X;
-*pPacketBuffer >> Y;
+	*pPacketBuffer >> X;
+	*pPacketBuffer >> Y;
 
-list<CBaseObject*>::iterator iter;
-for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
-{
-	if ((*iter)->GetObjectID() == ID)
+	list<CBaseObject*>::iterator iter;
+	for (iter = g_objectList.begin(); iter != g_objectList.end(); ++iter)
 	{
-		(*iter)->ActionInput(dfACTION_ATTACK2);
-		((CPlayerObject*)(*iter))->SetDirection(Direction);
-		(*iter)->SetPosition(X, Y);
-		return true;
+		if ((*iter)->GetObjectID() == ID)
+		{
+			(*iter)->ActionInput(dfACTION_ATTACK2);
+			((CPlayerObject*)(*iter))->SetDirection(Direction);
+			(*iter)->SetPosition(X, Y);
+			return true;
+		}
 	}
-}
-
-return false;
+	
+	return false;
 }
 
 BOOL CNetwork::netPacketProc_Attack3(CPacket * pPacketBuffer)
@@ -538,16 +538,16 @@ BOOL CNetwork::SendPacket(st_PACKET_HEADER * pHeader, CPacket * pPacket)
 	//빠른 이해를 위해 이렇게 구현 
 	//차후 직렬화 버퍼
 
-	printf("1 send buffer size : %d \n", g_SendBuffer.GetUseSize());
+	//printf("1 send buffer size : %d \n", g_SendBuffer.GetUseSize());
 
-	char tempbuf[1000] = { 0, };
-	g_SendBuffer.Peek(tempbuf, g_SendBuffer.GetUseSize());
-	printf("buffer");
-	for (int i = 0; i < g_SendBuffer.GetUseSize(); i++)
-	{
-		printf(" : %02X", (unsigned char)tempbuf[i]);
-	}
-	printf("\n");
+	//char tempbuf[1000] = { 0, };
+	//g_SendBuffer.Peek(tempbuf, g_SendBuffer.GetUseSize());
+	//printf("buffer");
+	//for (int i = 0; i < g_SendBuffer.GetUseSize(); i++)
+	//{
+	//	printf(" : %02X", (unsigned char)tempbuf[i]);
+	//}
+	//printf("\n");
 
 	//send를 시도하는 함수 호출
 	SendEvent();

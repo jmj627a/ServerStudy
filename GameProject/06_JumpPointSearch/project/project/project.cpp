@@ -292,7 +292,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (JPS.m_pEndNode != nullptr)
 		{
 			JPS.pathDraw(hWnd);
-			JPS.fastPathDraw(hWnd);
+			//JPS.fastPathDraw(hWnd);
 		}
 
         EndPaint(hWnd, &ps);

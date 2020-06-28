@@ -1,4 +1,6 @@
 #pragma once
+#include "CBresenham.h"
+
 struct NODE
 {
 	int ix;

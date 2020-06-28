@@ -69,7 +69,7 @@ void CPlayerObject::SetActionAttack1()
 		st_PACKET_HEADER Header;
 		//stPACKET_CS_MOVE_STOP Packet;
 		CPacket Packet;
-
+	
 		network->mpMoveStop(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
 		network->SendPacket(&Header, &Packet);
 	}
@@ -81,7 +81,7 @@ void CPlayerObject::SetActionAttack1()
 		st_PACKET_HEADER Header;
 		//stPACKET_CS_ATTACK1 Packet;
 		CPacket Packet;
-
+	
 		network->mpAttack1(&Header, &Packet, GetDirection(), GetCurX(), GetCurY());
 		network->SendPacket(&Header, &Packet);
 	}
@@ -208,28 +208,21 @@ void CPlayerObject::ActionProc()
 	{
 		switch (m_dwActionCur)
 		{
-			//공격동작 또는 데미지 동작은 애니메이션이 끝날 때까지 강제적으로 애니메이션이 되어야만 하며
-			//애니메이션이 끝난 후 기본동작으로 자동으로 돌아가야 한다.
+		//공격동작 또는 데미지 동작은 애니메이션이 끝날 때까지 강제적으로 애니메이션이 되어야만 하며
+		//애니메이션이 끝난 후 기본동작으로 자동으로 돌아가야 한다.
 
 		case dfACTION_ATTACK1:
 		case dfACTION_ATTACK2:
 		case dfACTION_ATTACK3:
 			if (IsEndFrame())
 			{
-				//스프라이트 바꿔주기
-				SetActionStand();
 				//공격이 끝났으면 액션을 바꿔 연속으로 공격을 할 때 재 전송이 가능하도록
 				m_dwActionInput = dfACTION_STAND;
 			}
-			else
-				InputActionProc();
-			break;
-
-		default:
-			//이외의 경우에는 사용자 입력 처리를 해준다
-			InputActionProc();
 			break;
 		}
+		InputActionProc();
+
 	}
 }
 

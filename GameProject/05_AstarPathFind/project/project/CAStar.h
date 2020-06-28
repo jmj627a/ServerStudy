@@ -37,7 +37,7 @@ public:
 	CAStar();
 	~CAStar();
 
-
+	void init_map();
 	//직선
 	void setG(NODE* _node);
 	//대각선

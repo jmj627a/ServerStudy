@@ -133,12 +133,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         //openlist에 시작 노드 추가
         NODE* newNode = nullptr;
-
+		
         for (int i = 0; i < 50; ++i)
             for (int j = 0; j < 30; ++j)
                 if (g_Grid[j][i] == eSTART)
                     newNode = new NODE(i, j, nullptr);
-
+		
         for (int i = 0; i < 50; ++i)
             for (int j = 0; j < 30; ++j)
                 if (g_Grid[j][i] == eEND)
@@ -151,8 +151,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
         astar.istartX = startX;
         astar.istartY = startY;
-        astar.searchLoad(hWnd);
-
+		//astar.init_map();
+		astar.searchLoad(hWnd);
+		  
         InvalidateRect(hWnd, NULL, false);
     }
     break;

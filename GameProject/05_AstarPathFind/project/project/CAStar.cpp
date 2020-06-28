@@ -1,4 +1,5 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include "pch.h"
 #include "CAStar.h"
 
@@ -34,6 +35,88 @@ void CAStar::setG_dia(NODE * _node)
 		_node->G = _node->pParent->G + 1.5;
 	else
 		_node->G = 0;
+}
+
+void CAStar::init_map()
+{
+	char data;
+	FILE* fp;
+	auto err = fopen_s(&fp, "mapData.txt", "rb");
+
+	int y = 0;
+	int x = 0;
+
+	while (fscanf_s(fp, "%c", &data) != EOF) {
+		//printf("%c", data);
+		switch (data)
+		{
+		case '0':
+			g_Grid[y][x] = eBLANK;
+			x++;
+			if (x >= 50)
+			{
+				x = 0;
+				y++;
+			}
+			break;
+		case '1':
+			g_Grid[y][x] = eSTART;
+			x++;
+			if (x >= 50)
+			{
+				x = 0;
+				y++;
+			}
+			break;
+		case '2':
+			g_Grid[y][x] = eEND;
+			x++;
+			if (x >= 50)
+			{
+				x = 0;
+				y++;
+			}
+			break;
+		case '3':
+			g_Grid[y][x] = eBLOCKED;
+			x++;
+			if (x >= 50)
+			{
+				x = 0;
+				y++;
+			}
+			break;
+		default:
+			break;
+		}
+
+		if (y >=30 )
+			break;
+	}
+
+
+	//openlist에 시작 노드 추가
+	NODE* newNode = nullptr;
+
+	for (int i = 0; i < 50; ++i)
+		for (int j = 0; j < 30; ++j)
+			if (g_Grid[j][i] == eSTART)
+			{
+				newNode = new NODE(i, j, nullptr);
+				istartX = i;
+				istartY = j;
+			}
+
+	for (int i = 0; i < 50; ++i)
+		for (int j = 0; j < 30; ++j)
+			if (g_Grid[j][i] == eEND)
+			{
+				setEndPos(i, j);
+				setG(newNode);
+				setH(newNode);
+				setF(newNode);
+				openList.push_back(newNode);
+			}
 }
 
 bool CAStar::compareG(NODE* _node, bool isDia, int dir)
@@ -131,7 +214,7 @@ void CAStar::setEndPos(int x, int y)
 void CAStar::searchLoad(HWND hWnd)
 {
 	//단계별 출력때문에 timer에서 매번 호출
-	while (true)
+	//while (true)
 	{
 		if (openList.size() == 0)
 			return;

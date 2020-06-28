@@ -72,6 +72,7 @@ void makePacket_MoveStop(st_CHARACTER* pCharacter, CPacket* pPacket);
 void makePacket_Attack1(st_CHARACTER* pCharacter, CPacket* pPacket);
 void makePacket_Attack2(st_CHARACTER* pCharacter, CPacket* pPacket);
 void makePacket_Attack3(st_CHARACTER* pCharacter, CPacket* pPacket);
+void makePacket_Damage(st_CHARACTER * pAttackCharacter, st_CHARACTER * pDamageCharacter, CPacket* pPacket);
 void makePacket_Sync(st_CHARACTER* pCharacter, CPacket* pPacket);
 
 
