@@ -57,22 +57,22 @@ void Update(void)
 				pCharacter->shY = max(0, pCharacter->shY - dfSPEED_PLAYER_Y);
 				break;
 			case dfPACKET_MOVE_DIR_RU:
-				pCharacter->shX = min(dfRANGE_MOVE_RIGHT, pCharacter->shX + dfSPEED_PLAYER_X);
+				pCharacter->shX = min(dfRANGE_MOVE_RIGHT - 1, pCharacter->shX + dfSPEED_PLAYER_X);
 				pCharacter->shY = max(0, pCharacter->shY - dfSPEED_PLAYER_Y);
 				break;
 			case dfPACKET_MOVE_DIR_RR:
-				pCharacter->shX = min(dfRANGE_MOVE_RIGHT, pCharacter->shX + dfSPEED_PLAYER_X);
+				pCharacter->shX = min(dfRANGE_MOVE_RIGHT - 1, pCharacter->shX + dfSPEED_PLAYER_X);
 				break;
-			case dfPACKET_MOVE_DIR_RD:
-				pCharacter->shX = min(dfRANGE_MOVE_RIGHT, pCharacter->shX + dfSPEED_PLAYER_X);
-				pCharacter->shY = min(dfRANGE_MOVE_BOTTOM, pCharacter->shY + dfSPEED_PLAYER_Y);
+			case dfPACKET_MOVE_DIR_RD: 
+				pCharacter->shX = min(dfRANGE_MOVE_RIGHT - 1, pCharacter->shX + dfSPEED_PLAYER_X);
+				pCharacter->shY = min(dfRANGE_MOVE_BOTTOM - 1, pCharacter->shY + dfSPEED_PLAYER_Y);
 				break;
 			case dfPACKET_MOVE_DIR_DD:
-				pCharacter->shY = min(dfRANGE_MOVE_BOTTOM, pCharacter->shY + dfSPEED_PLAYER_Y);
+				pCharacter->shY = min(dfRANGE_MOVE_BOTTOM - 1, pCharacter->shY + dfSPEED_PLAYER_Y);
 				break;
 			case dfPACKET_MOVE_DIR_LD:
 				pCharacter->shX = max(0, pCharacter->shX - dfSPEED_PLAYER_X);
-				pCharacter->shY = min(dfRANGE_MOVE_BOTTOM, pCharacter->shY + dfSPEED_PLAYER_Y);
+				pCharacter->shY = min(dfRANGE_MOVE_BOTTOM - 1, pCharacter->shY + dfSPEED_PLAYER_Y);
 				break;
 			}
 
@@ -286,8 +286,10 @@ bool netPacketProc_MoveStart(st_SESSION * pSession, CPacket * pPacket)
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
 	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
 	{
+		wprintf(L"SYNC in start : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+
 		makePacket_Sync(pCharacter, pPacket);
-		SendPacket_Around(pCharacter->pSession, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket, true);
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
@@ -356,8 +358,10 @@ bool netPacketProc_MoveStop(st_SESSION * pSession, CPacket * pPacket)
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
 	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
 	{
+		wprintf(L"SYNC in stop : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+		 
 		makePacket_Sync(pCharacter, pPacket);
-		SendPacket_Around(pCharacter->pSession, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket, true);
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
@@ -411,8 +415,10 @@ bool netPacketProc_Attack1(st_SESSION * pSession, CPacket * pPacket)
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
 	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
 	{
+		wprintf(L"SYNC in attack1 : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+
 		makePacket_Sync(pCharacter, pPacket);
-		SendPacket_Around(pCharacter->pSession, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket, true);
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
@@ -510,8 +516,10 @@ bool netPacketProc_Attack2(st_SESSION * pSession, CPacket * pPacket)
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
 	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
 	{
+		wprintf(L"SYNC in attack2 : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+
 		makePacket_Sync(pCharacter, pPacket);
-		SendPacket_Around(pCharacter->pSession, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket, true);
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
@@ -610,8 +618,10 @@ bool netPacketProc_Attack3(st_SESSION * pSession, CPacket * pPacket)
 	//서버의 위치와 받은 패킷의 위치값이 너무 큰 차이가 난다면 싱크 패킷을 보내어 좌표 보정
 	if (abs(pCharacter->shX - shX) > dfERROR_RANGE || abs(pCharacter->shY - shY) > dfERROR_RANGE)
 	{
+		wprintf(L"SYNC in attack 3 : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+
 		makePacket_Sync(pCharacter, pPacket);
-		SendPacket_Around(pCharacter->pSession, pPacket);
+		SendPacket_Around(pCharacter->pSession, pPacket, true);
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
@@ -892,6 +902,7 @@ void makePacket_Sync(st_CHARACTER * pCharacter, CPacket * pPacket)
 	pPacket->PutData(temp.GetReadPtr(), Header.bySize);
 
 	*pPacket << (BYTE)dfNETWORK_PACKET_END;
+
 }
 
 void makePacket_ECHO(st_CHARACTER * pCharacter, CPacket * pPacket)
