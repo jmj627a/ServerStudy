@@ -82,7 +82,7 @@ bool Sector_UpdateCharacter(st_CHARACTER * pCharacter)
 	if (iNewSectorX == OldSectorX && iNewSectorY == OldSectorY)
 		return false;
 
-	if (iNewSectorX < 0 || iNewSectorX > dfSECTOR_MAX_X || iNewSectorY < 0 || iNewSectorY > dfSECTOR_MAX_Y)
+	if (iNewSectorX < 0 || iNewSectorX >= dfSECTOR_MAX_X || iNewSectorY < 0 || iNewSectorY >= dfSECTOR_MAX_Y)
 		return false;
 
 	Sector_RemoveCharacter(pCharacter);

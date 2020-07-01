@@ -118,8 +118,8 @@ void CreateCharacter(st_SESSION * pSession)
 
 	character->shX = rand() % dfRANGE_MOVE_RIGHT;
 	character->shY = rand() % dfRANGE_MOVE_BOTTOM;
-	character->shActionX = character->shX;
-	character->shActionY = character->shY;
+	//character->shActionX = character->shX;
+	//character->shActionY = character->shY;
 	
 	character->CurSector.iX = -1;
 	character->CurSector.iY = -1;
@@ -294,6 +294,10 @@ bool netPacketProc_MoveStart(st_SESSION * pSession, CPacket * pPacket)
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
 	}
+	else
+	{
+		//wprintf(L"	 in start : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 
 	pCharacter->dwAction = byDirection;
@@ -366,6 +370,10 @@ bool netPacketProc_MoveStop(st_SESSION * pSession, CPacket * pPacket)
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
 	}
+	else
+	{
+		//wprintf(L"	 in stop : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 
 	pCharacter->dwAction = dfACTION_STAND;
@@ -422,6 +430,10 @@ bool netPacketProc_Attack1(st_SESSION * pSession, CPacket * pPacket)
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
+	}
+	else
+	{
+		//wprintf(L"	in attack1 : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
 	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 
@@ -524,6 +536,10 @@ bool netPacketProc_Attack2(st_SESSION * pSession, CPacket * pPacket)
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
 	}
+	else
+	{
+		//wprintf(L"	 in attack2 : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
+	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 
 	pCharacter->dwAction = dfACTION_ATTACK2;
@@ -625,6 +641,10 @@ bool netPacketProc_Attack3(st_SESSION * pSession, CPacket * pPacket)
 	
 		shX = pCharacter->shX;
 		shY = pCharacter->shY;
+	}
+	else
+	{
+		//wprintf(L"	 in attack 3 : %d org : (%d, %d) req : (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY, shX, shY);
 	}
 
 	//동작을 변경. 동작 번호와 방향값이 같다. 

@@ -437,8 +437,8 @@ void SendPacket_SectorOne(st_SESSION *pSession, CPacket *pPacket, st_SECTOR_POS 
 	if (pPos == nullptr)
 		return;
 
-	if (pPos->iX <= -1 || pPos->iX > dfSECTOR_MAX_X ||
-		pPos->iY <= -1 || pPos->iY > dfSECTOR_MAX_Y)
+	if (pPos->iX < 0 || pPos->iX >= dfSECTOR_MAX_X ||
+		pPos->iY < 0 || pPos->iY >= dfSECTOR_MAX_Y)
 		return;
 
 	list<st_CHARACTER *> *list = &g_Sector[pPos->iY][pPos->iX];
