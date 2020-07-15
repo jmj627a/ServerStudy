@@ -82,12 +82,10 @@ void Update(void)
 			if (dfPACKET_MOVE_DIR_LL <= pCharacter->dwAction &&
 				pCharacter->dwAction <= dfPACKET_MOVE_DIR_LD)
 			{
-				//wprintf(L"before :::: player %d (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY);
 				if (Sector_UpdateCharacter(pCharacter))
 				{
 					//변경되었으면 클라들에 정보 쏘기
 					CharacterSectorUpdatePacket(pCharacter);
-					//wprintf(L"after :::: player %d (%d , %d) \n", pCharacter->dwSessionID, pCharacter->shX, pCharacter->shY);
 				}
 			}
 		}
@@ -116,8 +114,8 @@ void CreateCharacter(st_SESSION * pSession)
 	character->byDirection = dfACTION_MOVE_LL;
 	character->byMoveDirection = dfACTION_MOVE_LL;
 
-	character->shX = rand() % dfRANGE_MOVE_RIGHT;
-	character->shY = rand() % dfRANGE_MOVE_BOTTOM;
+	character->shX = rand() % 300; //dfRANGE_MOVE_RIGHT;
+	character->shY = rand() % 300; //dfRANGE_MOVE_BOTTOM;
 	//character->shActionX = character->shX;
 	//character->shActionY = character->shY;
 	

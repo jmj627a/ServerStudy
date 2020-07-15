@@ -1,6 +1,7 @@
 #include "Sector.h"
 
 std::list<st_CHARACTER*> g_Sector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
+
 extern int g_iLogLevel;
 extern WCHAR g_szLogBuff[1024];
 

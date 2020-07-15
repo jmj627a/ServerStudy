@@ -30,19 +30,22 @@ bool CNetwork::RecvEvent()
 	{
 		printf("[recv : %d]\n", count++);
 
-		char recvBuffer[1000];
-		int ret = recv(Socket, recvBuffer, 1000, 0);
+		//char recvBuffer[1000];
+		int iBufferSize = g_RecvBuffer.DirectEnqueueSize();
+		int ret = recv(Socket, g_RecvBuffer.GetRearBufferPtr(), iBufferSize, 0);
 		if (ret == SOCKET_ERROR)
 		{
 			printf("recv socket error \n");
 			return false;
 		}
-		char* pbuf = recvBuffer;
+		g_RecvBuffer.MoveRear(ret);
+
+		//char* pbuf = recvBuffer;
 
 		//recv한게 다 enq 될 때까지. 이건 바로 링버퍼에 recv하면 사라질 문제
 		//while (ret != 0)
 		{
-			ret = g_RecvBuffer.Enqueue(pbuf, ret);
+			//ret = g_RecvBuffer.Enqueue(pbuf, ret);
 			printf("recv enqueue size %d \n", ret);
 
 			//unsigned char* ptr = (unsigned char*)g_RecvBuffer.arr;

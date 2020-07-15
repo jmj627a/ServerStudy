@@ -9,8 +9,8 @@
 //화면 이동 영역
 #define dfRANGE_MOVE_TOP	0
 #define dfRANGE_MOVE_LEFT	0
-#define dfRANGE_MOVE_RIGHT	6400
-#define dfRANGE_MOVE_BOTTOM	6400
+#define dfRANGE_MOVE_RIGHT	 6400
+#define dfRANGE_MOVE_BOTTOM	 6400
 
 // 캐릭터 이동 속도
 #define dfSPEED_PLAYER_X	6
