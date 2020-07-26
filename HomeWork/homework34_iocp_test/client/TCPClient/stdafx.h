@@ -19,5 +19,5 @@
 #include <WS2tcpip.h>
 
 #define SERVERIP "127.0.0.1"
-#define SERVERPORT 9000
+#define SERVERPORT 6000
 #define BUFSIZE 512
