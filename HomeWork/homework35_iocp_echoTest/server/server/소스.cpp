@@ -443,11 +443,21 @@ unsigned int __stdcall Worker_Thread(void* args)
 		{
 			//printf("<Send = %d>\n", dwTransfer);
 			//pSession->SendQ.PrintBufState();
+
+			char* p = pSession->SendQ.GetFrontBufferPtr();
+			for (int i = 0; i < dwTransfer; i++)
+			{
+				printf(" : %02x", *(p + i));
+
+				if (i % 10 == 0)
+					printf("\n");
+			}
+			printf("\n");
+
 			pSession->SendQ.MoveFront(dwTransfer);
 			//pSession->SendQ.PrintBufState();
 			//printf("<Rcvd>\n");
 			//pSession->RecvQ.PrintBufState();
-			//printf("\n");
 
 			InterlockedDecrement(&pSession->sendFlag);
 			sendPost(pSession->sessionID);
