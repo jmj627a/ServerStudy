@@ -1,19 +1,18 @@
 #pragma once
 #include <stdio.h>
 
-constexpr int BUFFER_SIZE = 50;
-//constexpr int DATA_SIZE = 121;
-
 class RingBuf
 {
 private:
-	char arr[BUFFER_SIZE] = { 0, };
-	int readPos = 0;	//front
-	int writePos = 0;	//rear
+	char* dataBuf;
+	int readPos;		//front
+	int writePos;		//rear
+	int totalSize;
+	int usedSize;
 
-	int useSize;
-
-private: void Initial(int iBufferSize);
+private:
+	void Initialize(int iBufferSize);
+	void Finalize(void);
 
 public:
 	//생성자
@@ -21,7 +20,7 @@ public:
 	RingBuf(int iBufferSize);
 	
 	//사이즈 재설정
-	//void Resize(int size);
+	void Resize(int iBufferSize);
 	
 	//버퍼 사이즈 얻기
 	int GetBufferSize(void);
@@ -29,8 +28,6 @@ public:
 	int GetUseSize(void);
 	// 현재 버퍼에 남은 용량 얻기. / 버퍼에 남은 용량 리턴
 	int GetFreeSize(void);
-
-	void RemoveData(int iSize);
 
 	// WritePos 에 데이터 넣음. / 넣은 크기 리턴 ((char *)데이터 포인터. (int)크기.) //넣은 크기
 	int Enqueue(char* chpData, int iSize);
@@ -60,5 +57,6 @@ public:
 	int DirectEnqueueSize(void);
 	int DirectDequeueSize(void);
 
+	void PrintBufState(void);
 };
 

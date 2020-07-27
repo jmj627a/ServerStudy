@@ -105,6 +105,10 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 	packet.PutData(pPacket->GetReadPtr(), header);
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
 
+	//여기서 한번 풀어줘야하나?? 이 함수는 recv에서 얘를 부르는데, sendPost에서 sessionFind할때 데드락
+	//LeaveCriticalSection(&session->cs);
+
+	//
 	sendPost(session->sessionID);
 }
 
@@ -171,7 +175,7 @@ void sendPost(int iSessionID)
 			return;
 		}
 	}
-
+	//LeaveCriticalSection(&session->cs);
 }
 
 //wsaRecv 함수 랩핑
@@ -219,6 +223,8 @@ void recvPost(int iSessionID)
 			}
 		}
 	}
+
+	//LeaveCriticalSection(&session->cs);
 }
 
 
@@ -418,7 +424,14 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
+			//printf("<Send = %d>\n", dwTransfer);
+			//pSession->SendQ.PrintBufState();
 			pSession->SendQ.MoveFront(dwTransfer);
+			//pSession->SendQ.PrintBufState();
+			//printf("<Rcvd>\n");
+			//pSession->RecvQ.PrintBufState();
+			//printf("\n");
+
 			InterlockedDecrement(&pSession->sendFlag);
 			sendPost(pSession->sessionID);
 		}
@@ -426,7 +439,13 @@ unsigned int __stdcall Worker_Thread(void* args)
 		else if (pOverlap == &pSession->recvOverlap)
 		{
 			//받아진 만큼 큐 이동 
+			//printf("<Send>\n");
+			//pSession->SendQ.PrintBufState();
+			//printf("<Rcvd = %d>\n", dwTransfer);
+			//pSession->RecvQ.PrintBufState();
 			pSession->RecvQ.MoveRear(dwTransfer);
+			//pSession->RecvQ.PrintBufState();
+			//printf("\n");
 
 			//받아진거 다 처리할때까지
 			while(true)
@@ -457,6 +476,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 				onRecv(pSession->sessionID, &packet);
 			}
 
+
 			//할일 다 했으면 다시 recv 걸고 나가기 
 			recvPost(pSession->sessionID);
 		}
@@ -484,6 +504,8 @@ bool DeleteSession(SESSION* pSession) {
 		if (pSession == (*SessionIter)) {
 
 			//delete
+			EnterCriticalSection(&(*SessionIter)->cs);
+			LeaveCriticalSection(&(*SessionIter)->cs);
 			g_SessionList.erase(SessionIter);
 			bRet = true;
 			break;
@@ -505,6 +527,7 @@ SESSION* FindSession(int iSessionID)
 	{
 		if ((*iter)->sessionID == iSessionID)
 		{
+			//EnterCriticalSection(&(*iter)->cs);
 			LeaveCriticalSection(&g_CS_sessionlist);
 			return *iter;
 		}

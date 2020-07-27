@@ -2,166 +2,207 @@
 #include <string>
 #include <Windows.h>
 
-void RingBuf::Initial(int iBufferSize)
+void RingBuf::Initialize(int iBufferSize)
 {
+	Finalize();
 
+	if (iBufferSize > 0)
+	{
+		dataBuf = new char[iBufferSize];
+		readPos = 0;
+		writePos = 0;
+		totalSize = iBufferSize;
+		usedSize = 0;
+	}
+}
+
+void RingBuf::Finalize(void)
+{
+	if (dataBuf != NULL)
+	{
+		delete[] dataBuf;
+	}
+
+	dataBuf = NULL;
+	readPos = 0;
+	writePos = 0;
+	totalSize = 0;
+	usedSize = 0;
 }
 
 RingBuf::RingBuf(void)
 {
+	dataBuf = NULL;
 	readPos = 0;
 	writePos = 0;
-	useSize = 0;
+	totalSize = 0;
+	usedSize = 0;
+
+	Initialize(10000);
 }
 
 RingBuf::RingBuf(int iBufferSize)
 {
+	dataBuf = NULL;
 	readPos = 0;
 	writePos = 0;
+	totalSize = 0;
+	usedSize = 0;
+
+	Initialize(iBufferSize);
 }
 
+void RingBuf::Resize(int iBufferSize)
+{
+	Initialize(iBufferSize);
+}
 
 int RingBuf::GetBufferSize(void)
 {
-	return BUFFER_SIZE;
+	return totalSize;
 }
 
 int RingBuf::GetUseSize(void)
 {
-	//이렇게 하면 꽉찼을 때도 0이 나와서 데이터가 없는것처럼 나온다.
-	int num = (writePos - readPos + BUFFER_SIZE) % BUFFER_SIZE;
-	return num;
-
-	//return useSize;
+	return usedSize;
 }
 
 int RingBuf::GetFreeSize(void)
 {
-	int num = (writePos - readPos + BUFFER_SIZE) % BUFFER_SIZE;
-	return BUFFER_SIZE - num;
-}
-
-void RingBuf::RemoveData(int iSize)
-{
-	if (BUFFER_SIZE < iSize)
-		return;
-	else
-	{
-		if (readPos + iSize >= BUFFER_SIZE)
-			readPos = (readPos + iSize) % BUFFER_SIZE;
-		else
-			readPos += iSize;
-	}
+	return (totalSize - usedSize);
 }
 
 int RingBuf::Enqueue(char* chpData, int iSize)
 {
-	int inputSize = 0;
-
 	if (readPos <= writePos)
 	{
-		int pSize = DirectEnqueueSize();
+		int rearSize = totalSize - writePos;
 
-		if (pSize < iSize)
+		if (rearSize < iSize)
 		{
-			memcpy(arr + writePos, chpData, pSize);
-			chpData += pSize;
-			inputSize += pSize;
+			memcpy((dataBuf + writePos), chpData, rearSize);
 
-			if (iSize - pSize > readPos)
+			int frontSize = readPos;
+			int remainSize = iSize - rearSize;
+
+			if (remainSize <= frontSize)
 			{
-				//뒷통수 짤림
-				memcpy(arr, chpData, readPos);
-				inputSize += readPos;
-				writePos = readPos;
+				memcpy(dataBuf, (chpData + rearSize), remainSize);
+
+				writePos = remainSize;
+				usedSize += iSize;
+
+				return iSize;
 			}
 			else
 			{
-				memcpy(arr, chpData, iSize - pSize);
-				inputSize += iSize - pSize;
-				writePos = iSize - pSize;
+				memcpy(dataBuf, (chpData + rearSize), frontSize);
+
+				writePos = frontSize;
+				usedSize += (frontSize + rearSize);
+
+				return (frontSize + rearSize);
 			}
-			return inputSize;
 		}
 		else
 		{
-			// 넣을수 있는 공간 >= 넣어야 하는 공간
-			memcpy(arr + writePos, chpData, iSize);
-			writePos = (writePos + iSize) % (BUFFER_SIZE);
+			memcpy((dataBuf + writePos), chpData, iSize);
+
+			writePos = (writePos + iSize) % totalSize;
+			usedSize += iSize;
+
 			return iSize;
 		}
 	}
 	else
 	{
-		// rear보다 front가 큰 경우
-		int pSize = readPos - writePos;
+		int remainSize = readPos - writePos;
 
-		if (pSize < iSize)
+		if (remainSize < iSize)
 		{
-			// pSize만큼만 넣고 리턴한다.
-			memcpy(arr + writePos, chpData, pSize);
-			writePos += pSize;
-			return pSize;
+			memcpy((dataBuf + writePos), chpData, remainSize);
+
+			writePos = (writePos + remainSize) % totalSize;
+			usedSize += remainSize;
+
+			return remainSize;
 		}
 		else
 		{
-			// iSize 만큼 다 넣는다.
-			memcpy(arr + writePos, chpData, iSize);
-			writePos += iSize;
+			memcpy((dataBuf + writePos), chpData, iSize);
+
+			writePos = (writePos + iSize) % totalSize;
+			usedSize += iSize;
+
 			return iSize;
 		}
-
 	}
+
+	return 0;
 }
 
 int RingBuf::Dequeue(char* chpData, int iSize)
 {
-	int getSize = 0;
-
 	if (readPos <= writePos)
 	{
-		int pSize = writePos - readPos;
+		int remainSize = writePos - readPos;
 
-		if (pSize < iSize)
+		if (remainSize < iSize)
 		{
-			memcpy(chpData, arr + readPos, pSize);
-			readPos += pSize;
-			return pSize;
+			memcpy(chpData, (dataBuf + readPos), remainSize);
+			
+			readPos = (readPos + remainSize) % totalSize;
+			usedSize -= remainSize;
+
+			return remainSize;
 		}
 		else
 		{
-			memcpy(chpData, arr + readPos, iSize);
-			readPos += iSize;
+			memcpy(chpData, (dataBuf + readPos), iSize);
+
+			readPos = (readPos + iSize) % totalSize;
+			usedSize -= iSize;
+
 			return iSize;
 		}
 	}
 	else
 	{
-		int pSize = DirectDequeueSize();
-		if (pSize < iSize)
-		{
-			memcpy(chpData, arr + readPos, pSize);
-			getSize += pSize;
+		int rearSize = totalSize - readPos;
 
-			if (iSize - pSize > writePos)
+		if (rearSize < iSize)
+		{
+			memcpy(chpData, (dataBuf + readPos), rearSize);
+
+			int frontSize = writePos;
+			int remainSize = iSize - rearSize;
+
+			if (remainSize <= frontSize)
 			{
-				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
-				memcpy(chpData + pSize, arr, writePos);
-				getSize += writePos;
-				readPos = writePos;
+				memcpy((chpData + rearSize), dataBuf, remainSize);
+
+				readPos = remainSize;
+				usedSize -= iSize;
+
+				return iSize;
 			}
 			else
 			{
-				memcpy(chpData + pSize, arr, iSize - pSize);
-				getSize += iSize - pSize;
-				readPos = iSize - pSize;
+				memcpy((chpData + rearSize), dataBuf, frontSize);
+
+				readPos = frontSize;
+				usedSize -= (frontSize + rearSize);
+
+				return (frontSize + rearSize);
 			}
-			return getSize;
 		}
 		else
 		{
-			memcpy(chpData, arr + readPos, iSize);
-			readPos += iSize;
+			memcpy(chpData, (dataBuf + readPos), iSize);
+			
+			readPos = (readPos + iSize) % totalSize;
+			usedSize -= iSize;
+			
 			return iSize;
 		}
 	}
@@ -169,48 +210,51 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 
 int RingBuf::Peek(char* chpData, int iSize)
 {
-	int getSize = 0;
-
 	if (readPos <= writePos)
 	{
-		int pSize = writePos - readPos;
+		int remainSize = writePos - readPos;
 
-		if (pSize < iSize)
+		if (remainSize < iSize)
 		{
-			memcpy(chpData, arr + readPos, pSize);
-			return pSize;
+			memcpy(chpData, (dataBuf + readPos), remainSize);
+
+			return remainSize;
 		}
 		else
 		{
-			memcpy(chpData, arr + readPos, iSize);
+			memcpy(chpData, (dataBuf + readPos), iSize);
+
 			return iSize;
 		}
 	}
 	else
 	{
-		int pSize = DirectDequeueSize();
-		if (pSize < iSize)
-		{
-			memcpy(chpData, arr + readPos, pSize);
-			getSize += pSize;
-			chpData += pSize;
+		int rearSize = totalSize - readPos;
 
-			if (iSize - pSize > writePos)
+		if (rearSize < iSize)
+		{
+			memcpy(chpData, (dataBuf + readPos), rearSize);
+
+			int frontSize = writePos;
+			int remainSize = iSize - rearSize;
+
+			if (remainSize <= frontSize)
 			{
-				// iSize - pSize = 새로 0부터 넣어야 할 데이터 크기
-				memcpy(chpData, arr, writePos);
-				getSize += writePos;
+				memcpy((chpData + rearSize), dataBuf, remainSize);
+
+				return iSize;
 			}
 			else
 			{
-				memcpy(chpData, arr, iSize - pSize);
-				getSize += iSize - pSize;
+				memcpy((chpData + rearSize), dataBuf, frontSize);
+
+				return (frontSize + rearSize);
 			}
-			return getSize;
 		}
 		else
 		{
-			memcpy(chpData, arr + readPos, iSize);
+			memcpy(chpData, (dataBuf + readPos), iSize);
+
 			return iSize;
 		}
 	}
@@ -218,59 +262,88 @@ int RingBuf::Peek(char* chpData, int iSize)
 
 int RingBuf::MoveRear(int iSize)
 {
-	writePos = (writePos + iSize) % (BUFFER_SIZE);
-	return writePos;
+	int freeSize = GetFreeSize();
+
+	if(iSize < freeSize)
+	{ 
+		writePos = (writePos + iSize) % totalSize;
+		usedSize += iSize;
+
+		return iSize;
+	}
+	else
+	{
+		writePos = (writePos + freeSize) % totalSize;
+		usedSize += freeSize;
+
+		return freeSize;
+	}
+
+	return 0;
 }
 
 int RingBuf::MoveFront(int iSize)
 {
-	readPos = (readPos + iSize) % (BUFFER_SIZE);
-	return readPos;
+	int useSize = GetUseSize();
+
+	if (iSize < useSize)
+	{
+		readPos = (readPos + iSize) % totalSize;
+		usedSize -= iSize;
+
+		return iSize;
+	}
+	else
+	{
+		readPos = (readPos + useSize) % totalSize;
+		usedSize -= useSize;
+
+		return useSize;
+	}
+	
+	return 0;
 }
 
 void RingBuf::ClearBuffer(void)
 {
-	//사실 0으로 지울 필요 없고, pos를 같게 위치시키면 데이터가 없다는 의미와 같음.
-	memset(arr, 0, sizeof(arr));
 	readPos = 0;
 	writePos = 0;
+	usedSize = 0;
 }
 
 char * RingBuf::GetFrontBufferPtr(void)
 {
-	return arr + readPos;
+	return (dataBuf + readPos);
 }
 
 char * RingBuf::GetRearBufferPtr(void)
 {
-	return arr + writePos;
+	return (dataBuf + writePos);
 }
 
 char * RingBuf::GetBufferPtr(void)
 {
-	return arr;
+	return dataBuf;
 }
 
 int RingBuf::DirectEnqueueSize(void)
 {
 	if (readPos <= writePos)
-	{
-		int endPointIndex = BUFFER_SIZE;
-
-		return endPointIndex - writePos;
-	}
+		return (totalSize - writePos);
 	else
-		return readPos - writePos;
+		return (readPos - writePos);
 }
 
 int RingBuf::DirectDequeueSize(void)
 {
-	if (readPos >= writePos)
-	{
-		int endPointIndex = BUFFER_SIZE;
-
-		return endPointIndex - readPos;
-	}
+	if (readPos <= writePos)
+		return (writePos - readPos);
 	else
-		return writePos - readPos;
+		return (totalSize - readPos);
+}
+
+void RingBuf::PrintBufState(void)
+{
+	printf("[Buffer State] R:%4d / W:%4d / T:%4d / U:%4d / F:%4d\n",
+		readPos, writePos, totalSize, usedSize, GetFreeSize());
 }
