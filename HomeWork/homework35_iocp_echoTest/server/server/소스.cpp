@@ -121,6 +121,23 @@ void onRecv(int iSessionID, CPacket* pPacket)
 	CPacket sendPacket;
 	sendPacket << temp;
 
+	//char* p = (char*)&temp;
+	//for (int i = 0; i < pPacket->GetDataSize(); i++)
+	//{
+	//	//printf(" : %x", *(p + i));
+	//}
+	//
+	//printf("\n");
+
+	//p = (char*)&sendPacket;
+	//for (int i = 0; i < sendPacket.GetDataSize(); i++)
+	//{
+	//	//printf(" : %x", *(p + i));
+	//}
+	//
+	//printf("\n");
+	//printf("\n");
+
 	SendPacket(iSessionID, &sendPacket);
 }
 
