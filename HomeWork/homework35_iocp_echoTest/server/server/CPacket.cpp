@@ -16,6 +16,7 @@ CPacket::CPacket()
 CPacket::CPacket(int iBufferSize)
 {
 	m_chpBuffer = new char[iBufferSize];
+	memset(m_chpBuffer, 0, m_iBufferSize);
 	m_iBufferSize = iBufferSize;
 
 	m_chpReadPos = m_chpBuffer;
@@ -32,7 +33,14 @@ CPacket::~CPacket()
 
 void CPacket::Release(void)
 {
-	delete[] m_chpBuffer;
+	try
+	{
+		delete[] m_chpBuffer;
+	}
+	catch (...)
+	{
+
+	}
 }
 
 void CPacket::Clear(void)
@@ -60,8 +68,9 @@ int CPacket::MoveReadPos(int iSize)
 	m_chpReadPos += iSize;
 	m_iDataSize -= iSize;
 
-	if (m_chpReadPos == m_chpWritePos)
-		Clear();
+	//???
+	//if (m_chpReadPos == m_chpWritePos)
+	//	Clear();
 
 	return iSize;
 }
@@ -246,13 +255,6 @@ int CPacket::PutData(char * chpSrc, int iSrcSize)
 	//넣을 자리가 없다면.
 	if (iSrcSize > m_iBufferSize - m_iDataSize)
 		return 0;
-
-	//int Usage = m_iBufferSize - (m_chpWritePos - m_chpReadPos);
-	//
-	//if (Usage == m_iBufferSize)
-	//	iSrcSize = min(iSrcSize, m_iBufferSize);
-	//else
-	//	iSrcSize = min(iSrcSize, Usage);
 
 	memcpy(m_chpWritePos, chpSrc, iSrcSize);
 	m_chpWritePos += iSrcSize;

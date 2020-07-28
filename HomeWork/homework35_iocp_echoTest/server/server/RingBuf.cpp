@@ -9,6 +9,7 @@ void RingBuf::Initialize(int iBufferSize)
 	if (iBufferSize > 0)
 	{
 		dataBuf = new char[iBufferSize];
+		memset(dataBuf, 0, iBufferSize);
 		readPos = 0;
 		writePos = 0;
 		totalSize = iBufferSize;

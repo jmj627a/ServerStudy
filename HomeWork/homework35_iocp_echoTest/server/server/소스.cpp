@@ -48,6 +48,9 @@ typedef struct SESSION {
 	long ioCount;
 };
 
+CPacket *g_tempPacket = new CPacket(10000);;
+CRITICAL_SECTION g_CS_packet;
+
 SOCKET g_listenSock;
 HANDLE g_iocp;
 HANDLE g_Shutdown;
@@ -97,18 +100,19 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 	if (session == nullptr)
 		return;
 
-	//헤더 생성 
-	WCHAR header = pPacket->GetDataSize();
 
+	WCHAR header = pPacket->GetDataSize();
 	CPacket packet;
 	packet.PutData((char*)&header, sizeof(header));
 	packet.PutData(pPacket->GetReadPtr(), header);
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
 
-	//여기서 한번 풀어줘야하나?? 이 함수는 recv에서 얘를 부르는데, sendPost에서 sessionFind할때 데드락
-	//LeaveCriticalSection(&session->cs);
+	//*에러잡기용******
+	g_tempPacket->PutData((char*)&header, sizeof(header));
+	g_tempPacket->PutData(pPacket->GetReadPtr(), header);
+	//****************
 
-	//
+
 	sendPost(session->sessionID);
 }
 
@@ -120,23 +124,6 @@ void onRecv(int iSessionID, CPacket* pPacket)
 
 	CPacket sendPacket;
 	sendPacket << temp;
-
-	//char* p = (char*)&temp;
-	//for (int i = 0; i < pPacket->GetDataSize(); i++)
-	//{
-	//	//printf(" : %x", *(p + i));
-	//}
-	//
-	//printf("\n");
-
-	//p = (char*)&sendPacket;
-	//for (int i = 0; i < sendPacket.GetDataSize(); i++)
-	//{
-	//	//printf(" : %x", *(p + i));
-	//}
-	//
-	//printf("\n");
-	//printf("\n");
 
 	SendPacket(iSessionID, &sendPacket);
 }
@@ -157,9 +144,9 @@ void sendPost(int iSessionID)
 	}
 
 	int ret;
-	DWORD dwSendByte;
-	DWORD dwFlag;
-	WSABUF wsaBuf[2];
+	DWORD dwSendByte = 0;
+	DWORD dwFlag = 0;
+	WSABUF wsaBuf[2] = { 0, };
 	int iBufCount = 0;
 
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
@@ -248,6 +235,8 @@ void recvPost(int iSessionID)
 
 int main()
 {
+	//g_tempPacket = new CPacket(10000);
+
 	// beginPeriod
 	timeBeginPeriod(1);
 
@@ -256,6 +245,7 @@ int main()
 
 	// initial Critical
 	InitializeCriticalSection(&g_CS_sessionlist);
+	InitializeCriticalSection(&g_CS_packet);
 
 	// win start
 	WSADATA wsa;
@@ -441,23 +431,22 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
-			//printf("<Send = %d>\n", dwTransfer);
-			//pSession->SendQ.PrintBufState();
 
-			char* p = pSession->SendQ.GetFrontBufferPtr();
+			//EnterCriticalSection(&g_CS_packet);
+			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
+			char* pPacket = g_tempPacket->GetReadPtr();
 			for (int i = 0; i < dwTransfer; i++)
 			{
-				printf(" : %02x", *(p + i));
-
-				if (i % 10 == 0)
-					printf("\n");
+				if (*(pQueue + i) != *(pPacket + i))
+				{
+					int a = 0;
+				}
 			}
-			printf("\n");
+
+			g_tempPacket->MoveReadPos(dwTransfer);
+			//LeaveCriticalSection(&g_CS_packet);
 
 			pSession->SendQ.MoveFront(dwTransfer);
-			//pSession->SendQ.PrintBufState();
-			//printf("<Rcvd>\n");
-			//pSession->RecvQ.PrintBufState();
 
 			InterlockedDecrement(&pSession->sendFlag);
 			sendPost(pSession->sessionID);
@@ -466,13 +455,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 		else if (pOverlap == &pSession->recvOverlap)
 		{
 			//받아진 만큼 큐 이동 
-			//printf("<Send>\n");
-			//pSession->SendQ.PrintBufState();
-			//printf("<Rcvd = %d>\n", dwTransfer);
-			//pSession->RecvQ.PrintBufState();
 			pSession->RecvQ.MoveRear(dwTransfer);
-			//pSession->RecvQ.PrintBufState();
-			//printf("\n");
 
 			//받아진거 다 처리할때까지
 			while(true)
@@ -501,6 +484,8 @@ unsigned int __stdcall Worker_Thread(void* args)
 
 				//이 안에서 sendpacket 호출하고 패킷 보내버림
 				onRecv(pSession->sessionID, &packet);
+
+				//packet.Clear();
 			}
 
 
