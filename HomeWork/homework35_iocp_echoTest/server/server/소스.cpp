@@ -48,7 +48,8 @@ typedef struct SESSION {
 	long ioCount;
 };
 
-CPacket *g_tempPacket = new CPacket(10000);;
+CPacket g_tempPacket;
+long g_insize = 0;
 CRITICAL_SECTION g_CS_packet;
 
 SOCKET g_listenSock;
@@ -105,11 +106,15 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 	CPacket packet;
 	packet.PutData((char*)&header, sizeof(header));
 	packet.PutData(pPacket->GetReadPtr(), header);
+
+
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
 
-	//*에러잡기용******
-	g_tempPacket->PutData((char*)&header, sizeof(header));
-	g_tempPacket->PutData(pPacket->GetReadPtr(), header);
+	//*******
+	int ret1 = g_tempPacket.PutData((char*)&header, sizeof(header));
+	int ret2 = g_tempPacket.PutData(pPacket->GetReadPtr(), header);
+
+	InterlockedAdd(&g_insize, sizeof(header) + header);
 	//****************
 
 
@@ -235,8 +240,6 @@ void recvPost(int iSessionID)
 
 int main()
 {
-	//g_tempPacket = new CPacket(10000);
-
 	// beginPeriod
 	timeBeginPeriod(1);
 
@@ -434,7 +437,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 
 			//EnterCriticalSection(&g_CS_packet);
 			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
-			char* pPacket = g_tempPacket->GetReadPtr();
+			char* pPacket = g_tempPacket.GetReadPtr();
 			for (int i = 0; i < dwTransfer; i++)
 			{
 				if (*(pQueue + i) != *(pPacket + i))
@@ -443,7 +446,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 				}
 			}
 
-			g_tempPacket->MoveReadPos(dwTransfer);
+			g_tempPacket.MoveReadPos(dwTransfer);
 			//LeaveCriticalSection(&g_CS_packet);
 
 			pSession->SendQ.MoveFront(dwTransfer);

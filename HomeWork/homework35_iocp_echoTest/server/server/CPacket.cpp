@@ -68,10 +68,6 @@ int CPacket::MoveReadPos(int iSize)
 	m_chpReadPos += iSize;
 	m_iDataSize -= iSize;
 
-	//???
-	//if (m_chpReadPos == m_chpWritePos)
-	//	Clear();
-
 	return iSize;
 }
 
@@ -252,6 +248,9 @@ int CPacket::GetData(char * chpDest, int iSize)
 
 int CPacket::PutData(char * chpSrc, int iSrcSize)
 {
+	if (m_chpWritePos - m_chpBuffer >= m_iBufferSize)
+		return  0;
+
 	//넣을 자리가 없다면.
 	if (iSrcSize > m_iBufferSize - m_iDataSize)
 		return 0;
