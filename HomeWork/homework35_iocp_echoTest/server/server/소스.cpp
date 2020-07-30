@@ -48,7 +48,7 @@ typedef struct SESSION {
 	long ioCount;
 };
 
-CPacket g_tempPacket;
+CPacket *g_tempPacket = new CPacket(1000000);
 long g_insize = 0;
 CRITICAL_SECTION g_CS_packet;
 
@@ -95,6 +95,9 @@ void SendPacket(int iSessionID, CPacket* pPacket);
 void Disconnect(int iSessionID);
 
 
+int firstsize = 0;
+int secoundsize = 0;
+
 void SendPacket(int iSessionID, CPacket* pPacket)
 {
 	SESSION* session = FindSession(iSessionID);
@@ -103,20 +106,35 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 
 
 	WCHAR header = pPacket->GetDataSize();
+	if (header != 0x08)
+		return;
+
 	CPacket packet;
 	packet.PutData((char*)&header, sizeof(header));
 	packet.PutData(pPacket->GetReadPtr(), header);
 
+	////*******
+	//EnterCriticalSection(&g_CS_packet);
+	//int ret1 = g_tempPacket->PutData((char*)&header, sizeof(header));
+	//int ret2 = g_tempPacket->PutData(pPacket->GetReadPtr(), header);
+	//
+	//
+	//EnterCriticalSection(&session->cs);
+	//int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
+	//LeaveCriticalSection(&session->cs);
+	//
+	//LeaveCriticalSection(&g_CS_packet);
+	////****************
 
+	EnterCriticalSection(&session->cs);
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
+	LeaveCriticalSection(&session->cs);
 
-	//*******
-	int ret1 = g_tempPacket.PutData((char*)&header, sizeof(header));
-	int ret2 = g_tempPacket.PutData(pPacket->GetReadPtr(), header);
+	if (size <= 0)
+		int a = 0;
 
-	InterlockedAdd(&g_insize, sizeof(header) + header);
-	//****************
 
+	//InterlockedAdd(&g_insize, sizeof(header) + header);
 
 	sendPost(session->sessionID);
 }
@@ -151,18 +169,20 @@ void sendPost(int iSessionID)
 	int ret;
 	DWORD dwSendByte = 0;
 	DWORD dwFlag = 0;
-	WSABUF wsaBuf[2] = { 0, };
+	static WSABUF wsaBuf[2] = { 0, };
 	int iBufCount = 0;
 
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
 	wsaBuf[iBufCount].buf = session->SendQ.GetFrontBufferPtr();
 	wsaBuf[iBufCount].len = session->SendQ.DirectDequeueSize();
+	firstsize = wsaBuf[iBufCount].len;
 	iBufCount++;
 	
 	if (session->SendQ.DirectDequeueSize() < session->SendQ.GetUseSize())
 	{
 		wsaBuf[iBufCount].buf = session->SendQ.GetBufferPtr();
 		wsaBuf[iBufCount].len = session->SendQ.GetUseSize() - session->SendQ.DirectDequeueSize();
+		secoundsize = wsaBuf[iBufCount].len;
 		iBufCount++;
 	}
 
@@ -300,8 +320,8 @@ int main()
 
 	while (true)
 	{
-		// SPACE 키가 눌렸다면 종료
-		if (GetAsyncKeyState(VK_SPACE))
+		// esc 키가 눌렸다면 종료
+		if (GetAsyncKeyState(VK_ESCAPE))
 		{
 			// Update 종료
 			SetEvent(g_Shutdown);
@@ -434,22 +454,26 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
-
 			//EnterCriticalSection(&g_CS_packet);
-			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
-			char* pPacket = g_tempPacket.GetReadPtr();
-			for (int i = 0; i < dwTransfer; i++)
-			{
-				if (*(pQueue + i) != *(pPacket + i))
-				{
-					int a = 0;
-				}
-			}
-
-			g_tempPacket.MoveReadPos(dwTransfer);
+			//char* pQueue = pSession->SendQ.GetFrontBufferPtr();
+			//char* pPacket = g_tempPacket->GetReadPtr();
+			//for (int i = 0; i < dwTransfer; i++)
+			//{
+			//	if (*(pQueue + i) != *(pPacket + i))
+			//	{
+			//		int a = 0;
+			//	}
+			//}
+			//
+			//g_tempPacket->MoveReadPos(dwTransfer);
+			EnterCriticalSection(&pSession->cs);
+			pSession->SendQ.MoveFront(dwTransfer);
+			LeaveCriticalSection(&pSession->cs);
 			//LeaveCriticalSection(&g_CS_packet);
 
-			pSession->SendQ.MoveFront(dwTransfer);
+
+			firstsize   = 0;
+			secoundsize = 0;
 
 			InterlockedDecrement(&pSession->sendFlag);
 			sendPost(pSession->sessionID);
@@ -473,6 +497,8 @@ unsigned int __stdcall Worker_Thread(void* args)
 				//패킷이 전부 왔는지 확인. 헤더 + 페이로드 사이즈 
 				WCHAR header;
 				pSession->RecvQ.Peek((char*)&header, sizeof(short));
+				//if (header != 0x08)
+				//	break; 
 				if (sizeof(short) + header > recvSize)
 					break;
 				//헤더 부분은 빼서 onRecv로 전달.

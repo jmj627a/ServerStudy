@@ -75,17 +75,30 @@ int RingBuf::GetFreeSize(void)
 
 int RingBuf::Enqueue(char* chpData, int iSize)
 {
+	//더 넣을 용량이 없으면 나가기
+	if (GetFreeSize() == 0)
+		return 0;
+
+	//넣어야 하는 크기보다 남은 공간이 적으면 쓰지 말고 나가기
+	if (GetFreeSize() < iSize)
+		return 0;
+
+	//읽기 / 쓰기
 	if (readPos <= writePos)
 	{
 		int rearSize = totalSize - writePos;
 
+		//쓸 수 있는 공간보다 써야하는 데이터가 많은 경우
 		if (rearSize < iSize)
 		{
+			//뒷부분 쓸 수 있는 공간 일단 채우기
 			memcpy((dataBuf + writePos), chpData, rearSize);
 
 			int frontSize = readPos;
 			int remainSize = iSize - rearSize;
 
+			//앞으로 와서 앞에도 채울 수 있으면 채우기
+			//앞에 공간이 넉넉해서 다 채울 수 있는 경우
 			if (remainSize <= frontSize)
 			{
 				memcpy(dataBuf, (chpData + rearSize), remainSize);
@@ -95,6 +108,7 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 
 				return iSize;
 			}
+			//앞에도 공간이 부족해서 못채우는 경우
 			else
 			{
 				memcpy(dataBuf, (chpData + rearSize), frontSize);
@@ -105,6 +119,7 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 				return (frontSize + rearSize);
 			}
 		}
+		//쓸 수 있는 공간이 써야하는 데이터보다 많은 경우
 		else
 		{
 			memcpy((dataBuf + writePos), chpData, iSize);
@@ -115,6 +130,7 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 			return iSize;
 		}
 	}
+	//쓰기 / 읽기
 	else
 	{
 		int remainSize = readPos - writePos;
@@ -144,19 +160,31 @@ int RingBuf::Enqueue(char* chpData, int iSize)
 
 int RingBuf::Dequeue(char* chpData, int iSize)
 {
-	if (readPos <= writePos)
+	//더 뺄 게 없으면 나가기
+	if (usedSize == 0)
+		return 0;
+
+	//있는 크기보다 더 많이 달라고 하면 나가기 
+	if (usedSize < iSize)
+		return 0;
+
+	//읽기 / 쓰기
+	if (readPos < writePos)
 	{
+		//뺄 수 있는 크기
 		int remainSize = writePos - readPos;
 
+		//남은 크기보다 더 많이 빼라고 한 경우
 		if (remainSize < iSize)
 		{
 			memcpy(chpData, (dataBuf + readPos), remainSize);
-			
+
 			readPos = (readPos + remainSize) % totalSize;
 			usedSize -= remainSize;
 
 			return remainSize;
 		}
+		//요청한 만큼 다 뺄 수 있는 경우
 		else
 		{
 			memcpy(chpData, (dataBuf + readPos), iSize);
@@ -167,7 +195,8 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 			return iSize;
 		}
 	}
-	else
+	//이제 여기서 같다고 나오는 경우는 버퍼가 꽉 찬 경우 뿐
+	else if (readPos >= writePos)
 	{
 		int rearSize = totalSize - readPos;
 
@@ -200,18 +229,23 @@ int RingBuf::Dequeue(char* chpData, int iSize)
 		else
 		{
 			memcpy(chpData, (dataBuf + readPos), iSize);
-			
+
 			readPos = (readPos + iSize) % totalSize;
 			usedSize -= iSize;
-			
+
 			return iSize;
 		}
 	}
+
+	return 0;
 }
 
 int RingBuf::Peek(char* chpData, int iSize)
 {
-	if (readPos <= writePos)
+	if (usedSize == 0)
+		return 0;
+
+	if (readPos < writePos)
 	{
 		int remainSize = writePos - readPos;
 
@@ -228,7 +262,8 @@ int RingBuf::Peek(char* chpData, int iSize)
 			return iSize;
 		}
 	}
-	else
+	//이제 여기서 같다고 나오는 경우는 버퍼가 꽉 찬 경우 뿐
+	else if (readPos >= writePos)
 	{
 		int rearSize = totalSize - readPos;
 
@@ -259,14 +294,16 @@ int RingBuf::Peek(char* chpData, int iSize)
 			return iSize;
 		}
 	}
+
+	return 0;
 }
 
 int RingBuf::MoveRear(int iSize)
 {
 	int freeSize = GetFreeSize();
 
-	if(iSize < freeSize)
-	{ 
+	if (iSize < freeSize)
+	{
 		writePos = (writePos + iSize) % totalSize;
 		usedSize += iSize;
 
@@ -301,7 +338,7 @@ int RingBuf::MoveFront(int iSize)
 
 		return useSize;
 	}
-	
+
 	return 0;
 }
 
@@ -312,23 +349,26 @@ void RingBuf::ClearBuffer(void)
 	usedSize = 0;
 }
 
-char * RingBuf::GetFrontBufferPtr(void)
+char* RingBuf::GetFrontBufferPtr(void)
 {
 	return (dataBuf + readPos);
 }
 
-char * RingBuf::GetRearBufferPtr(void)
+char* RingBuf::GetRearBufferPtr(void)
 {
 	return (dataBuf + writePos);
 }
 
-char * RingBuf::GetBufferPtr(void)
+char* RingBuf::GetBufferPtr(void)
 {
 	return dataBuf;
 }
 
 int RingBuf::DirectEnqueueSize(void)
 {
+	if (GetFreeSize() == 0)
+		return 0;
+
 	if (readPos <= writePos)
 		return (totalSize - writePos);
 	else
@@ -337,7 +377,10 @@ int RingBuf::DirectEnqueueSize(void)
 
 int RingBuf::DirectDequeueSize(void)
 {
-	if (readPos <= writePos)
+	if (GetUseSize() == 0)
+		return 0;
+
+	if (readPos < writePos)
 		return (writePos - readPos);
 	else
 		return (totalSize - readPos);

@@ -2,235 +2,367 @@
 #include <string>
 #include <Windows.h>
 
-void RingBuf::Initial(int iBufferSize)
+void RingBuf::Initialize(int iBufferSize)
 {
+	Finalize();
+
+	if (iBufferSize > 0)
+	{
+		dataBuf = new char[iBufferSize];
+		memset(dataBuf, 0, iBufferSize);
+		readPos = 0;
+		writePos = 0;
+		totalSize = iBufferSize;
+		usedSize = 0;
+	}
+}
+
+void RingBuf::Finalize(void)
+{
+	if (dataBuf != NULL)
+	{
+		delete[] dataBuf;
+	}
+
+	dataBuf = NULL;
+	readPos = 0;
+	writePos = 0;
+	totalSize = 0;
+	usedSize = 0;
 }
 
 RingBuf::RingBuf(void)
 {
+	dataBuf = NULL;
 	readPos = 0;
 	writePos = 0;
+	totalSize = 0;
+	usedSize = 0;
+
+	Initialize(200);
 }
 
 RingBuf::RingBuf(int iBufferSize)
 {
+	dataBuf = NULL;
 	readPos = 0;
 	writePos = 0;
+	totalSize = 0;
+	usedSize = 0;
+
+	Initialize(iBufferSize);
 }
 
+void RingBuf::Resize(int iBufferSize)
+{
+	Initialize(iBufferSize);
+}
 
 int RingBuf::GetBufferSize(void)
 {
-	return BUFFER_SIZE;
+	return totalSize;
 }
 
 int RingBuf::GetUseSize(void)
 {
-	int num = (writePos - readPos + BUFFER_SIZE) % BUFFER_SIZE;
-	return num;
+	return usedSize;
 }
 
 int RingBuf::GetFreeSize(void)
 {
-	int num = (writePos - readPos + BUFFER_SIZE) % BUFFER_SIZE;
-	return BUFFER_SIZE - num;
+	return (totalSize - usedSize);
 }
 
 int RingBuf::Enqueue(char* chpData, int iSize)
 {
-	int count = 0;
+	//더 넣을 용량이 없으면 나가기
+	if (GetFreeSize() == 0)
+		return 0;
 
-	while (iSize != 0)
+	if (readPos <= writePos)
 	{
-		//배열에 데이터 꽉 참
-		if ((writePos + 1) % BUFFER_SIZE == readPos)
+
+		int rearSize = totalSize - writePos;
+
+		if (rearSize < iSize)
 		{
-			//printf("배열이 꽉 찼습니다 \n");
-			return count;
+			memcpy((dataBuf + writePos), chpData, rearSize);
+
+			int frontSize = readPos;
+			int remainSize = iSize - rearSize;
+
+			if (remainSize <= frontSize)
+			{
+				memcpy(dataBuf, (chpData + rearSize), remainSize);
+
+				writePos = remainSize;
+				usedSize += iSize;
+
+				return iSize;
+			}
+			else
+			{
+				memcpy(dataBuf, (chpData + rearSize), frontSize);
+
+				writePos = frontSize;
+				usedSize += (frontSize + rearSize);
+
+				return (frontSize + rearSize);
+			}
 		}
-		
-		arr[writePos] = *chpData;
-		writePos = (writePos + 1) % BUFFER_SIZE;
+		else
+		{
+			memcpy((dataBuf + writePos), chpData, iSize);
 
-		count++;
-		chpData++;
-		iSize--;
+			writePos = (writePos + iSize) % totalSize;
+			usedSize += iSize;
 
+			return iSize;
+		}
+	}
+	else
+	{
+		int remainSize = readPos - writePos;
+
+		if (remainSize < iSize)
+		{
+			memcpy((dataBuf + writePos), chpData, remainSize);
+
+			writePos = (writePos + remainSize) % totalSize;
+			usedSize += remainSize;
+
+			return remainSize;
+		}
+		else
+		{
+			memcpy((dataBuf + writePos), chpData, iSize);
+
+			writePos = (writePos + iSize) % totalSize;
+			usedSize += iSize;
+
+			return iSize;
+		}
 	}
 
-	return count;
+	return 0;
 }
 
 int RingBuf::Dequeue(char* chpData, int iSize)
 {
-	int count = 0;
-	int pos = readPos;
+	//더 뺄 게 없으면 나가기
+	if (usedSize == 0)
+		return 0;
 
-	bool isOneCircle = false;
-	int afterCount = 0;
-
-	char* cmpCopy = (char*)malloc(DATA_SIZE);
-	ZeroMemory(cmpCopy, sizeof(cmpCopy));
-
-	//끝까지 다 읽을때까지
-	while (iSize != 0)
+	if (readPos < writePos)
 	{
-		//읽으려 보니 배열이 비어있음
-		if (pos == writePos)
-		{
-			//여기서 반으로 쪼개지는 상황이 있음. (readPos가 배열 끝에서 시작으로 넘어갔을때)
-			if (isOneCircle == true)
-			{
-				memcpy(cmpCopy, arr + readPos, count - afterCount);
-				memcpy(cmpCopy + (count - afterCount), arr , afterCount);
-			}
-			else
-				memcpy(cmpCopy, arr + readPos, count);
+		int remainSize = writePos - readPos;
 
-			//먼저 했던 peek의 결과와 비교
-			if (memcmp(cmpCopy, chpData, strlen(chpData)) == 0)
+		if (remainSize < iSize)
+		{
+			memcpy(chpData, (dataBuf + readPos), remainSize);
+
+			readPos = (readPos + remainSize) % totalSize;
+			usedSize -= remainSize;
+
+			return remainSize;
+		}
+		else
+		{
+			memcpy(chpData, (dataBuf + readPos), iSize);
+
+			readPos = (readPos + iSize) % totalSize;
+			usedSize -= iSize;
+
+			return iSize;
+		}
+	}
+	//이제 여기서 같다고 나오는 경우는 버퍼가 꽉 찬 경우 뿐
+	else if(readPos >= writePos)
+	{
+		int rearSize = totalSize - readPos;
+
+		if (rearSize < iSize)
+		{
+			memcpy(chpData, (dataBuf + readPos), rearSize);
+
+			int frontSize = writePos;
+			int remainSize = iSize - rearSize;
+
+			if (remainSize <= frontSize)
 			{
-				readPos = pos;
-				delete cmpCopy;
-				return count;
+				memcpy((chpData + rearSize), dataBuf, remainSize);
+
+				readPos = remainSize;
+				usedSize -= iSize;
+
+				return iSize;
 			}
 			else
 			{
-				delete cmpCopy;
-				return 0;
+				memcpy((chpData + rearSize), dataBuf, frontSize);
+
+				readPos = frontSize;
+				usedSize -= (frontSize + rearSize);
+
+				return (frontSize + rearSize);
 			}
 		}
+		else
+		{
+			memcpy(chpData, (dataBuf + readPos), iSize);
 
-		pos = (pos + 1) % BUFFER_SIZE;
-		
-		if (isOneCircle == true)
-			afterCount++;
-		
-		if (pos == 0)
-			isOneCircle = true; 
-		
-		count++;
-		iSize--;
+			readPos = (readPos + iSize) % totalSize;
+			usedSize -= iSize;
+
+			return iSize;
+		}
 	}
 
-	if (isOneCircle == true)
-	{
-		memcpy(cmpCopy, arr + readPos, count - afterCount);
-		memcpy(cmpCopy + (count - afterCount), arr, afterCount);
-	}
-	else
-		memcpy(cmpCopy, arr + readPos, count);
-	
-	//이부분은 테스트할 때 peek의 결과와 deq의 결과가 같을때만 진짜 deq를 하기 위해 넣은 코드. 
-	//반드시 peek를 먼저 했어야 데이터 비교가 가능하고, 쓰지 않을거면 	readPos = pos;	return count; 만 남기고 지워야 함.
-	if (memcmp(cmpCopy, chpData, strlen(chpData)) == 0)
-	{
-		readPos = pos;
-		delete cmpCopy;
-		return count;
-	}
-	else
-	{
-		delete cmpCopy;
-		return 0;
-	}
+	return 0;
 }
 
 int RingBuf::Peek(char* chpData, int iSize)
 {
-	int count = 0;
-	int pos = readPos;
+	if (usedSize == 0)
+		return 0;
 
-	bool isOneCircle = false;
-	int afterCount = 0;
-
-	//끝까지 다 읽을때까지
-	while (iSize != 0)
+	if (readPos < writePos)
 	{
-		//읽으려 보니 배열이 비어있음
-		if (pos == writePos)
+		int remainSize = writePos - readPos;
+
+		if (remainSize < iSize)
 		{
-			//여기서 반으로 쪼개지는 상황이 있음. (readPos가 배열 끝에서 시작으로 넘어갔을때)
-			if (isOneCircle == true)
+			memcpy(chpData, (dataBuf + readPos), remainSize);
+
+			return remainSize;
+		}
+		else
+		{
+			memcpy(chpData, (dataBuf + readPos), iSize);
+
+			return iSize;
+		}
+	}
+	//이제 여기서 같다고 나오는 경우는 버퍼가 꽉 찬 경우 뿐
+	else if (readPos >= writePos)
+	{
+		int rearSize = totalSize - readPos;
+
+		if (rearSize < iSize)
+		{
+			memcpy(chpData, (dataBuf + readPos), rearSize);
+
+			int frontSize = writePos;
+			int remainSize = iSize - rearSize;
+
+			if (remainSize <= frontSize)
 			{
-				memcpy(chpData, arr + readPos, count - afterCount);
-				memcpy(chpData + (count - afterCount), arr, afterCount);
+				memcpy((chpData + rearSize), dataBuf, remainSize);
+
+				return iSize;
 			}
 			else
-				memcpy(chpData, arr + readPos, count);
+			{
+				memcpy((chpData + rearSize), dataBuf, frontSize);
 
-			return count;
+				return (frontSize + rearSize);
+			}
 		}
+		else
+		{
+			memcpy(chpData, (dataBuf + readPos), iSize);
 
-		pos = (pos + 1) % BUFFER_SIZE;
-
-		if (isOneCircle == true)
-			afterCount++;
-
-		if (pos == 0)
-			isOneCircle = true;
-
-		count++;
-		iSize--;
+			return iSize;
+		}
 	}
 
-	if (isOneCircle == true)
-	{
-		memcpy(chpData, arr + readPos, count - afterCount);
-		memcpy(chpData + (count - afterCount), arr, afterCount);
-	}
-	else
-		memcpy(chpData, arr + readPos, count);
-
-	return count;
+	return 0;
 }
 
 int RingBuf::MoveRear(int iSize)
 {
-	writePos = (writePos + iSize) % BUFFER_SIZE;
-	return writePos;
+	int freeSize = GetFreeSize();
+
+	if (iSize < freeSize)
+	{
+		writePos = (writePos + iSize) % totalSize;
+		usedSize += iSize;
+
+		return iSize;
+	}
+	else
+	{
+		writePos = (writePos + freeSize) % totalSize;
+		usedSize += freeSize;
+
+		return freeSize;
+	}
+
+	return 0;
 }
 
 int RingBuf::MoveFront(int iSize)
 {
-	readPos = (readPos + iSize) % BUFFER_SIZE;
-	return readPos;
+	int useSize = GetUseSize();
+
+	if (iSize < useSize)
+	{
+		readPos = (readPos + iSize) % totalSize;
+		usedSize -= iSize;
+
+		return iSize;
+	}
+	else
+	{
+		readPos = (readPos + useSize) % totalSize;
+		usedSize -= useSize;
+
+		return useSize;
+	}
+
+	return 0;
 }
 
 void RingBuf::ClearBuffer(void)
 {
-	//사실 0으로 지울 필요 없고, pos를 같게 위치시키면 데이터가 없다는 의미와 같음.
-	memset(arr, 0, sizeof(arr));
 	readPos = 0;
-	writePos= 0;
+	writePos = 0;
+	usedSize = 0;
 }
 
-char * RingBuf::GetFrontBufferPtr(void)
+char* RingBuf::GetFrontBufferPtr(void)
 {
-	return arr + readPos;
+	return (dataBuf + readPos);
 }
 
-char * RingBuf::GetRearBufferPtr(void)
+char* RingBuf::GetRearBufferPtr(void)
 {
-	return arr + writePos;
+	return (dataBuf + writePos);
+}
+
+char* RingBuf::GetBufferPtr(void)
+{
+	return dataBuf;
 }
 
 int RingBuf::DirectEnqueueSize(void)
 {
-	if (readPos < writePos)
-		return BUFFER_SIZE - writePos;
-	else if (readPos > writePos)
-		return readPos - writePos;
+	if (readPos <= writePos)
+		return (totalSize - writePos);
 	else
-		return BUFFER_SIZE - writePos;
+		return (readPos - writePos);
 }
 
 int RingBuf::DirectDequeueSize(void)
 {
-	if (readPos < writePos)
-		return writePos - readPos;
-	else if (readPos > writePos)
-		return BUFFER_SIZE - readPos;
+	if (readPos <= writePos)
+		return (writePos - readPos);
 	else
-		return BUFFER_SIZE - readPos;
+		return (totalSize - readPos);
+}
+
+void RingBuf::PrintBufState(void)
+{
+	printf("[Buffer State] R:%4d / W:%4d / T:%4d / U:%4d / F:%4d\n",
+		readPos, writePos, totalSize, usedSize, GetFreeSize());
 }

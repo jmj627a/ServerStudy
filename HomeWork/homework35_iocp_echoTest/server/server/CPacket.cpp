@@ -248,9 +248,14 @@ int CPacket::GetData(char * chpDest, int iSize)
 
 int CPacket::PutData(char * chpSrc, int iSrcSize)
 {
+	//용량을 끝까지 다 찼을때.. 이 이상 가면 다른 스택 침범
 	if (m_chpWritePos - m_chpBuffer >= m_iBufferSize)
-		return  0;
-
+	{
+		m_chpReadPos = m_chpBuffer;
+		m_chpWritePos = m_chpBuffer;
+		m_iDataSize = 0;
+		//return  0;
+	}
 	//넣을 자리가 없다면.
 	if (iSrcSize > m_iBufferSize - m_iDataSize)
 		return 0;
