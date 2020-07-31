@@ -173,11 +173,16 @@ void sendPost(int iSessionID)
 	int iBufCount = 0;
 
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
-	wsaBuf[iBufCount].buf = session->SendQ.GetFrontBufferPtr();
-	wsaBuf[iBufCount].len = session->SendQ.DirectDequeueSize();
-	firstsize = wsaBuf[iBufCount].len;
+	wsaBuf[0].buf = session->SendQ.GetFrontBufferPtr();
+	wsaBuf[0].len = session->SendQ.DirectDequeueSize();
+	if (wsaBuf[0].len > 10000)
+		int a = 0;
+	firstsize = session->SendQ.DirectDequeueSize();
 	iBufCount++;
-	
+
+	if (wsaBuf[0].len > 10000)
+		int a = 0;
+
 	if (session->SendQ.DirectDequeueSize() < session->SendQ.GetUseSize())
 	{
 		wsaBuf[iBufCount].buf = session->SendQ.GetBufferPtr();
@@ -186,7 +191,14 @@ void sendPost(int iSessionID)
 		iBufCount++;
 	}
 
+	if (wsaBuf[0].len > 10000)
+		int a = 0;
+
 	InterlockedIncrement(&session->ioCount);
+	
+	if (wsaBuf[0].len > 10000)
+		int a = 0;
+
 	ret = WSASend(session->socket, wsaBuf, iBufCount, &dwSendByte, 0, &session->sendOverlap, NULL);
 	if (ret == SOCKET_ERROR)
 	{
