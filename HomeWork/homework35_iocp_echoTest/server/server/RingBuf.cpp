@@ -364,7 +364,7 @@ char* RingBuf::GetBufferPtr(void)
 	return dataBuf;
 }
 
-int RingBuf::DirectEnqueueSize(void)
+unsigned int RingBuf::DirectEnqueueSize(void)
 {
 	if (GetFreeSize() == 0)
 		return 0;
@@ -375,7 +375,7 @@ int RingBuf::DirectEnqueueSize(void)
 		return (readPos - writePos);
 }
 
-int RingBuf::DirectDequeueSize(void)
+unsigned int RingBuf::DirectDequeueSize(void)
 {
 	if (GetUseSize() == 0)
 		return 0;

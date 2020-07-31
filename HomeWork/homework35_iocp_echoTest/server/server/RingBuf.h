@@ -54,8 +54,8 @@ public:
 	// (끊기지 않은 길이)
 	// 원형 큐의 구조상 버퍼의 끝단에 있는 데이터는 끝 -> 처음으로 돌아가서
 	// 2번에 데이터를 얻거나 넣을 수 있음. 이 부분에서 끊어지지 않은 길이를 의미
-	int DirectEnqueueSize(void);
-	int DirectDequeueSize(void);
+	unsigned int DirectEnqueueSize(void);
+	unsigned int DirectDequeueSize(void);
 
 	void PrintBufState(void);
 };

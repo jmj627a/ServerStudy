@@ -95,8 +95,8 @@ void SendPacket(int iSessionID, CPacket* pPacket);
 void Disconnect(int iSessionID);
 
 
-int firstsize = 0;
-int secoundsize = 0;
+ULONG firstsize = 0;
+ULONG secoundsize = 0;
 
 void SendPacket(int iSessionID, CPacket* pPacket)
 {
@@ -169,7 +169,7 @@ void sendPost(int iSessionID)
 	int ret;
 	DWORD dwSendByte = 0;
 	DWORD dwFlag = 0;
-	static WSABUF wsaBuf[2] = { 0, };
+	WSABUF wsaBuf[2] = { 0, };
 	int iBufCount = 0;
 
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
@@ -467,6 +467,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 			}
 			
 			g_tempPacket->MoveReadPos(dwTransfer);
+		
 			EnterCriticalSection(&pSession->cs);
 			pSession->SendQ.MoveFront(dwTransfer);
 			LeaveCriticalSection(&pSession->cs);
