@@ -253,7 +253,7 @@ int CPacket::PutData(char * chpSrc, int iSrcSize)
 	{
 		m_chpReadPos = m_chpBuffer;
 		m_chpWritePos = m_chpBuffer;
-		m_iDataSize = -1;
+		m_iDataSize = 0;
 		//return  0;
 	}
 	//넣을 자리가 없다면.

@@ -114,21 +114,21 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 	packet.PutData(pPacket->GetReadPtr(), header);
 
 	////*******
-	//EnterCriticalSection(&g_CS_packet);
-	//int ret1 = g_tempPacket->PutData((char*)&header, sizeof(header));
-	//int ret2 = g_tempPacket->PutData(pPacket->GetReadPtr(), header);
-	//
-	//
-	//EnterCriticalSection(&session->cs);
-	//int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
-	//LeaveCriticalSection(&session->cs);
-	//
-	//LeaveCriticalSection(&g_CS_packet);
-	////****************
-
+	EnterCriticalSection(&g_CS_packet);
+	int ret1 = g_tempPacket->PutData((char*)&header, sizeof(header));
+	int ret2 = g_tempPacket->PutData(pPacket->GetReadPtr(), header);
+	
+	
 	EnterCriticalSection(&session->cs);
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
 	LeaveCriticalSection(&session->cs);
+	
+	LeaveCriticalSection(&g_CS_packet);
+	//****************
+
+	//EnterCriticalSection(&session->cs);
+	//int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
+	//LeaveCriticalSection(&session->cs);
 
 	if (size <= 0)
 		int a = 0;
@@ -454,22 +454,24 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
-			//EnterCriticalSection(&g_CS_packet);
-			//char* pQueue = pSession->SendQ.GetFrontBufferPtr();
-			//char* pPacket = g_tempPacket->GetReadPtr();
-			//for (int i = 0; i < dwTransfer; i++)
-			//{
-			//	if (*(pQueue + i) != *(pPacket + i))
-			//	{
-			//		int a = 0;
-			//	}
-			//}
-			//
-			//g_tempPacket->MoveReadPos(dwTransfer);
+			EnterCriticalSection(&g_CS_packet);
+
+			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
+			char* pPacket = g_tempPacket->GetReadPtr();
+			for (int i = 0; i < dwTransfer; i++)
+			{
+				if (*(pQueue + i) != *(pPacket + i))
+				{
+					int a = 0;
+				}
+			}
+			
+			g_tempPacket->MoveReadPos(dwTransfer);
 			EnterCriticalSection(&pSession->cs);
 			pSession->SendQ.MoveFront(dwTransfer);
 			LeaveCriticalSection(&pSession->cs);
-			//LeaveCriticalSection(&g_CS_packet);
+
+			LeaveCriticalSection(&g_CS_packet);
 
 
 			firstsize   = 0;
