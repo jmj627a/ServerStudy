@@ -14,6 +14,8 @@ void RingBuf::Initialize(int iBufferSize)
 		writePos = 0;
 		totalSize = iBufferSize;
 		usedSize = 0;
+
+		InitializeCriticalSection(&cs);
 	}
 }
 
@@ -22,6 +24,7 @@ void RingBuf::Finalize(void)
 	if (dataBuf != NULL)
 	{
 		delete[] dataBuf;
+		DeleteCriticalSection(&cs);
 	}
 
 	dataBuf = NULL;
@@ -29,6 +32,7 @@ void RingBuf::Finalize(void)
 	writePos = 0;
 	totalSize = 0;
 	usedSize = 0;
+
 }
 
 RingBuf::RingBuf(void)
@@ -384,6 +388,16 @@ unsigned int RingBuf::DirectDequeueSize(void)
 		return (writePos - readPos);
 	else
 		return (totalSize - readPos);
+}
+
+void RingBuf::Lock()
+{
+	EnterCriticalSection(&cs);
+}
+
+void RingBuf::Unlock()
+{
+	LeaveCriticalSection(&cs);
 }
 
 void RingBuf::PrintBufState(void)

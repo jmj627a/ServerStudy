@@ -1,5 +1,6 @@
 #pragma once
 #include <stdio.h>
+#include <Windows.h>
 
 class RingBuf
 {
@@ -9,6 +10,8 @@ private:
 	int writePos;		//rear
 	int totalSize;
 	int usedSize;
+
+	CRITICAL_SECTION cs;
 
 private:
 	void Initialize(int iBufferSize);
@@ -56,6 +59,10 @@ public:
 	// 2번에 데이터를 얻거나 넣을 수 있음. 이 부분에서 끊어지지 않은 길이를 의미
 	unsigned int DirectEnqueueSize(void);
 	unsigned int DirectDequeueSize(void);
+
+
+	void Lock();
+	void Unlock();
 
 	void PrintBufState(void);
 };

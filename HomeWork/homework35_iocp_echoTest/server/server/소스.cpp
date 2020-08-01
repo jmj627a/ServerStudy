@@ -46,6 +46,8 @@ typedef struct SESSION {
 	int sessionID;
 
 	long ioCount;
+
+	RingBuf saveBuf;
 };
 
 CPacket *g_tempPacket = new CPacket(1000000);
@@ -115,11 +117,10 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 
 	////*******
 	EnterCriticalSection(&g_CS_packet);
-	int ret1 = g_tempPacket->PutData((char*)&header, sizeof(header));
-	int ret2 = g_tempPacket->PutData(pPacket->GetReadPtr(), header);
-	
-	
+
 	EnterCriticalSection(&session->cs);
+	int ret1 = session->saveBuf.Enqueue((char*)&header, sizeof(header));
+	int ret2 = session->saveBuf.Enqueue(pPacket->GetReadPtr(), header);
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
 	LeaveCriticalSection(&session->cs);
 	
@@ -173,11 +174,13 @@ void sendPost(int iSessionID)
 	int iBufCount = 0;
 
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
+
+	EnterCriticalSection(&session->cs);
 	wsaBuf[0].buf = session->SendQ.GetFrontBufferPtr();
 	wsaBuf[0].len = session->SendQ.DirectDequeueSize();
 	if (wsaBuf[0].len > 10000)
-		int a = 0;
-	firstsize = session->SendQ.DirectDequeueSize();
+		wsaBuf[0].len = session->SendQ.DirectDequeueSize();
+	firstsize = wsaBuf[0].len;
 	iBufCount++;
 
 	if (wsaBuf[0].len > 10000)
@@ -190,6 +193,8 @@ void sendPost(int iSessionID)
 		secoundsize = wsaBuf[iBufCount].len;
 		iBufCount++;
 	}
+	LeaveCriticalSection(&session->cs);
+
 
 	if (wsaBuf[0].len > 10000)
 		int a = 0;
@@ -469,7 +474,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 			EnterCriticalSection(&g_CS_packet);
 
 			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
-			char* pPacket = g_tempPacket->GetReadPtr();
+			char* pPacket = pSession->saveBuf.GetFrontBufferPtr();
 			for (int i = 0; i < dwTransfer; i++)
 			{
 				if (*(pQueue + i) != *(pPacket + i))
@@ -478,9 +483,8 @@ unsigned int __stdcall Worker_Thread(void* args)
 				}
 			}
 			
-			g_tempPacket->MoveReadPos(dwTransfer);
-		
 			EnterCriticalSection(&pSession->cs);
+			pSession->saveBuf.MoveFront(dwTransfer);
 			pSession->SendQ.MoveFront(dwTransfer);
 			LeaveCriticalSection(&pSession->cs);
 
@@ -535,6 +539,12 @@ unsigned int __stdcall Worker_Thread(void* args)
 
 			//할일 다 했으면 다시 recv 걸고 나가기 
 			recvPost(pSession->sessionID);
+		}
+
+
+		if (InterlockedDecrement(&pSession->ioCount) == 0)
+		{
+			//ReleaseIO(pSession);
 		}
 	}
 
