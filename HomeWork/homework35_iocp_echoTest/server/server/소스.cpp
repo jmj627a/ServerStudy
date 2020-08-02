@@ -152,6 +152,7 @@ void onRecv(int iSessionID, CPacket* pPacket)
 	SendPacket(iSessionID, &sendPacket);
 }
 
+
 void sendPost(int iSessionID)
 {
 	SESSION* session = FindSession(iSessionID);
@@ -160,10 +161,13 @@ void sendPost(int iSessionID)
 	if (InterlockedCompareExchange(&session->sendFlag, 1, 0) == 1)
 		return;
 
+
 	//wsaSend 실행
+	EnterCriticalSection(&session->cs);
 	if (session->SendQ.GetUseSize() == 0)
 	{
 		InterlockedDecrement(&session->sendFlag);
+		LeaveCriticalSection(&session->cs);
 		return;
 	}
 
@@ -173,18 +177,15 @@ void sendPost(int iSessionID)
 	WSABUF wsaBuf[2] = { 0, };
 	int iBufCount = 0;
 
+
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
 
-	EnterCriticalSection(&session->cs);
 	wsaBuf[0].buf = session->SendQ.GetFrontBufferPtr();
 	wsaBuf[0].len = session->SendQ.DirectDequeueSize();
 	if (wsaBuf[0].len > 10000)
 		wsaBuf[0].len = session->SendQ.DirectDequeueSize();
 	firstsize = wsaBuf[0].len;
 	iBufCount++;
-
-	if (wsaBuf[0].len > 10000)
-		int a = 0;
 
 	if (session->SendQ.DirectDequeueSize() < session->SendQ.GetUseSize())
 	{
@@ -196,14 +197,8 @@ void sendPost(int iSessionID)
 	LeaveCriticalSection(&session->cs);
 
 
-	if (wsaBuf[0].len > 10000)
-		int a = 0;
 
 	InterlockedIncrement(&session->ioCount);
-	
-	if (wsaBuf[0].len > 10000)
-		int a = 0;
-
 	ret = WSASend(session->socket, wsaBuf, iBufCount, &dwSendByte, 0, &session->sendOverlap, NULL);
 	if (ret == SOCKET_ERROR)
 	{
@@ -267,6 +262,7 @@ void recvPost(int iSessionID)
 			{
 
 			}
+			return;
 		}
 	}
 
@@ -484,6 +480,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 			}
 			
 			EnterCriticalSection(&pSession->cs);
+			memset(pSession->saveBuf.GetFrontBufferPtr(), 0, dwTransfer);
 			pSession->saveBuf.MoveFront(dwTransfer);
 			pSession->SendQ.MoveFront(dwTransfer);
 			LeaveCriticalSection(&pSession->cs);
@@ -520,15 +517,18 @@ unsigned int __stdcall Worker_Thread(void* args)
 				//	break; 
 				if (sizeof(short) + header > recvSize)
 					break;
+
 				//헤더 부분은 빼서 onRecv로 전달.
 				pSession->RecvQ.MoveFront(sizeof(short));
 
 				CPacket packet;
 
 				//헤더 크기만큼 직렬화버퍼로 뽑아냄 
-				if (header != pSession->RecvQ.Dequeue(packet.GetWritePtr(), header))
+				if (header != pSession->RecvQ.Peek(packet.GetWritePtr(), header))
 					break;
+
 				packet.MoveWritePos(header);
+				pSession->RecvQ.MoveFront(header);
 
 				//이 안에서 sendpacket 호출하고 패킷 보내버림
 				onRecv(pSession->sessionID, &packet);
