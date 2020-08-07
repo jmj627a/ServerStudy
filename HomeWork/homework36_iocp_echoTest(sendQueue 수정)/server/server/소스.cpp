@@ -50,8 +50,6 @@ typedef struct SESSION {
 	int sessionID;
 
 	long ioCount;
-
-	RingBuf saveBuf;
 };
 
 CPacket *g_tempPacket = new CPacket(1000000);
@@ -106,25 +104,9 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 	if (session == nullptr)
 		return;
 
-	//WCHAR header = pPacket->GetDataSize();
-	
-	//CPacket packet;
-	//packet.PutData((char*)&header, sizeof(header));
-	//packet.PutData(pPacket->GetReadPtr(), header);
-
-	////*******
-	EnterCriticalSection(&g_CS_packet);
-
 	EnterCriticalSection(&session->cs);
-	//int ret1 = session->saveBuf.Enqueue((char*)&header, sizeof(header));
-	//int ret2 = session->saveBuf.Enqueue(pPacket->GetReadPtr(), header);
 	int size = session->SendQ.Enqueue((char*)&pPacket, sizeof(CPacket*));
 	LeaveCriticalSection(&session->cs);
-	
-	LeaveCriticalSection(&g_CS_packet);
-	//****************
-
-	//InterlockedAdd(&g_insize, sizeof(header) + header);
 
 	sendPost(session->sessionID);
 }
@@ -179,10 +161,11 @@ void sendPost(int iSessionID)
 		session->SendQ.Dequeue((char*)&packet, sizeof(CPacket*)); //8바이트씩 뽑기
 
 		session->SendPacketBuf[iBufCount] = packet; //완료통지 왔을 때 지워야 하는 직렬화 버퍼 동적할당 한 것들 보관
+		session->sendPacketBufCount++;
+		
 		wsaBuf[iBufCount].buf = packet->GetReadPtr();
 		wsaBuf[iBufCount].len = packet->GetDataSize();
 		iBufCount++;
-		session->sendPacketBufCount++;
 
 		if (iBufCount > 300) {
 			break;

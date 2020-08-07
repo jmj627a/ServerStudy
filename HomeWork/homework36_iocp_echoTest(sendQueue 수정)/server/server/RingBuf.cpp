@@ -381,13 +381,17 @@ unsigned int RingBuf::DirectEnqueueSize(void)
 
 unsigned int RingBuf::DirectDequeueSize(void)
 {
-	if (GetUseSize() == 0)
+	int _readPos = readPos;
+	int _writePos = writePos;
+	int _useSize = GetUseSize();
+
+	if (_useSize == 0)
 		return 0;
 
-	if (readPos < writePos)
-		return (writePos - readPos);
+	if (_readPos < _writePos)
+		return (_writePos - _readPos);
 	else
-		return (totalSize - readPos);
+		return (totalSize - _readPos);
 }
 
 void RingBuf::Lock()
