@@ -36,6 +36,10 @@ typedef struct SESSION {
 	WSABUF		Sendbuf;
 	WSABUF		Recvbuf;
 
+	//완성된 직렬화 버퍼 포인터를 하나씩 넣어둠. 완료통지 왔을 때 지워야 하는 직렬화 버퍼 동적할당 한 것들 보관
+	CPacket*	SendPacketBuf[300];
+	int			sendPacketBufCount;
+
 	//지금 send중이면 버퍼에 넣고 빠짐
 	//다음번 send 완료통지 왔을때 sendq에 있는거 sendpost 호출.
 	long		sendFlag;
@@ -96,44 +100,29 @@ void SendPacket(int iSessionID, CPacket* pPacket);
 //얘를 끊어달라
 void Disconnect(int iSessionID);
 
-
-ULONG firstsize = 0;
-ULONG secoundsize = 0;
-
 void SendPacket(int iSessionID, CPacket* pPacket)
 {
 	SESSION* session = FindSession(iSessionID);
 	if (session == nullptr)
 		return;
 
-
-	WCHAR header = pPacket->GetDataSize();
-	if (header != 0x08)
-		return;
-
-	CPacket packet;
-	packet.PutData((char*)&header, sizeof(header));
-	packet.PutData(pPacket->GetReadPtr(), header);
+	//WCHAR header = pPacket->GetDataSize();
+	
+	//CPacket packet;
+	//packet.PutData((char*)&header, sizeof(header));
+	//packet.PutData(pPacket->GetReadPtr(), header);
 
 	////*******
 	EnterCriticalSection(&g_CS_packet);
 
 	EnterCriticalSection(&session->cs);
-	int ret1 = session->saveBuf.Enqueue((char*)&header, sizeof(header));
-	int ret2 = session->saveBuf.Enqueue(pPacket->GetReadPtr(), header);
-	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
+	//int ret1 = session->saveBuf.Enqueue((char*)&header, sizeof(header));
+	//int ret2 = session->saveBuf.Enqueue(pPacket->GetReadPtr(), header);
+	int size = session->SendQ.Enqueue((char*)&pPacket, sizeof(CPacket*));
 	LeaveCriticalSection(&session->cs);
 	
 	LeaveCriticalSection(&g_CS_packet);
 	//****************
-
-	//EnterCriticalSection(&session->cs);
-	//int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
-	//LeaveCriticalSection(&session->cs);
-
-	if (size <= 0)
-		int a = 0;
-
 
 	//InterlockedAdd(&g_insize, sizeof(header) + header);
 
@@ -146,10 +135,13 @@ void onRecv(int iSessionID, CPacket* pPacket)
 	LONGLONG temp;
 	*pPacket >> temp;
 
-	CPacket sendPacket;
-	sendPacket << temp;
+	WCHAR header = sizeof(LONGLONG);
+	CPacket* sendPacket = new CPacket();
 
-	SendPacket(iSessionID, &sendPacket);
+	sendPacket->PutData((char*)&header, sizeof(short));
+	sendPacket->PutData((char*)&temp, sizeof(LONGLONG));
+
+	SendPacket(iSessionID, sendPacket);
 }
 
 
@@ -174,29 +166,30 @@ void sendPost(int iSessionID)
 	int ret;
 	DWORD dwSendByte = 0;
 	DWORD dwFlag = 0;
-	WSABUF wsaBuf[2] = { 0, };
+	WSABUF wsaBuf[300] = { 0, };
 	int iBufCount = 0;
 
 
 	ZeroMemory(&session->sendOverlap, sizeof(session->sendOverlap));
 
-	wsaBuf[0].buf = session->SendQ.GetFrontBufferPtr();
-	wsaBuf[0].len = session->SendQ.DirectDequeueSize();
-	if (wsaBuf[0].len > 10000)
-		wsaBuf[0].len = session->SendQ.DirectDequeueSize();
-	firstsize = wsaBuf[0].len;
-	iBufCount++;
-
-	if (session->SendQ.DirectDequeueSize() < session->SendQ.GetUseSize())
+	for (int i = 0; i < session->SendQ.GetUseSize() / 8; i++)
 	{
-		wsaBuf[iBufCount].buf = session->SendQ.GetBufferPtr();
-		wsaBuf[iBufCount].len = session->SendQ.GetUseSize() - session->SendQ.DirectDequeueSize();
-		secoundsize = wsaBuf[iBufCount].len;
+		CPacket* packet = NULL;
+
+		session->SendQ.Dequeue((char*)&packet, sizeof(CPacket*)); //8바이트씩 뽑기
+
+		session->SendPacketBuf[iBufCount] = packet; //완료통지 왔을 때 지워야 하는 직렬화 버퍼 동적할당 한 것들 보관
+		wsaBuf[iBufCount].buf = packet->GetReadPtr();
+		wsaBuf[iBufCount].len = packet->GetDataSize();
 		iBufCount++;
+		session->sendPacketBufCount++;
+
+		if (iBufCount > 300) {
+			break;
+		}
 	}
+
 	LeaveCriticalSection(&session->cs);
-
-
 
 	InterlockedIncrement(&session->ioCount);
 	ret = WSASend(session->socket, wsaBuf, iBufCount, &dwSendByte, 0, &session->sendOverlap, NULL);
@@ -216,7 +209,6 @@ void sendPost(int iSessionID)
 			return;
 		}
 	}
-	//LeaveCriticalSection(&session->cs);
 }
 
 //wsaRecv 함수 랩핑
@@ -265,8 +257,6 @@ void recvPost(int iSessionID)
 			return;
 		}
 	}
-
-	//LeaveCriticalSection(&session->cs);
 }
 
 
@@ -467,29 +457,11 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
-			EnterCriticalSection(&g_CS_packet);
-
-			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
-			char* pPacket = pSession->saveBuf.GetFrontBufferPtr();
-			for (int i = 0; i < dwTransfer; i++)
+			for (int i = 0; i < pSession->sendPacketBufCount; ++i)
 			{
-				if (*(pQueue + i) != *(pPacket + i))
-				{
-					int a = 0;
-				}
+				delete pSession->SendPacketBuf[i];
 			}
-			
-			EnterCriticalSection(&pSession->cs);
-			memset(pSession->saveBuf.GetFrontBufferPtr(), 0, dwTransfer);
-			pSession->saveBuf.MoveFront(dwTransfer);
-			pSession->SendQ.MoveFront(dwTransfer);
-			LeaveCriticalSection(&pSession->cs);
-
-			LeaveCriticalSection(&g_CS_packet);
-
-
-			firstsize   = 0;
-			secoundsize = 0;
+			pSession->sendPacketBufCount = 0;
 
 			InterlockedDecrement(&pSession->sendFlag);
 			sendPost(pSession->sessionID);

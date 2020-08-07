@@ -10,7 +10,7 @@ public:
 	//Packet Enum.
 	enum en_PACKET
 	{
-		eBUFFER_DEFAULT = 10000		// 패킷의 기본 버퍼 사이즈.
+		eBUFFER_DEFAULT = 1000		// 패킷의 기본 버퍼 사이즈.
 	};
 
 	// 생성자, 파괴자.

@@ -145,6 +145,7 @@
     <ClCompile Include="소스.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CCrashDump.h" />
     <ClInclude Include="CPacket.h" />
     <ClInclude Include="RingBuf.h" />
   </ItemGroup>
