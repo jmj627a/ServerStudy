@@ -79,32 +79,26 @@ int RingBuf::GetFreeSize(void)
 
 int RingBuf::Enqueue(char* chpData, int iSize)
 {
-	//이렇게 지역변수에 옮겨두는 이유 : 멀티스레드 환경에서 이 중간에 deq로 pos가 바뀌는걸 대비하려고 
-	//미리 받아두고 그 위치를 기준으로만 작업한다. 
-	int _readPos = readPos;
-	int _writePos = writePos;
-	int _usedSize = usedSize;
-
 	//더 넣을 용량이 없으면 나가기
-	if (totalSize - _usedSize == 0)
+	if (GetFreeSize() == 0)
 		return 0;
 
 	//넣어야 하는 크기보다 남은 공간이 적으면 쓰지 말고 나가기
-	if (totalSize - _usedSize < iSize)
+	if (GetFreeSize() < iSize)
 		return 0;
 
 	//읽기 / 쓰기
-	if (_readPos <= _writePos)
+	if (readPos <= writePos)
 	{
-		int rearSize = totalSize - _writePos;
+		int rearSize = totalSize - writePos;
 
 		//쓸 수 있는 공간보다 써야하는 데이터가 많은 경우
 		if (rearSize < iSize)
 		{
 			//뒷부분 쓸 수 있는 공간 일단 채우기
-			memcpy((dataBuf + _writePos), chpData, rearSize);
+			memcpy((dataBuf + writePos), chpData, rearSize);
 
-			int frontSize = _readPos;
+			int frontSize = readPos;
 			int remainSize = iSize - rearSize;
 
 			//앞으로 와서 앞에도 채울 수 있으면 채우기
@@ -376,26 +370,17 @@ char* RingBuf::GetBufferPtr(void)
 
 unsigned int RingBuf::DirectEnqueueSize(void)
 {
-	//이렇게 지역변수에 옮겨두는 이유 : 멀티스레드 환경에서 이 중간에 deq로 pos가 바뀌는걸 대비하려고 
-	//미리 받아두고 그 위치를 기준으로만 작업한다. 
-	int _readPos = readPos;
-	int _writePos = writePos;
-	int _usedSize = usedSize;
-
-	//if (GetFreeSize() == 0)
-	if (totalSize - _usedSize == 0)
+	if (GetFreeSize() == 0)
 		return 0;
 
-	if (_readPos <= _writePos)
-		return (totalSize - _writePos);
+	if (readPos <= writePos)
+		return (totalSize - writePos);
 	else
-		return (_readPos - _writePos);
+		return (readPos - writePos);
 }
 
 unsigned int RingBuf::DirectDequeueSize(void)
 {
-	//이렇게 지역변수에 옮겨두는 이유 : 멀티스레드 환경에서 이 중간에 deq로 pos가 바뀌는걸 대비하려고 
-	//미리 받아두고 그 위치를 기준으로만 작업한다. 
 	int _readPos = readPos;
 	int _writePos = writePos;
 	int _usedSize = usedSize;

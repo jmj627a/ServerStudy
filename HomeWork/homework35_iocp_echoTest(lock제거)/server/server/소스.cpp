@@ -46,8 +46,6 @@ typedef struct SESSION {
 	int sessionID;
 
 	long ioCount;
-
-	RingBuf saveBuf;
 };
 
 CPacket *g_tempPacket = new CPacket(1000000);
@@ -119,13 +117,19 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 	//EnterCriticalSection(&g_CS_packet);
 
 	//EnterCriticalSection(&session->cs);
-	//int ret1 = session->saveBuf.Enqueue((char*)&header, sizeof(header));
-	//int ret2 = session->saveBuf.Enqueue(pPacket->GetReadPtr(), header);
 	int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
 	//LeaveCriticalSection(&session->cs);
-	//
+	
 	//LeaveCriticalSection(&g_CS_packet);
 	//****************
+
+	//EnterCriticalSection(&session->cs);
+	//int size = session->SendQ.Enqueue(packet.GetReadPtr(), packet.GetDataSize());
+	//LeaveCriticalSection(&session->cs);
+
+	if (size <= 0)
+		int a = 0;
+
 
 	//InterlockedAdd(&g_insize, sizeof(header) + header);
 
@@ -205,6 +209,7 @@ void sendPost(int iSessionID)
 			return;
 		}
 	}
+	//LeaveCriticalSection(&session->cs);
 }
 
 //wsaRecv 함수 랩핑
@@ -253,6 +258,8 @@ void recvPost(int iSessionID)
 			return;
 		}
 	}
+
+	//LeaveCriticalSection(&session->cs);
 }
 
 
@@ -453,29 +460,7 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
-			//EnterCriticalSection(&g_CS_packet);
-			//
-			//char* pQueue = pSession->SendQ.GetFrontBufferPtr();
-			//char* pPacket = pSession->saveBuf.GetFrontBufferPtr();
-			//for (int i = 0; i < dwTransfer; i++)
-			//{
-			//	if (*(pQueue + i) != *(pPacket + i))
-			//	{
-			//		int a = 0;
-			//	}
-			//}
-			
-			//EnterCriticalSection(&pSession->cs);
-			//memset(pSession->saveBuf.GetFrontBufferPtr(), 0, dwTransfer);
-			//pSession->saveBuf.MoveFront(dwTransfer);
 			pSession->SendQ.MoveFront(dwTransfer);
-			//LeaveCriticalSection(&pSession->cs);
-
-			//LeaveCriticalSection(&g_CS_packet);
-
-
-			firstsize   = 0;
-			secoundsize = 0;
 
 			InterlockedDecrement(&pSession->sendFlag);
 			sendPost(pSession->sessionID);
