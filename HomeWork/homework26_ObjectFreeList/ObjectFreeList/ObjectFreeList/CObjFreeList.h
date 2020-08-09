@@ -184,6 +184,9 @@ DATA* CObjFreeList<DATA>::Alloc(void)
 template <class DATA>
 bool CObjFreeList<DATA>::Free(DATA* pData)
 {
+	if (m_iUseCount == 0)
+		return true;
+
 	if (pData == NULL)
 		return false;
 
