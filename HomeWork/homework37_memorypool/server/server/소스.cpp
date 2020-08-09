@@ -101,7 +101,9 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 		return;
 
 	EnterCriticalSection(&session->cs);
+	pPacket->AddRefCount();
 	int size = session->SendQ.Enqueue((char*)&pPacket, sizeof(CPacket*));
+	pPacket->Free();
 	LeaveCriticalSection(&session->cs);
 
 	sendPost(session->sessionID);
@@ -121,7 +123,9 @@ void onRecv(int iSessionID, CPacket* pPacket)
 	sendPacket->PutData((char*)&header, sizeof(short));
 	sendPacket->PutData((char*)&temp, sizeof(LONGLONG));
 
+	sendPacket->AddRefCount();
 	SendPacket(iSessionID, sendPacket);
+	sendPacket->Free();
 }
 
 
