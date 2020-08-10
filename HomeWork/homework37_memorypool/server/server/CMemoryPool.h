@@ -154,6 +154,8 @@ DATA* CMemoryPool<DATA>::Alloc(void)
 {
 	st_BLOCK_NODE* newNode;
 
+	EnterCriticalSection(&cs);
+
 	//리스트가 비어있으면
 	if (_pFreeNode == NULL)
 	{

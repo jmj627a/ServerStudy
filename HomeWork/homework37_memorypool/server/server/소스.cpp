@@ -50,6 +50,8 @@ typedef struct SESSION {
 	int sessionID;
 
 	long ioCount;
+
+	RingBuf saveBuf;
 };
 
 SOCKET g_listenSock;
@@ -102,6 +104,9 @@ void SendPacket(int iSessionID, CPacket* pPacket)
 
 	EnterCriticalSection(&session->cs);
 	pPacket->AddRefCount();
+
+	int ret1 = session->saveBuf.Enqueue((char*)&pPacket, sizeof(CPacket*));
+
 	int size = session->SendQ.Enqueue((char*)&pPacket, sizeof(CPacket*));
 	pPacket->Free();
 	LeaveCriticalSection(&session->cs);
@@ -441,6 +446,22 @@ unsigned int __stdcall Worker_Thread(void* args)
 		//send 완료통지 
 		if (pOverlap == &pSession->sendOverlap)
 		{
+			EnterCriticalSection(&pSession->cs);
+
+			char* pQueue = pSession->SendQ.GetFrontBufferPtr();
+			char* pPacket = pSession->saveBuf.GetFrontBufferPtr();
+			for (int i = 0; i < dwTransfer; i++)
+			{
+				if (*(pQueue + i) != *(pPacket + i))
+				{
+					int a = 0;
+				}
+			}
+			LeaveCriticalSection(&pSession->cs);
+
+
+
+
 			for (int i = 0; i < pSession->sendPacketBufCount; ++i)
 			{
 				//delete pSession->SendPacketBuf[i];
